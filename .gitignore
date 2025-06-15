@@ -1,20 +1,46 @@
-# Project exclude paths
-/src/_Root/domain/factories/ErrorResult.js
-/src/_Root/domain/factories/SuccessResult.js
-/src/_Root/domain/types/Result/IError.d.ts
-/src/_Root/domain/types/Result/IError.js
-/src/_Root/domain/types/Result/ISuccess.d.ts
-/src/_Root/domain/types/Result/ISuccess.js
-/src/_Root/domain/types/Result/TResult.d.ts
-/src/_Root/domain/types/Result/TResult.js
-/src/_Root/domain/types/utils.js
-/src/Validation/domain/types/TValidator.js
-/src/Validation/domain/validators/isArrayExactLength.js
-/src/Validation/domain/validators/isArrayMaxLength.js
-/src/Validation/domain/validators/isArrayMinLength.js
-/src/Validation/domain/validators/isNumber.js
-/src/Validation/domain/validators/isOnlyDigitsString.js
-/src/Validation/domain/validators/isOnlyEnglishLettersString.js
-/src/Validation/domain/validators/isPositiveNumber.js
-/src/Validation/domain/validators/isString.js
-/index.js
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# Build output
+dist/
+build/
+*.tsbuildinfo
+
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+.cursorrules
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Test coverage
+coverage/
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+tmp/
+temp/
+
+# Testing and Analysis
+.lh/
+.nyc_output/
+.nyc_cache/
+.eslintcache
+.stylelintcache
+.prettiercache
+jest-cache/
+jest-coverage/

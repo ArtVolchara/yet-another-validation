@@ -4,8 +4,8 @@ import composeValidator from './src/Validation/domain/utils/composeValidator';
 import isUndefined from './src/Validation/domain/validators/isUndefined';
 import isOnlyEnglishLettersString from './src/Validation/domain/validators/isOnlyEnglishLettersString';
 import createObjectValidationRule from './src/Validation/domain/utils/createObjectValidationRule';
-import createArrayValidatorRule from './src/Validation/domain/utils/createArrayValidatorRule';
-import createTupleValidatorRule from './src/Validation/domain/utils/createTupleValidatorRule';
+import createArrayValidationRule from './src/Validation/domain/utils/createArrayValidationRule';
+import createTupleValidationRule from './src/Validation/domain/utils/createTupleValidationRule';
 import generateArrayExactLengthValidator from './src/Validation/domain/validators/isArrayExactLength';
 
 const stringValidator = composeValidator([[isString, isOnlyEnglishLettersString], [isUndefined]]);
@@ -23,7 +23,7 @@ const workplaceSchema = {
   company: composeValidator([[isString, isOnlyEnglishLettersString]]),
 };
 const workplaceValidationRule = createObjectValidationRule(workplaceSchema);
-const workplaceValidator = composeValidator([[workplaceValidationRule], [isUndefined]]);
+const workplaceValidator = composeValidator([[workplaceValidationRule]]);
 const workPlaceValidationResult = workplaceValidator({ position: '1', company: 'w' });
 if (workPlaceValidationResult.status === 'success') {
   const { data } = workPlaceValidationResult;
@@ -33,12 +33,12 @@ if (workPlaceValidationResult.status === 'error') {
 }
 const valSchema1 = {
   id: composeValidator([[isOnlyDigitsString]]),
-  name: composeValidator([[isString, isOnlyEnglishLettersString]]),
-  workplace: composeValidator([workplaceValidator, [isUndefined]]),
+  name: composeValidator([[isString]]),
+  // workplace: composeValidator([[workplaceValidator]]),
 };
 const valValidationRule = createObjectValidationRule(valSchema1);
 const objValidator = composeValidator([[valValidationRule]]);
-const objValidationResult = objValidator({ id: 'a', name: '', workplace: { position: '1', company: 'w' } });
+const objValidationResult = valValidationRule(1);
 
 if (objValidationResult.status === 'success') {
   const data = objValidationResult?.data;
@@ -46,22 +46,21 @@ if (objValidationResult.status === 'success') {
 if (objValidationResult.status === 'error') {
   const { message, data } = objValidationResult;
 }
-// console.log(objValidationResult.data);
+console.log(objValidationResult.data);
 
-const arrValidatorRule = createArrayValidatorRule(workplaceValidator);
-const arrValidator = composeValidator([[arrValidatorRule, generateArrayExactLengthValidator(5)]]);
+const arrValidatorRule = createArrayValidationRule(composeValidator([[isOnlyDigitsString]]));
+const arrValidator = composeValidator([[arrValidatorRule]]);
 
-const arrValidationResult = arrValidator([{ position: '1', company: 'w' }, { position: '1', company: '1' }]);
+const arrValidationResult = arrValidator(['5', "2", 'f']);
 
 if (arrValidationResult.status === 'success') {
   const { data } = arrValidationResult;
 }
 if (arrValidationResult.status === 'error') {
   const { message, data } = arrValidationResult;
-  console.log(arrValidationResult);
 }
 
-const tupleValidatorRule = createTupleValidatorRule([workplaceValidator]);
+const tupleValidatorRule = createTupleValidationRule([workplaceValidator]);
 const tupleValidator = composeValidator([[tupleValidatorRule], [isUndefined]]);
 
 const tupleValidationResult = tupleValidator([{ position: '1', company: 'w' }]);
