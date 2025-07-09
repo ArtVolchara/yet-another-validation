@@ -1,10 +1,21 @@
 {
   "compilerOptions": {
     "target": "ES2020",
-    "module": "commonjs",                                /* Specify what module code is generated. */
+    "lib": ["ES2020", "dom"],
+    "module": "es2020",                                /* Specify what module code is generated. */
+    "moduleResolution": "bundler",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strictNullChecks": true,
     "strict": true,
+    "noErrorTruncation": true,
+    "baseUrl": ".",
+    "paths": {
+      "@validation": ["src"],
+      "@validation/rules": ["src/Validation/domain/rules"],
+      "@validation/factories": ["src/Validation/domain/factories"],
+      "@validation/functions": ["src/Validation/domain/functions"],
+      "@validation/utils": ["src/_Root/domain/factories"]
+    }
   }
 }

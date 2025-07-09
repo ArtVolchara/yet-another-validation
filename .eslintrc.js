@@ -17,6 +17,10 @@ module.exports = {
             ],
             "parserOptions": {
                 "sourceType": "script"
+            },
+            "parser": null,
+            "parserOptions": {
+                "project": null
             }
         }
     ],
@@ -31,5 +35,6 @@ module.exports = {
         "only-warn",
     ],
     "rules": {
+        "max-len": ["error", { "code": 120 }]
     }
 }

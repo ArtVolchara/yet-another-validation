@@ -9,7 +9,8 @@ export type TValidationRule<
     Error extends IError<string, any> = IError<string, any>,
 > = <Input extends InputData = InputData>(value: Input) => TResult<Success, Error>;
 
-export type TValidationRules = Array<TValidationRule>;
+export type TValidationRules = [TValidationRule, ...Array<TValidationRule>]
+| Readonly<[TValidationRule, ...Array<TValidationRule>]>;
 
 // валидационное правило с возможностью валидирования по принципу "ИЛИ"
 export type TValidator<
@@ -18,6 +19,9 @@ export type TValidator<
     Error extends IError<string, Array<Array<IError<string, any>>>
     > = IError<string, Array<Array<IError<string, any>>>>,
 > = <Input extends InputData = InputData>(value: Input) => TResult<Success, Error>;
+
+export type TValidators = [TValidator, ...Array<TValidator>]
+| Readonly<[TValidator, ...Array<TValidator>]>;
 
 export type TRetrieveValidationInputData<Validator extends TValidator | TValidationRule> =
     Validator extends (value: infer ValidatorInput) => TResult<ISuccess>

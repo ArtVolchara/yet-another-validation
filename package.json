@@ -3,24 +3,55 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
-    "test:verbose": "jest --verbose"
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "test:coverage": "vitest --coverage",
+    "test:verbose": "vitest --verbose"
   },
   "keywords": [],
   "author": "Artem Volkov",
   "license": "ISC",
+  "main": "./index.js",
+  "module": "./index.js",
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js",
+      "require": "./index.js"
+    },
+    "./rules": {
+      "types": "./src/Validation/domain/rules/index.d.ts",
+      "import": "./src/Validation/domain/rules/index.js",
+      "require": "./src/Validation/domain/rules/index.js"
+    },
+    "./factories": {
+      "types": "./src/Validation/domain/factories/index.d.ts",
+      "import": "./src/Validation/domain/factories/index.js",
+      "require": "./src/Validation/domain/factories/index.js"
+    },
+    "./functions": {
+      "types": "./src/Validation/domain/functions/index.d.ts",
+      "import": "./src/Validation/domain/functions/index.js",
+      "require": "./src/Validation/domain/functions/index.js"
+    },
+    "./utils": {
+      "types": "./src/_Root/domain/factories/index.d.ts",
+      "import": "./src/_Root/domain/factories/index.js",
+      "require": "./src/_Root/domain/factories/index.js"
+    }
+  },
   "devDependencies": {
-    "@types/jest": "^29.5.14",
+    "@types/node": "^24.0.7",
     "@typescript-eslint/eslint-plugin": "^7.3.1",
     "@typescript-eslint/parser": "^7.3.1",
     "eslint": "^8.57.0",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-airbnb-typescript": "^18.0.0",
     "eslint-plugin-only-warn": "^1.1.0",
-    "jest": "^29.7.0",
-    "ts-jest": "^29.3.4",
-    "typescript": "^5.7.2"
+    "rollup": "^4.44.2",
+    "typescript": "^5.7.2",
+    "vite": "^7.0.2",
+    "vitest": "^3.2.4"
   }
 }
