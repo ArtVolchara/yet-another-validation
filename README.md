@@ -86,9 +86,7 @@ type TValidationRule<
 | rules    | Валидационные правила |
 
 **Возвращает:**
-| Возвращает                |
-|---------------------------|
-| TResult<Success, Error> - результат валидации |
+TResult<Success, Error> - результат валидации
 
 **Пример:**
 ```typescript
@@ -133,10 +131,8 @@ const actualResult = validateValueFromRules('abc', isString, isArray);
 | value | Значение для валидации |
 | validators | Валидаторы или списки валидационных правил |
 
-**Возвращает:**<br/>
-| Возвращает |
-|---|
-| TResult<Success, Error> - результат валидации |
+**Возвращает:**
+TResult<Success, Error> - результат валидации
 
 **Пример:**<br/>
 ```typescript
@@ -205,10 +201,8 @@ type TValidator<
 |----------|----------|
 | validators | Валидаторы или списки валидационных правил |
 
-**Возвращает:**<br/>
-| Возвращает                |
-|---------------------------|
-| TValidator<InputData, Success, Error> |
+**Возвращает:**
+TValidator<InputData, Success, Error>
 
 **Пример:**<br/>
 ```typescript
@@ -268,10 +262,8 @@ const validator = composeValidator(
 |----------|----------|
 | schema | Объект с валидаторами для каждого поля объекта |
 
-**Возвращает:**<br/>
-| Возвращает                |
-|---------------------------|
-| TValidator<object, object, ErrorResult> - функция-валидатор для объекта |
+**Возвращает:**
+TValidator<object, object, ErrorResult> - функция-валидатор для объекта
 
 **Пример:**<br/>
 ```typescript
@@ -321,10 +313,8 @@ const result = objectValidationRule({ optionalField: undefined });
 |----------|----------|
 | validator | Валидатор для элементов массива |
 
-**Возвращает:**<br/>
-| Возвращает                |
-|---------------------------|
-| TValidator<Array<any>, Array<any>, ErrorResult> - функция-валидатор для массива |
+**Возвращает:**
+TValidator<Array<any>, Array<any>, ErrorResult> - функция-валидатор для массива
 
 **Пример:**<br/>
 ```typescript
@@ -348,10 +338,8 @@ const result = stringArrayValidationRule(['Hello', 'World', 'Test'])
 |----------|----------|
 | validators | Массив валидаторов для каждого элемента кортежа |
 
-**Возвращает:**<br/>
-| Возвращает                |
-|---------------------------|
-| TValidator<Tuple, Tuple, ErrorResult> - функция-валидатор для кортежа, где Tuple — кортеж с конкретными типами элементов |
+**Возвращает:**
+TValidator<Tuple, Tuple, ErrorResult> - функция-валидатор для кортежа, где Tuple — кортеж с конкретными типами элементов
 
 **Пример:**<br/>
 ```typescript
