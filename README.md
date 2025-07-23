@@ -80,11 +80,11 @@ type TValidationRule<
 > = <Input extends InputData = InputData>(value: Input) => TResult<Success, Error>;
 ```
 **Параметры:**<br/>
-- `value`: Валидируемое значение
-- `rules`: Валидационные правила
+- `value`: Валидируемое значение<br/>
+- `rules`: Валидационные правила<br/>
 **Возвращает:**<br/>
-- `TResult<Success, Error>` - результат валидации
-**Пример:**<br/>
+- `TResult<Success, Error>` - результат валидации<br/>
+**Пример:**
 ```typescript
 const actualResult = validateValueFromRules('abc', isString, isOnlyEnglishLettersString);
 /*const actualResult: ISuccess<string & TOnlyEnglishLettersNominal> | IError<"Value should contain only English letters" | "Value should be string. Value should contain only English letters", [TIsOnlyEnglishLettersStringValidationError] | [TIsStringValidationError, TIsOnlyEnglishLettersStringValidationError]>*/
@@ -120,13 +120,12 @@ const actualResult = validateValueFromRules('abc', isString, isArray);
 ### `validateValue(value, ...validators)`
 Функция, проверяет значение value по принципу "ИЛИ". То есть соответствует ли value списку правил 1 (или валидатору) ИЛИ списку правил 2 (или валидатору).
 Успешный результат валидации будет иметь вид объединения (union, ||) пересечений валидационных правил (или валидатора/ов).
-Ошибка валидации будет иметь сообщение из сообщений валидационных правил (или валидатора/ов), разделённых союзом OR, а в data будет лежать список, элементами которого будет data из валидаторов и списки ошибок на каждую цепочку валидационных правил.
-
+Ошибка валидации будет иметь сообщение из сообщений валидационных правил (или валидатора/ов), разделённых союзом OR, а в data будет лежать список, элементами которого будет data из валидаторов и списки ошибок на каждую цепочку валидационных правил.<br/>
 **Параметры:**<br/>
-- `value`: Значение для валидации
-- `validators`: Валидаторы или списки валидационных правил
+- `value`: Значение для валидации<br/>
+- `validators`: Валидаторы или списки валидационных правил<br/>
 **Возвращает:**<br/>
-- `TResult<Success, Error>` - результат валидации
+- `TResult<Success, Error>` - результат валидации<br/>
 **Пример:**<br/>
 ```typescript
 import isString from '@validation/rules/isString';
@@ -188,11 +187,11 @@ type TValidator<
     > = IError<string, Array<Array<IError<string, any>>>>,
 > = <Input extends InputData = InputData>(value: Input) => TResult<Success, Error>
 ```
-Для валидации использует validateValue
+Для валидации использует validateValue<br/>
 **Параметры:**<br/>
-- `validators`: Валидаторы или списки валидационных правил
+- `validators`: Валидаторы или списки валидационных правил<br/>
 **Возвращает:**<br/>
-- `TValidator<InputData, Success, Error>`
+- `TValidator<InputData, Success, Error>`<br/>
 **Пример:**<br/>
 ```typescript
 import isString from '@validation/rules/isString';
@@ -245,12 +244,11 @@ const validator = composeValidator(
 ```
 
 ### `createObjectValidationRule(schema)`
-Фабрика для создания правила валидации объекта. Принимает схему объекта с валидаторами для каждого поля и возвращает функцию-валидатор, которая проверяет соответствие переданного объекта заданной схеме.
-
+Фабрика для создания правила валидации объекта. Принимает схему объекта с валидаторами для каждого поля и возвращает функцию-валидатор, которая проверяет соответствие переданного объекта заданной схеме.<br/>
 **Параметры:**<br/>
-- `schema`: Объект с валидаторами для каждого поля объекта
+- `schema`: Объект с валидаторами для каждого поля объекта<br/>
 **Возвращает:**<br/>
-- `TValidator<object, object, ErrorResult>` - функция-валидатор для объекта
+- `TValidator<object, object, ErrorResult>` - функция-валидатор для объекта<br/>
 **Пример:**<br/>
 ```typescript
 import isString from '@validation/rules/isString';
@@ -293,11 +291,11 @@ const result = objectValidationRule({ optionalField: undefined });
 ```
 
 ### `createArrayValidationRule(validator)`
-Фабрика для создания правила валидации массива. Принимает валидатор для элементов массива и возвращает функцию-валидатор, которая проверяет, что переданное значение является массивом и все его элементы соответствуют заданному валидатору.
+Фабрика для создания правила валидации массива. Принимает валидатор для элементов массива и возвращает функцию-валидатор, которая проверяет, что переданное значение является массивом и все его элементы соответствуют заданному валидатору.<br/>
 **Параметры:**<br/>
-- `validator`: Валидатор для элементов массива
+- `validator`: Валидатор для элементов массива<br/>
 **Возвращает:**<br/>
-- `TValidator<Array<any>, Array<any>, ErrorResult>` - функция-валидатор для массива
+- `TValidator<Array<any>, Array<any>, ErrorResult>` - функция-валидатор для массива<br/>
 **Пример:**<br/>
 ```typescript
 import isString from '@validation/rules/isString';
@@ -314,11 +312,11 @@ const result = stringArrayValidationRule(['Hello', 'World', 'Test'])
 ```
 
 ### `createTupleValidationRule(validators)`
-Фабрика для создания правила валидации кортежа (tuple). Принимает массив валидаторов для каждого элемента кортежа и возвращает функцию-валидатор, которая проверяет, что переданное значение является массивом с фиксированной длиной и каждый элемент соответствует своему валидатору.
+Фабрика для создания правила валидации кортежа (tuple). Принимает массив валидаторов для каждого элемента кортежа и возвращает функцию-валидатор, которая проверяет, что переданное значение является массивом с фиксированной длиной и каждый элемент соответствует своему валидатору.<br/>
 **Параметры:**<br/>
-- `validators`: Массив валидаторов для каждого элемента кортежа
+- `validators`: Массив валидаторов для каждого элемента кортежа<br/>
 **Возвращает:**<br/>
-- `TValidator<Tuple, Tuple, ErrorResult>` - функция-валидатор для кортежа, где Tuple — кортеж с конкретными типами элементов
+- `TValidator<Tuple, Tuple, ErrorResult>` - функция-валидатор для кортежа, где Tuple — кортеж с конкретными типами элементов<br/>
 **Пример:**<br/>
 ```typescript
 import isString from '@validation/rules/isString';
