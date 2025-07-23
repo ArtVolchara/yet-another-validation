@@ -350,5 +350,5 @@ import { isString, composeValidator, validateValue, SuccessResult, ErrorResult }
 import { isString } from '@validation/rules';
 import { composeValidator } from '@validation/factories';
 import { validateValue } from '@validation/functions';
-import { SuccessResult, ErrorResult } from '@validation/utils';
+import { SuccessResult, ErrorResult } from '@validation/utils'; 
 ```
