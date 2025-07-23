@@ -10,7 +10,7 @@ export type TNaNNominal = { readonly [nan_brand]: 'NaN' };
 export type TIsNaNValidationError = IError<typeof IS_NAN_ERROR_MESSAGE, undefined>;
 export type TIsNaNValidationSuccess = ISuccess<TNaNNominal>;
 
-export default function isNaN(value: unknown): TIsNaNValidationSuccess | TIsNaNValidationError {
+export default function isNaN(value: any): TIsNaNValidationSuccess | TIsNaNValidationError {
   try {
     if (Number.isNaN(value)) {
       return new SuccessResult(value as unknown as TNaNNominal);

@@ -13,7 +13,7 @@ export type TIsInt32ArrayValidationSuccess = ISuccess<Int32Array>;
  * @param value - The value to check
  * @returns SuccessResult with the Int32Array if valid, ErrorResult otherwise
  */
-export default function isInt32Array(value: unknown): TIsInt32ArrayValidationSuccess | TIsInt32ArrayValidationError {
+export default function isInt32Array(value: any): TIsInt32ArrayValidationSuccess | TIsInt32ArrayValidationError {
   try {
     if (value instanceof Int32Array) {
       return new SuccessResult(value);

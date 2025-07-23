@@ -8,7 +8,7 @@ export const IS_WEAK_MAP_ERROR_MESSAGE = 'Value should be a WeakMap' as const;
 export type TIsWeakMapValidationError = IError<typeof IS_WEAK_MAP_ERROR_MESSAGE, undefined>;
 export type TIsWeakMapValidationSuccess = ISuccess<WeakMap<object, unknown>>;
 
-export default function isWeakMap(value: unknown): TIsWeakMapValidationSuccess | TIsWeakMapValidationError {
+export default function isWeakMap(value: any): TIsWeakMapValidationSuccess | TIsWeakMapValidationError {
   try {
     if (value instanceof WeakMap) {
       return new SuccessResult(value as WeakMap<object, unknown>);

@@ -18,4 +18,4 @@ export default function isNumber(value: any): TIsNumberValidationSuccess | TIsNu
     console.error(error);
     return new ErrorResult(IS_NUMBER_ERROR_MESSAGE, undefined);
   }
-} 
+}

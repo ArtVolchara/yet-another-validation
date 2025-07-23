@@ -8,7 +8,7 @@ export const IS_FLOAT64_ARRAY_ERROR_MESSAGE = 'Value should be Float64Array' as 
 export type TIsFloat64ArrayValidationError = IError<typeof IS_FLOAT64_ARRAY_ERROR_MESSAGE, undefined>;
 export type TIsFloat64ArrayValidationSuccess = ISuccess<Float64Array>;
 
-export default function isFloat64Array(value: unknown): TIsFloat64ArrayValidationSuccess | TIsFloat64ArrayValidationError {
+export default function isFloat64Array(value: any): TIsFloat64ArrayValidationSuccess | TIsFloat64ArrayValidationError {
   try {
     if (value instanceof Float64Array) {
       return new SuccessResult(value);

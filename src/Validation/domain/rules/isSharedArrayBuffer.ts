@@ -8,7 +8,7 @@ export const IS_SHARED_ARRAY_BUFFER_ERROR_MESSAGE = 'Value should be a SharedArr
 export type TIsSharedArrayBufferValidationError = IError<typeof IS_SHARED_ARRAY_BUFFER_ERROR_MESSAGE, undefined>;
 export type TIsSharedArrayBufferValidationSuccess = ISuccess<SharedArrayBuffer>;
 
-export default function isSharedArrayBuffer(value: unknown): TIsSharedArrayBufferValidationSuccess | TIsSharedArrayBufferValidationError {
+export default function isSharedArrayBuffer(value: any): TIsSharedArrayBufferValidationSuccess | TIsSharedArrayBufferValidationError {
   try {
     if (value instanceof SharedArrayBuffer) {
       return new SuccessResult(value as SharedArrayBuffer);

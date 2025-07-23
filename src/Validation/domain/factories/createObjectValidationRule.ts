@@ -21,7 +21,7 @@ type TValidationAccumulator<ValidatorsSchema extends TObjectValidatorsSchema> = 
   isError: boolean;
 };
 
-export default function createObjectValidationRule<const ValidatorsSchema extends TObjectValidatorsSchema>(
+export default function createObjectValidationRule<ValidatorsSchema extends TObjectValidatorsSchema>(
   validatorsSchema: ValidatorsSchema,
 ) {
   const schemaEntries = Object.entries(validatorsSchema) as TObjectEntries<typeof validatorsSchema>;
@@ -51,7 +51,6 @@ export default function createObjectValidationRule<const ValidatorsSchema extend
           acc.validResults[field] = validationResult.data;
         } else {
           acc.isError = true;
-          console.log(validationResult);
           acc.errors[field] = validationResult as TRetrieveError<ReturnType<ValidatorsSchema[typeof field]>>;
           acc.errorMessages.push(`${String(field)}: ${validationResult.message}`);
         }

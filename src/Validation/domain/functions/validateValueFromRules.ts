@@ -19,7 +19,7 @@ InputData = ValidationRules[0] extends TValidationRule<infer Input> ? Input : ne
     ? [
       TValidationRule<InputData>,
       ...TConsistentValidationRules<
-      Tail extends TValidationRules ? Tail : [],
+      Tail extends Array<TValidationRule> ? Tail : [],
       First extends TValidationRule<InputData, ISuccess<infer SuccessValidationRulesData>>
         ? InputData & SuccessValidationRulesData
         : never>,
@@ -81,7 +81,7 @@ export default function validateValueFromRules<
   const localErrors = [] as Array<IError<string, any>>;
   const result = validationRules.reduce((acc, validator) => {
     try {
-      const res = validator(acc);
+      const res = (validator as any)(acc);
       if (res.status === 'error') {
         localErrors.push(res);
         return acc;

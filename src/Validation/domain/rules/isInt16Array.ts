@@ -8,7 +8,7 @@ export const IS_INT16_ARRAY_ERROR_MESSAGE = 'Value should be Int16Array' as cons
 export type TIsInt16ArrayValidationError = IError<typeof IS_INT16_ARRAY_ERROR_MESSAGE, undefined>;
 export type TIsInt16ArrayValidationSuccess = ISuccess<Int16Array>;
 
-export default function isInt16Array(value: unknown): TIsInt16ArrayValidationSuccess | TIsInt16ArrayValidationError {
+export default function isInt16Array(value: any): TIsInt16ArrayValidationSuccess | TIsInt16ArrayValidationError {
   try {
     if (value instanceof Int16Array) {
       return new SuccessResult(value);

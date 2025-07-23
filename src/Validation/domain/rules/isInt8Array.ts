@@ -13,7 +13,7 @@ export type TIsInt8ArrayValidationSuccess = ISuccess<Int8Array>;
  * @param value - The value to check
  * @returns SuccessResult with the Int8Array if valid, ErrorResult otherwise
  */
-export default function isInt8Array(value: unknown): TIsInt8ArrayValidationSuccess | TIsInt8ArrayValidationError {
+export default function isInt8Array(value: any): TIsInt8ArrayValidationSuccess | TIsInt8ArrayValidationError {
   try {
     if (value instanceof Int8Array) {
       return new SuccessResult(value);

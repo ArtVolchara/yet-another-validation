@@ -8,7 +8,7 @@ export const IS_WEAK_SET_ERROR_MESSAGE = 'Value should be WeakSet' as const;
 export type TIsWeakSetValidationError = IError<typeof IS_WEAK_SET_ERROR_MESSAGE, undefined>;
 export type TIsWeakSetValidationSuccess = ISuccess<WeakSet<object>>;
 
-export default function isWeakSet(value: unknown): TIsWeakSetValidationSuccess | TIsWeakSetValidationError {
+export default function isWeakSet(value: any): TIsWeakSetValidationSuccess | TIsWeakSetValidationError {
   try {
     if (value instanceof WeakSet) {
       return new SuccessResult(value as WeakSet<object>);
@@ -19,3 +19,4 @@ export default function isWeakSet(value: unknown): TIsWeakSetValidationSuccess |
     return new ErrorResult(IS_WEAK_SET_ERROR_MESSAGE, undefined);
   }
 }
+

@@ -4,8 +4,8 @@ import {
   TValidator,
 } from '../types/TValidator';
 import {
-  Flatten,
   TConcatWithSeparator,
+  TRemoveReadonly,
 } from '../../../_Root/domain/types/utils';
 import { TRetrieveError, TRetrieveSuccess } from '../../../_Root/domain/types/Result/TResult';
 import { ISuccess } from '../../../_Root/domain/types/Result/ISuccess';
@@ -16,7 +16,6 @@ import validateValueFromRules, {
   TErrorValidationRulesData,
   TSuccessValidationRulesData,
 } from './validateValueFromRules';
-import { TRemoveReadonly } from '../types/TRemoveReadonly';
 
 export type TConsistentORValidators<ORValidators extends Partial<TORValidators>> = {
   [Key in keyof ORValidators]: ORValidators[Key] extends TValidationRules
@@ -79,14 +78,11 @@ TRemoveReadonly<ORValidators> extends [
   infer First extends TValidator | TValidationRules,
   ...infer Tail extends TORValidators,
 ]
-  ? [
-    First extends TValidator
-      ? Flatten<TRetrieveError<ReturnType<First>>['data']>
-      : First extends TValidationRules | Readonly<TValidationRules>
-        ? TErrorValidationRulesData<First>
-        : never,
-    ...TErrorORValidationErrorData<Tail>,
-  ]
+  ? First extends TValidator
+    ? [...TRetrieveError<ReturnType<First>>['data'], ...TErrorORValidationErrorData<Tail>]
+    : First extends TValidationRules | Readonly<TValidationRules>
+      ? [TErrorValidationRulesData<First>, ...TErrorORValidationErrorData<Tail>]
+      : []
   : [];
 
 // Валидационные правила, передаваемые в pipe-функцию должны быть готовы вне зависимости от типа аргумента(но тип нужен)
