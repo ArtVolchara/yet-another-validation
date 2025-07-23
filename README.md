@@ -15,12 +15,18 @@ YET-ANOTHER-VALIDATION - мой собственный пример деклар
 Тесты и документация написаны с помощью Cursor AI
 
 Основные особенности:
-- **Декларативность**: Опиши желаемый результат
-- **Функциональный подход**: Чистые функции в качестве валидационных правил
-- **Композируемость**: Pipe-утилита для композирования валидаторов и валидационных правил
-- **AND/OR**: Используйте операцию AND для проверки всех критериев одновременно и OR для проверки хотя бы одного
-- **Типобезопасность**: Подробный вывод типов удачной и неудачной валидации. Использование номинальных типов
-- **Гибкость**: Используйте готовые или создавайте собственные валидационные правила
+- **Декларативность**<br/>
+  Опиши желаемый результат
+- **Функциональный подход**<br/>
+  Чистые функции в качестве валидационных правил
+- **Композируемость**<br/>
+  Pipe-утилита для композирования валидаторов и валидационных правил
+- **AND/OR**<br/>
+  Используйте операцию AND для проверки всех критериев одновременно и OR для проверки хотя бы одного
+- **Типобезопасность**<br/>
+  Подробный вывод типов удачной и неудачной валидации. Использование номинальных типов
+- **Гибкость**<br/>
+  Используйте готовые или создавайте собственные валидационные правила
 
 ## Основные концепции и понятия
 
@@ -79,12 +85,12 @@ type TValidationRule<
     Error extends IError<string, any> = IError<string, any>,
 > = <Input extends InputData = InputData>(value: Input) => TResult<Success, Error>;
 ```
-**Параметры:**
+**Параметры:**<br/>
 - `value`: Валидируемое значение
 - `rules`: Валидационные правила
-**Возвращает:**
+**Возвращает:**<br/>
 - `TResult<Success, Error>` - результат валидации
-**Пример:**
+**Пример:**<br/>
 ```typescript
 const actualResult = validateValueFromRules('abc', isString, isOnlyEnglishLettersString);
 /*const actualResult: ISuccess<string & TOnlyEnglishLettersNominal> | IError<"Value should contain only English letters" | "Value should be string. Value should contain only English letters", [TIsOnlyEnglishLettersStringValidationError] | [TIsStringValidationError, TIsOnlyEnglishLettersStringValidationError]>*/
@@ -122,12 +128,12 @@ const actualResult = validateValueFromRules('abc', isString, isArray);
 Успешный результат валидации будет иметь вид объединения (union, ||) пересечений валидационных правил (или валидатора/ов).
 Ошибка валидации будет иметь сообщение из сообщений валидационных правил (или валидатора/ов), разделённых союзом OR, а в data будет лежать список, элементами которого будет data из валидаторов и списки ошибок на каждую цепочку валидационных правил.
 
-**Параметры:**
+**Параметры:**<br/>
 - `value`: Значение для валидации
 - `validators`: Валидаторы или списки валидационных правил
-**Возвращает:**
+**Возвращает:**<br/>
 - `TResult<Success, Error>` - результат валидации
-**Пример:**
+**Пример:**<br/>
 ```typescript
 import isString from '@validation/rules/isString';
 import isOnlyEnglishLettersString from '@validation/rules/isOnlyEnglishLettersString';
@@ -189,11 +195,11 @@ type TValidator<
 > = <Input extends InputData = InputData>(value: Input) => TResult<Success, Error>
 ```
 Для валидации использует validateValue
-**Параметры:**
+**Параметры:**<br/>
 - `validators`: Валидаторы или списки валидационных правил
-**Возвращает:**
+**Возвращает:**<br/>
 - `TValidator<InputData, Success, Error>`
-**Пример:**
+**Пример:**<br/>
 ```typescript
 import isString from '@validation/rules/isString';
 import isOnlyEnglishLettersString from '@validation/rules/isOnlyEnglishLettersString';
@@ -247,11 +253,11 @@ const validator = composeValidator(
 ### `createObjectValidationRule(schema)`
 Фабрика для создания правила валидации объекта. Принимает схему объекта с валидаторами для каждого поля и возвращает функцию-валидатор, которая проверяет соответствие переданного объекта заданной схеме.
 
-**Параметры:**
+**Параметры:**<br/>
 - `schema`: Объект с валидаторами для каждого поля объекта
-**Возвращает:**
+**Возвращает:**<br/>
 - `TValidator<object, object, ErrorResult>` - функция-валидатор для объекта
-**Пример:**
+**Пример:**<br/>
 ```typescript
 import isString from '@validation/rules/isString';
 import isOnlyEnglishLettersString from '@validation/rules/isOnlyEnglishLettersString';
@@ -294,11 +300,11 @@ const result = objectValidationRule({ optionalField: undefined });
 
 ### `createArrayValidationRule(validator)`
 Фабрика для создания правила валидации массива. Принимает валидатор для элементов массива и возвращает функцию-валидатор, которая проверяет, что переданное значение является массивом и все его элементы соответствуют заданному валидатору.
-**Параметры:**
+**Параметры:**<br/>
 - `validator`: Валидатор для элементов массива
-**Возвращает:**
+**Возвращает:**<br/>
 - `TValidator<Array<any>, Array<any>, ErrorResult>` - функция-валидатор для массива
-**Пример:**
+**Пример:**<br/>
 ```typescript
 import isString from '@validation/rules/isString';
 import composeValidator from '@validation/factories/composeValidator';
@@ -315,11 +321,11 @@ const result = stringArrayValidationRule(['Hello', 'World', 'Test'])
 
 ### `createTupleValidationRule(validators)`
 Фабрика для создания правила валидации кортежа (tuple). Принимает массив валидаторов для каждого элемента кортежа и возвращает функцию-валидатор, которая проверяет, что переданное значение является массивом с фиксированной длиной и каждый элемент соответствует своему валидатору.
-**Параметры:**
+**Параметры:**<br/>
 - `validators`: Массив валидаторов для каждого элемента кортежа
-**Возвращает:**
+**Возвращает:**<br/>
 - `TValidator<Tuple, Tuple, ErrorResult>` - функция-валидатор для кортежа, где Tuple — кортеж с конкретными типами элементов
-**Пример:**
+**Пример:**<br/>
 ```typescript
 import isString from '@validation/rules/isString';
 import isNumber from '@validation/rules/isNumber';
