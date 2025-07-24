@@ -365,7 +365,7 @@ const result = tupleValidationRule(['hello', 42]);
 // TIsArrayValidationError
 
 ```
-### 📦 Импорт
+## 📦 Импорт
 ```typescript
 // Импорт всех основных компонентов из корневого модуля
 import { isString, composeValidator, validateValue, SuccessResult, ErrorResult } from '@validation';
