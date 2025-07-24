@@ -2,9 +2,9 @@
 
 ## 📋 Содержание
 
-1. [🧭 Обзор](#🧭-обзор)
-2. [🧩 Основные концепции и понятия](#🧩-основные-концепции-и-понятия)
-3. [📦 Импорт](#📦-импорт)
+1. [🧭 Обзор](#обзор)
+2. [🧩 Основные концепции и понятия](#основные-концепции-и-понятия)
+3. [📦 Импорт](#импорт)
 
 ---
 
@@ -158,8 +158,7 @@ const actualResult = validateValue(
 //      [TIsPositiveNumberValidationError] | [TIsNumberValidationError, TIsPositiveNumberValidationError]
 //    ]
 //  >
-```
-или
+```или
 ```typescript
 import isString from '@validation/rules/isString';
 import isOnlyEnglishLettersString from '@validation/rules/isOnlyEnglishLettersString';
@@ -374,3 +373,4 @@ import { composeValidator } from '@validation/factories';
 import { validateValue } from '@validation/functions';
 import { SuccessResult, ErrorResult } from '@validation/utils'; 
 ```
+
