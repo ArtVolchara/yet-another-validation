@@ -1,4 +1,4 @@
-# YET-ANOTHER-VALIDATION
+# Yеt-Another-Validation
 
 ## 📋 Содержание
 
