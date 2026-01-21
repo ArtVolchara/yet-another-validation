@@ -12,14 +12,18 @@ import { ISuccess } from '../../../_Root/domain/types/Result/ISuccess';
 import { IError } from '../../../_Root/domain/types/Result/IError';
 import ErrorResult from '../../../_Root/domain/factories/ErrorResult';
 import validateValueFromRules, {
-  TConsistentValidationRules,
+  TGetConsistentValidationRulesWithCheckedInput,
   TErrorValidationRulesData,
   TSuccessValidationRulesData,
+  TErrorValidationMessage,
+  DEFAULT_AND_SEPARATOR,
 } from './validateValueFromRules';
+
+export const DEFAULT_OR_SEPARATOR = ' or ' as const;
 
 export type TConsistentORValidators<ORValidators extends Partial<TORValidators>> = {
   [Key in keyof ORValidators]: ORValidators[Key] extends TValidationRules
-    ? TConsistentValidationRules<ORValidators[Key]>
+    ? TGetConsistentValidationRulesWithCheckedInput<ORValidators[Key]>
     : ORValidators[Key]
 };
 
@@ -57,23 +61,34 @@ export type TErrorsANDToMessages<Errors extends Array<IError<string, any>>> = Er
   ? [First['message'], ...TErrorsANDToMessages<Tail>]
   : [];
 
-export type TORErrorsToMessages<
-  ORErrors extends Array<Array<IError<string, any>>>,
-  > = ORErrors extends [infer First extends Array<IError<string, any>>, ...infer Tail]
-    ? [
-      TConcatWithSeparator<TErrorsANDToMessages<First>, '. '>,
-      ...TORErrorsToMessages<Tail extends Array<Array<IError<string, any>>> ? Tail : []>,
-    ]
+export type TORValidationErrorsMessages<
+  ORValidators extends TORValidators,
+  SeparatorAND extends string | undefined = undefined,
+  > = ORValidators extends [infer First extends TValidator | TValidationRules, ...infer Tail]
+    ? First extends TValidator
+      ? [
+        TRetrieveError<
+        ReturnType<First>>['message'], ...TORValidationErrorsMessages<Tail extends TORValidators ? Tail : []
+        >,
+      ]
+      : First extends TValidationRules
+        ? [
+          TErrorValidationMessage<First, SeparatorAND>,
+          ...TORValidationErrorsMessages<Tail extends TORValidators ? Tail : [], SeparatorAND>,
+        ]
+        : []
     : [];
 
-export type TErrorORValidationErrorMessage<ORValidators extends TORValidators> = TConcatWithSeparator<
-TORErrorsToMessages<TErrorORValidationErrorData<ORValidators>>,
-' OR '
+export type TErrorORValidationErrorMessage<
+ORValidators extends TORValidators,
+SeparatorOR extends string | undefined = undefined,
+SeparatorAND extends string | undefined = undefined,
+> = TConcatWithSeparator<
+TORValidationErrorsMessages<ORValidators, SeparatorAND>,
+SeparatorOR extends string ? SeparatorOR : ''
 >;
 
-export type TErrorORValidationErrorData<
-ORValidators extends TORValidators,
-> =
+export type TErrorORValidationErrorData<ORValidators extends TORValidators> =
 TRemoveReadonly<ORValidators> extends [
   infer First extends TValidator | TValidationRules,
   ...infer Tail extends TORValidators,
@@ -90,17 +105,23 @@ TRemoveReadonly<ORValidators> extends [
 // ErrorResult c нужным message.
 export default function validateValue<
     const Value extends TORValidationFirstParameter<ORValidators>,
-    const ORValidators extends TORValidators = [],
+    ORValidators extends TORValidators = [],
+    const Params extends { separatorOR?: string, separatorAND?: string } 
+    = { separatorOR: typeof DEFAULT_OR_SEPARATOR, separatorAND: typeof DEFAULT_AND_SEPARATOR },
+    const SeparatorOR extends Params['separatorOR'] extends string ? Params['separatorOR'] : typeof DEFAULT_OR_SEPARATOR
+    = Params['separatorOR'] extends string ? Params['separatorOR'] : typeof DEFAULT_OR_SEPARATOR,
+    const SeparatorAND extends Params['separatorAND'] extends string ? Params['separatorAND'] : typeof DEFAULT_AND_SEPARATOR
+    = Params['separatorAND'] extends string ? Params['separatorAND'] : typeof DEFAULT_AND_SEPARATOR,
 >(
   value: Value,
-  ...orValidators: TConsistentORValidators<ORValidators>
+  validatorsOrRules: TConsistentORValidators<ORValidators>,
+  params?: Params,
 ) {
   const errors = [] as Array<Array<IError<string, any>>>;
-
   // eslint-disable-next-line no-restricted-syntax
-  for (const validator of orValidators) {
+  for (const validator of validatorsOrRules) {
     if (Array.isArray(validator)) {
-      const result = validateValueFromRules.apply(null, [value, ...validator]);
+      const result = validateValueFromRules.apply(null, [value, validator, { separator: params?.separatorAND }]);
       if (result.status === 'error') {
         const errorsAND = result.data;
         errors.push(errorsAND);
@@ -126,7 +147,10 @@ export default function validateValue<
   return new ErrorResult(
     errors.map((localErrors) => localErrors.map(
       (el) => el.message,
-    )?.join('. '))?.join(' OR '),
+    )?.join('. '))?.join(params?.separatorOR || DEFAULT_OR_SEPARATOR),
     errors as TErrorORValidationErrorData<ORValidators>,
-  ) as IError<TErrorORValidationErrorMessage<ORValidators>, TErrorORValidationErrorData<ORValidators>>;
+  ) as IError<
+  TErrorORValidationErrorMessage<ORValidators, SeparatorOR, SeparatorAND>,
+  TErrorORValidationErrorData<ORValidators>
+  >;
 }

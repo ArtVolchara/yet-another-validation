@@ -11,7 +11,7 @@ describe('validateValueFromRules', () => {
       const expectedData = 'Hello';
 
       // Act
-      const actualResult = validateValueFromRules(inputValue, isString);
+      const actualResult = validateValueFromRules(inputValue, [isString]);
 
       // Assert
       expect(actualResult.status).toBe('success');
@@ -27,7 +27,7 @@ describe('validateValueFromRules', () => {
       const expectedErrorCount = 1;
 
       // Act
-      const actualResult = validateValueFromRules(inputValue, isString);
+      const actualResult = validateValueFromRules(inputValue, [isString]);
 
       // Assert
       expect(actualResult.status).toBe('error');
@@ -47,7 +47,7 @@ describe('validateValueFromRules', () => {
       const expectedErrorCount = 2;
 
       // Act
-      const actualResult = validateValueFromRules(inputValue, isString, isOnlyEnglishLettersString);
+      const actualResult = validateValueFromRules(inputValue, [isString, isOnlyEnglishLettersString]);
 
       // Assert
       expect(actualResult.status).toBe('error');
@@ -68,7 +68,7 @@ describe('validateValueFromRules', () => {
       const expectedData = 'Hello';
 
       // Act
-      const actualResult = validateValueFromRules(inputValue, ...rules);
+      const actualResult = validateValueFromRules(inputValue, rules);
 
       // Assert
       expect(actualResult.status).toBe('success');
@@ -83,7 +83,7 @@ describe('validateValueFromRules', () => {
       const expectedData = 'Hello';
 
       // Act
-      const actualResult = validateValueFromRules(inputValue, isString, isOnlyEnglishLettersString);
+      const actualResult = validateValueFromRules(inputValue, [isString, isOnlyEnglishLettersString]);
 
       // Assert
       expect(actualResult.status).toBe('success');

@@ -28,15 +28,20 @@ export type TConcatWithSeparator<T extends string[], Separator extends string> =
   ...infer R extends string[],
 ] ? `${F}${TPrependIfDefined<TConcatWithSeparator<R, Separator>, Separator>}` : '';
 
-type UnionToOvlds<U> = TUnionToIntersection<U extends any ? (f: U) => void : never>;
-
-type PopUnion<U> = UnionToOvlds<U> extends (a: infer A) => void ? A : never;
-
 export type TRemoveReadonly<T> = { -readonly [P in keyof T]: T[P] };
-type IfEquals<X, Y, A=X, B=never> =
-  (<T>() => T extends X ? 1 : 2) extends
-  (<T>() => T extends Y ? 1 : 2) ? A : B;
 
-type WritableKeys<T> = {
-  [P in keyof T]: IfEquals<{ [Q in P]: T[P] }, { -readonly [Q in P]: T[P] }, P>
-}[keyof T];
+
+// Проверка, является ли тип any
+export type IsAny<T> = 0 extends 1 & T ? true : false;
+
+// Проверка, является ли тип unknown
+export type IsUnknown<T> = IsAny<T> extends true
+  ? false
+  : unknown extends T
+    ? T extends unknown
+      ? true
+      : false
+    : false;
+
+// Проверка, является ли тип any или unknown
+export type IsAnyOrUnknown<T> = IsAny<T> extends true ? true : IsUnknown<T>;

@@ -6,6 +6,9 @@ import { ISuccess } from '../../../_Root/domain/types/Result/ISuccess';
 import { TRetrieveValidationInputData, TValidator } from '../types/TValidator';
 import { TRetrieveError, TRetrieveSuccess } from '../../../_Root/domain/types/Result/TResult';
 import isObject, { TIsObjectValidationError } from '../rules/isObject';
+import { validateValueFromRules } from '@validation/functions';
+import isString from '../rules/isString';
+import { isNumber } from '@validation/rules';
 
 // Объект с валидаторами для каждого ключа в объекте
 export type TObjectValidatorsSchema = Record<string, TValidator>;
@@ -25,7 +28,7 @@ export default function createObjectValidationRule<ValidatorsSchema extends TObj
   validatorsSchema: ValidatorsSchema,
 ) {
   const schemaEntries = Object.entries(validatorsSchema) as TObjectEntries<typeof validatorsSchema>;
-  return (value: { [Key in keyof ValidatorsSchema]: TRetrieveValidationInputData<ValidatorsSchema[Key]> }):
+  return (value: Record<string | symbol, any>):
   ISuccess<{ [Key in keyof ValidatorsSchema]: TRetrieveSuccess<ReturnType<ValidatorsSchema[Key]>>['data'] }>
   | (
   IError<string, { [Key in keyof ValidatorsSchema]: TRetrieveError<ReturnType<ValidatorsSchema[Key]>> }>
@@ -73,3 +76,4 @@ export default function createObjectValidationRule<ValidatorsSchema extends TObj
     }
   };
 }
+

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import isString, { IS_STRING_ERROR_MESSAGE } from '../../rules/isString';
-import isNumber, { IS_NUMBER_ERROR_MESSAGE } from '../../rules/isNumber';
+import isNumber, { } from '../../rules/isNumber';
 import isPositiveNumber, { IS_ONLY_POSITIVE_NUMBER_ERROR_MESSAGE } from '../../rules/isPositiveNumber';
 import isArray, { IS_ARRAY_ERROR_MESSAGE } from '../../rules/isArray';
 import isBoolean from '../../rules/isBoolean';
@@ -16,7 +16,7 @@ describe('createArrayValidationRule', () => {
         // Arrange
         const inputValue = ['Hello', 'World', 'Test'];
         const expectedData = ['Hello', 'World', 'Test'];
-        const arrayValidationRule = createArrayValidationRule(composeValidator([isString]));
+        const arrayValidationRule = createArrayValidationRule(composeValidator([[isString]]));
 
         // Act
         const actualResult = arrayValidationRule(inputValue);
@@ -32,7 +32,7 @@ describe('createArrayValidationRule', () => {
       it('should fail when array contains non-string elements', () => {
         // Arrange
         const inputValue = ['Hello', 123, 'World'];
-        const arrayValidationRule = createArrayValidationRule(composeValidator([isString]));
+        const arrayValidationRule = createArrayValidationRule(composeValidator([[isString]]));
 
         // Act
         const actualResult = arrayValidationRule(inputValue);
@@ -52,7 +52,7 @@ describe('createArrayValidationRule', () => {
       it('should fail when input is not an array', () => {
         // Arrange
         const inputValue = 'not an array';
-        const arrayValidationRule = createArrayValidationRule(composeValidator([isString]));
+        const arrayValidationRule = createArrayValidationRule(composeValidator([[isString]]));
 
         // Act
         const actualResult = arrayValidationRule(inputValue as any);
@@ -72,7 +72,7 @@ describe('createArrayValidationRule', () => {
         // Arrange
         const inputValue = [1, 42, 100];
         const expectedData = [1, 42, 100];
-        const arrayValidationRule = createArrayValidationRule(composeValidator([isPositiveNumber]));
+        const arrayValidationRule = createArrayValidationRule(composeValidator([[isNumber, isPositiveNumber]]));
 
         // Act
         const actualResult = arrayValidationRule(inputValue);
@@ -88,7 +88,7 @@ describe('createArrayValidationRule', () => {
       it('should fail when array contains non-positive numbers', () => {
         // Arrange
         const inputValue = [1, -5, 0, 42];
-        const arrayValidationRule = createArrayValidationRule(composeValidator([isPositiveNumber]));
+        const arrayValidationRule = createArrayValidationRule(composeValidator([[isNumber, isPositiveNumber]]));
 
         // Act
         const actualResult = arrayValidationRule(inputValue);
@@ -116,7 +116,7 @@ describe('createArrayValidationRule', () => {
         // Arrange
         const inputValue = [true, false, true];
         const expectedData = [true, false, true];
-        const arrayValidationRule = createArrayValidationRule(composeValidator([isBoolean]));
+        const arrayValidationRule = createArrayValidationRule(composeValidator([[isBoolean]]));
 
         // Act
         const actualResult = arrayValidationRule(inputValue);
@@ -132,7 +132,7 @@ describe('createArrayValidationRule', () => {
       it('should fail when array contains non-boolean elements', () => {
         // Arrange
         const inputValue = [true, 'false', 1, false];
-        const arrayValidationRule = createArrayValidationRule(composeValidator([isBoolean]));
+        const arrayValidationRule = createArrayValidationRule(composeValidator([[isBoolean]]));
 
         // Act
         const actualResult = arrayValidationRule(inputValue);
@@ -159,7 +159,7 @@ describe('createArrayValidationRule', () => {
         // Arrange
         const inputValue = ['a', undefined, 'b'];
         const expectedData = ['a', undefined, 'b'];
-        const arrayValidationRule = createArrayValidationRule(composeValidator([isString], [isUndefined]));
+        const arrayValidationRule = createArrayValidationRule(composeValidator([[isString], [isUndefined]]));
 
         // Act
         const actualResult = arrayValidationRule(inputValue);
@@ -175,7 +175,7 @@ describe('createArrayValidationRule', () => {
       it('should fail when array contains not string or undefined', () => {
         // Arrange
         const inputValue = ['a', 123, undefined];
-        const arrayValidationRule = createArrayValidationRule(composeValidator([isString], [isUndefined]));
+        const arrayValidationRule = createArrayValidationRule(composeValidator([[isString], [isUndefined]]));
 
         // Act
         const actualResult = arrayValidationRule(inputValue);
@@ -197,7 +197,7 @@ describe('createArrayValidationRule', () => {
         // Arrange
         const inputValue: string[] = [];
         const expectedData: string[] = [];
-        const arrayValidationRule = createArrayValidationRule(composeValidator([isString]));
+        const arrayValidationRule = createArrayValidationRule(composeValidator([[isString]]));
 
         // Act
         const actualResult = arrayValidationRule(inputValue);
@@ -216,7 +216,7 @@ describe('createArrayValidationRule', () => {
       it('should handle array with all invalid elements', () => {
         // Arrange
         const inputValue = [null, undefined, 'not a number'];
-        const arrayValidationRule = createArrayValidationRule(composeValidator([isNumber]));
+        const arrayValidationRule = createArrayValidationRule(composeValidator([[isNumber]]));
 
         // Act
         const actualResult = arrayValidationRule(inputValue);
@@ -240,7 +240,7 @@ describe('createArrayValidationRule', () => {
         // Arrange
         const inputValue = ['single'];
         const expectedData = ['single'];
-        const arrayValidationRule = createArrayValidationRule(composeValidator([isString]));
+        const arrayValidationRule = createArrayValidationRule(composeValidator([[isString]]));
 
         // Act
         const actualResult = arrayValidationRule(inputValue);
@@ -259,7 +259,7 @@ describe('createArrayValidationRule', () => {
       it('should format error messages with element indices', () => {
         // Arrange
         const inputValue = ['valid', 123, 'valid', false];
-        const arrayValidationRule = createArrayValidationRule(composeValidator([isString]));
+        const arrayValidationRule = createArrayValidationRule(composeValidator([[isString]]));
 
         // Act
         const actualResult = arrayValidationRule(inputValue);
@@ -277,8 +277,8 @@ describe('createArrayValidationRule', () => {
     describe('Type case: OR logic and structure', () => {
       it('should have correct error structure for array validation with OR logic', () => {
         // Arrange
-        const arrValidatorRule = createArrayValidationRule(composeValidator([isOnlyDigitsString]));
-        const arrValidator = composeValidator([arrValidatorRule]);
+        const arrValidatorRule = createArrayValidationRule(composeValidator([[isString, isOnlyDigitsString]]));
+        const arrValidator = composeValidator([[isArray, arrValidatorRule]]);
         const inputValue = ['5', '2', 'f'];
 
         // Act
@@ -316,8 +316,8 @@ describe('createArrayValidationRule', () => {
       });
       it('should have correct success structure for array validation', () => {
         // Arrange
-        const arrValidatorRule = createArrayValidationRule(composeValidator([isOnlyDigitsString]));
-        const arrValidator = composeValidator([arrValidatorRule]);
+        const arrValidatorRule = createArrayValidationRule(composeValidator([[isString, isOnlyDigitsString]]));
+        const arrValidator = composeValidator([[isArray, arrValidatorRule]]);
         const inputValue = ['5', '2', '3'];
 
         // Act

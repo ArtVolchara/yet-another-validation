@@ -7,8 +7,9 @@ import isArray, { IS_ARRAY_ERROR_MESSAGE } from '../../rules/isArray';
 import isArrayMinLength from '../../rules/isArrayMinLength';
 import isUndefined, { IS_UNDEFINED_ERROR_MESSAGE } from '../../rules/isUndefined';
 import isBoolean, { IS_BOOLEAN_ERROR_MESSAGE } from '../../rules/isBoolean';
-import validateValue from '../validateValue';
+import validateValue, { DEFAULT_OR_SEPARATOR } from '../validateValue';
 import composeValidator from '../../factories/composeValidator';
+import { DEFAULT_AND_SEPARATOR } from '../validateValueFromRules';
 
 describe('validateValue', () => {
   describe('Single OR validator', () => {
@@ -18,7 +19,7 @@ describe('validateValue', () => {
       const expectedData = 'Hello';
 
       // Act
-      const actualResult = validateValue(inputValue, [isString]);
+      const actualResult = validateValue(inputValue, [[isString]]);
 
       // Assert
       expect(actualResult.status).toBe('success');
@@ -33,7 +34,7 @@ describe('validateValue', () => {
       const expectedMessage = IS_STRING_ERROR_MESSAGE;
 
       // Act
-      const actualResult = validateValue(inputValue, [isString]);
+      const actualResult = validateValue(inputValue, [[isString]]);
 
       // Assert
       expect(actualResult.status).toBe('error');
@@ -53,7 +54,7 @@ describe('validateValue', () => {
       // Act
       const actualResult = validateValue(
         inputValue,
-        [isUndefined],
+        [[isUndefined]],
       );
 
       // Assert
@@ -71,7 +72,7 @@ describe('validateValue', () => {
       // Act
       const actualResult = validateValue(
         inputValue,
-        [isUndefined],
+        [[isUndefined]],
       );
 
       // Assert
@@ -92,7 +93,7 @@ describe('validateValue', () => {
       // Act
       const actualResult = validateValue(
         inputValue,
-        [isBoolean],
+        [[isBoolean]],
       );
 
       // Assert
@@ -110,7 +111,7 @@ describe('validateValue', () => {
       // Act
       const actualResult = validateValue(
         inputValue,
-        [isBoolean],
+        [[isBoolean]],
       );
 
       // Assert
@@ -127,10 +128,10 @@ describe('validateValue', () => {
       // Arrange
       const inputValue = ['a', 'b', 'c'];
       const expectedData = ['a', 'b', 'c'];
-      const validator = composeValidator([isArray, isArrayMinLength(2)]);
+      const validator = composeValidator([[isArray, isArrayMinLength(2)]]);
 
       // Act
-      const actualResult = validateValue(inputValue, validator);
+      const actualResult = validateValue(inputValue, [validator]);
 
       // Assert
       expect(actualResult.status).toBe('success');
@@ -143,10 +144,10 @@ describe('validateValue', () => {
       // Arrange
       const inputValue = null;
       const expectedMessage = `${IS_ARRAY_ERROR_MESSAGE}. Array should contain more than 2 elements`;
-      const validator = composeValidator([isArray, isArrayMinLength(2)]);
+      const validator = composeValidator([[isArray, isArrayMinLength(2)]]);
 
       // Act
-      const actualResult = validateValue(inputValue, validator);
+      const actualResult = validateValue(inputValue, [validator]);
 
       // Assert
       expect(actualResult.status).toBe('error');
@@ -171,8 +172,10 @@ describe('validateValue', () => {
       // Act
       const actualResult = validateValue(
         inputValue,
-        [isString, isOnlyEnglishLettersString],
-        [isNumber, isPositiveNumber],
+        [
+          [isString, isOnlyEnglishLettersString],
+          [isNumber, isPositiveNumber],
+        ],
       );
 
       // Assert
@@ -190,8 +193,10 @@ describe('validateValue', () => {
       // Act
       const actualResult = validateValue(
         inputValue,
-        [isString, isOnlyEnglishLettersString],
-        [isNumber, isPositiveNumber],
+        [
+          [isString, isOnlyEnglishLettersString],
+          [isNumber, isPositiveNumber],
+        ],
       );
 
       // Assert
@@ -209,8 +214,10 @@ describe('validateValue', () => {
       // Act
       const actualResult = validateValue(
         inputValue,
-        [isString, isOnlyEnglishLettersString],
-        [isNumber, isPositiveNumber],
+        [
+          [isString, isOnlyEnglishLettersString],
+          [isNumber, isPositiveNumber],
+        ],
       );
 
       // Assert
@@ -226,10 +233,10 @@ describe('validateValue', () => {
       // Arrange
       const inputValue = 'Hello';
       const expectedData = 'Hello';
-      const validator = composeValidator(
+      const validator = composeValidator([
         [isString, isOnlyEnglishLettersString],
-        composeValidator([isNumber, isPositiveNumber]),
-      );
+        composeValidator([[isNumber, isPositiveNumber]]),
+      ]);
 
       // Act
       const actualResult = validator(inputValue);
@@ -245,10 +252,10 @@ describe('validateValue', () => {
       // Arrange
       const inputValue = null;
       const expectedMessage = `${IS_STRING_ERROR_MESSAGE}. ${IS_ONLY_ENGLISH_LETTERS_STRING_ERROR_MESSAGE} OR ${IS_NUMBER_ERROR_MESSAGE}. ${IS_ONLY_POSITIVE_NUMBER_ERROR_MESSAGE}`;
-      const validator = composeValidator(
+      const validator = composeValidator([
         [isString, isOnlyEnglishLettersString],
-        composeValidator([isNumber, isPositiveNumber]),
-      );
+        composeValidator([[isNumber, isPositiveNumber]]),
+      ]);
 
       // Act
       const actualResult = validator(inputValue);
@@ -273,13 +280,13 @@ describe('validateValue', () => {
       // Arrange
       const inputValue = ['a', 'b', 'c'];
       const expectedData = ['a', 'b', 'c'];
-      const validator = composeValidator(
+      const validator = composeValidator([
         [isString, isOnlyEnglishLettersString],
-        composeValidator(
+        composeValidator([
           [isString, isOnlyEnglishLettersString],
-          composeValidator([isArray, isArrayMinLength(2)]),
-        ),
-      );
+          composeValidator([[isArray, isArrayMinLength(2)]]),
+        ]),
+      ]);
 
       // Act
       const actualResult = validator(inputValue);
@@ -296,13 +303,14 @@ describe('validateValue', () => {
       const inputValue = null;
       const expectedMessage = `${IS_STRING_ERROR_MESSAGE}. ${IS_ONLY_ENGLISH_LETTERS_STRING_ERROR_MESSAGE} OR ${IS_NUMBER_ERROR_MESSAGE}. ${IS_ONLY_POSITIVE_NUMBER_ERROR_MESSAGE} OR ${IS_ARRAY_ERROR_MESSAGE}. Array should contain more than 2 elements`;
       const validator = composeValidator(
-        [isString, isOnlyEnglishLettersString],
-        composeValidator(
-          [isNumber, isPositiveNumber],
-          composeValidator([isArray, isArrayMinLength(2)]),
-        ),
+        [
+          [isString, isOnlyEnglishLettersString],
+          composeValidator([
+            [isNumber, isPositiveNumber],
+            composeValidator([[isArray, isArrayMinLength(2)]]),
+          ]),
+        ],
       );
-
       // Act
       const actualResult = validator(inputValue);
 
@@ -331,13 +339,15 @@ describe('validateValue', () => {
       // Act
       const actualResult = validateValue(
         inputValue,
-        [isString, isOnlyEnglishLettersString],
-        (value: any) => {
-          if (typeof value === 'string') {
-            return { status: 'success' as const, data: value };
-          }
-          return { status: 'error' as const, message: 'Custom error', data: [[{ status: 'error' as const, message: 'Custom error', data: undefined }]] };
-        },
+        [
+          [isString, isOnlyEnglishLettersString],
+          (value: any) => {
+            if (typeof value === 'string') {
+              return { status: 'success' as const, data: value };
+            }
+            return { status: 'error' as const, message: 'Custom error', data: [[{ status: 'error' as const, message: 'Custom error', data: undefined }]] };
+          },
+        ],
       );
 
       // Assert
@@ -355,13 +365,15 @@ describe('validateValue', () => {
       // Act
       const actualResult = validateValue(
         inputValue,
-        [isString, isOnlyEnglishLettersString],
-        (value: any) => {
-          if (typeof value === 'string') {
-            return { status: 'success' as const, data: value };
-          }
-          return { status: 'error' as const, message: 'Custom error', data: [[{ status: 'error' as const, message: 'Custom error', data: undefined }]] };
-        },
+        [
+          [isString, isOnlyEnglishLettersString],
+          (value: any) => {
+            if (typeof value === 'string') {
+              return { status: 'success' as const, data: value };
+            }
+            return { status: 'error' as const, message: 'Custom error', data: [[{ status: 'error' as const, message: 'Custom error', data: undefined }]] };
+          },
+        ],
       );
 
       // Assert

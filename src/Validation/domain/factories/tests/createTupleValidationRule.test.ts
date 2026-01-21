@@ -9,6 +9,7 @@ import isUndefined from '../../rules/isUndefined';
 import createTupleValidationRule from '../createTupleValidationRule';
 import createObjectValidationRule from '../createObjectValidationRule';
 import composeValidator from '../composeValidator';
+import { isObject } from '@validation/rules';
 
 describe('createTupleValidationRule', () => {
   describe('Simple tuple', () => {
@@ -18,8 +19,8 @@ describe('createTupleValidationRule', () => {
         const inputValue = ['Hello', 42] as const;
         const expectedData = ['Hello', 42];
         const tupleValidationRule = createTupleValidationRule([
-          composeValidator([isString]),
-          composeValidator([isNumber]),
+          composeValidator([[isString]]),
+          composeValidator([[isNumber]]),
         ]);
         // Act
         const actualResult = tupleValidationRule(inputValue);
@@ -35,8 +36,8 @@ describe('createTupleValidationRule', () => {
         // Arrange
         const inputValue = [123, 'not a number'] as const;
         const tupleValidationRule = createTupleValidationRule([
-          composeValidator([isString]),
-          composeValidator([isNumber]),
+          composeValidator([[isString]]),
+          composeValidator([[isNumber]]),
         ]);
         // Act
         const actualResult = tupleValidationRule(inputValue);
@@ -56,8 +57,8 @@ describe('createTupleValidationRule', () => {
         // Arrange
         const inputValue = 'not an array';
         const tupleValidationRule = createTupleValidationRule([
-          composeValidator([isString]),
-          composeValidator([isNumber]),
+          composeValidator([[isString]]),
+          composeValidator([[isNumber]]),
         ]);
         // Act
         const actualResult = tupleValidationRule(inputValue as any);
@@ -77,10 +78,10 @@ describe('createTupleValidationRule', () => {
         const inputValue = ['Alice', 30, true, [1, 2, 3]] as const;
         const expectedData = ['Alice', 30, true, [1, 2, 3]];
         const tupleValidationRule = createTupleValidationRule([
-          composeValidator([isString]),
-          composeValidator([isPositiveNumber]),
-          composeValidator([isBoolean]),
-          composeValidator([isArray]),
+          composeValidator([[isString]]),
+          composeValidator([[isNumber, isPositiveNumber]]),
+          composeValidator([[isBoolean]]),
+          composeValidator([[isArray]]),
         ]);
         // Act
         const actualResult = tupleValidationRule(inputValue);
@@ -96,10 +97,10 @@ describe('createTupleValidationRule', () => {
         // Arrange
         const inputValue = ['Bob', -5, 'not boolean', [1, 2, 3]] as const;
         const tupleValidationRule = createTupleValidationRule([
-          composeValidator([isString]),
-          composeValidator([isPositiveNumber]),
-          composeValidator([isBoolean]),
-          composeValidator([isArray]),
+          composeValidator([[isString]]),
+          composeValidator([[isNumber, isPositiveNumber]]),
+          composeValidator([[isBoolean]]),
+          composeValidator([[isArray]]),
         ]);
         // Act
         const actualResult = tupleValidationRule(inputValue);
@@ -126,8 +127,8 @@ describe('createTupleValidationRule', () => {
         const inputValue = ['a', undefined] as const;
         const expectedData = ['a', undefined];
         const tupleValidationRule = createTupleValidationRule([
-          composeValidator([isString], [isUndefined]),
-          composeValidator([isString], [isUndefined]),
+          composeValidator([[isString], [isUndefined]]),
+          composeValidator([[isString], [isUndefined]]),
         ]);
         // Act
         const actualResult = tupleValidationRule(inputValue);
@@ -143,8 +144,8 @@ describe('createTupleValidationRule', () => {
         // Arrange
         const inputValue = ['a', 123] as const;
         const tupleValidationRule = createTupleValidationRule([
-          composeValidator([isString], [isUndefined]),
-          composeValidator([isString], [isUndefined]),
+          composeValidator([[isString], [isUndefined]]),
+          composeValidator([[isString], [isUndefined]]),
         ]);
         // Act
         const actualResult = tupleValidationRule(inputValue);
@@ -166,7 +167,7 @@ describe('createTupleValidationRule', () => {
         const inputValue = ['Single'] as const;
         const expectedData = ['Single'];
         const tupleValidationRule = createTupleValidationRule([
-          composeValidator([isString]),
+          composeValidator([[isString]]),
         ]);
         // Act
         const actualResult = tupleValidationRule(inputValue);
@@ -182,7 +183,7 @@ describe('createTupleValidationRule', () => {
         // Arrange
         const inputValue = [123] as const;
         const tupleValidationRule = createTupleValidationRule([
-          composeValidator([isString]),
+          composeValidator([[isString]]),
         ]);
         // Act
         const actualResult = tupleValidationRule(inputValue);
@@ -204,8 +205,8 @@ describe('createTupleValidationRule', () => {
         // Arrange
         const inputValue = [null, 'not a number'] as const;
         const tupleValidationRule = createTupleValidationRule([
-          composeValidator([isString]),
-          composeValidator([isNumber]),
+          composeValidator([[isString]]),
+          composeValidator([[isNumber]]),
         ]);
         // Act
         const actualResult = tupleValidationRule(inputValue);
@@ -225,8 +226,8 @@ describe('createTupleValidationRule', () => {
         // Arrange
         const inputValue = ['valid', 'not number', true] as const;
         const tupleValidationRule = createTupleValidationRule([
-          composeValidator([isString]),
-          composeValidator([isNumber]),
+          composeValidator([[isString]]),
+          composeValidator([[isNumber]]),
           composeValidator([isBoolean]),
         ]);
         // Act
@@ -245,9 +246,9 @@ describe('createTupleValidationRule', () => {
         // Arrange
         const inputValue = [123, 'invalid', false] as const;
         const tupleValidationRule = createTupleValidationRule([
-          composeValidator([isString]),
-          composeValidator([isNumber]),
-          composeValidator([isBoolean]),
+          composeValidator([[isString]]),
+          composeValidator([[isNumber]]),
+          composeValidator([[isBoolean]]),
         ]);
         // Act
         const actualResult = tupleValidationRule(inputValue);
@@ -266,14 +267,14 @@ describe('createTupleValidationRule', () => {
       it('should have correct error structure for tuple validation with OR logic', () => {
         // Arrange
         const workplaceSchema = {
-          position: composeValidator([isString, isOnlyEnglishLettersString]),
-          company: composeValidator([isString, isOnlyEnglishLettersString]),
+          position: composeValidator([[isString, isOnlyEnglishLettersString]]),
+          company: composeValidator([[isString, isOnlyEnglishLettersString]]),
         };
         const workplaceValidationRule = createObjectValidationRule(workplaceSchema);
-        const workplaceValidator = composeValidator([workplaceValidationRule]);
-        const tupleValidationRuleRule = createTupleValidationRule([workplaceValidator]);
-        const tupleValidationRule = composeValidator([tupleValidationRuleRule], [isUndefined]);
-        const inputValue = [{ position: '1', company: 'w' }];
+        const workplaceValidator = composeValidator([[isObject, workplaceValidationRule]]);
+        const tupleValidationRule = createTupleValidationRule([workplaceValidator]);
+        const tupleValidator = composeValidator([[isArray, tupleValidationRule], [isUndefined]]);
+        const inputValue = [[{ position: '1', company: 'w' }]];
         // Act
         const actualResult = tupleValidationRule(inputValue);
         // Assert
