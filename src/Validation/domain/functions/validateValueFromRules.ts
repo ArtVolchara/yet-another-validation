@@ -17,47 +17,42 @@ import isPositiveNumber from '../rules/isPositiveNumber';
 
 export const DEFAULT_AND_SEPARATOR = '. ' as const;
 
-// export type TGetConsistentValidationRulesWithCheckedInput<
-// ValidationRules extends Partial<TValidationRules>,
-// InputData = ValidationRules[0] extends TValidationRule<infer Input> ? Input : never,
-// > = ValidationRules extends [TValidationRule<InputData>]
-//   ? TConsistentValidationRules<ValidationRules>
-//   : ValidationRules extends [infer First, ...infer Tail extends Partial<TValidationRules>]
-//     ? First extends TValidationRule<InputData, ISuccess<infer RuleSuccessData>>
-//       ? [First, ...TConsistentValidationRules<Tail, RuleSuccessData>]
-//       : [TValidationRule<InputData>, ...Tail]
-//     : ValidationRules;
-
-export type TGetConsistentValidationRulesWithCheckedInput<
-ValidationRules extends Partial<TValidationRules>,
-> = ValidationRules extends [infer First, ...infer Tail extends Partial<TValidationRules>]
-  ? First extends TValidationRule<infer FirstInput>
-    ? IsAnyOrUnknown<FirstInput> extends true
-      ? First extends TValidationRule<any, ISuccess<infer RuleSuccessData>>
-        ? Tail extends []
-          ? [First]
-          : [First, ...TConsistentValidationRules<Tail, RuleSuccessData>]
+export type TConsistentValidationRules<
+  ValidationRules extends Partial<TValidationRules>,
+> = ValidationRules extends [infer First extends TValidationRule]
+  ? First extends TValidationRule<infer InputData>
+    ? IsAnyOrUnknown<InputData> extends true
+      ? [First]
+      : [TValidationRule<unknown>]
+    : [TValidationRule<unknown>]
+  : ValidationRules extends [infer First extends TValidationRule, ...infer Tail extends Partial<TValidationRules>]
+    ? First extends TValidationRule<infer InputData, ISuccess<infer RuleSuccessData>>
+      ? IsAnyOrUnknown<InputData> extends true
+        ? [First, ...TConsistentValidationRulesWithoutAnyAndUnknown<Tail, RuleSuccessData>]
         : [TValidationRule<unknown>, ...Tail]
       : [TValidationRule<unknown>, ...Tail]
-    : [TValidationRule<unknown>, ...Tail]
-  : ValidationRules;
+    : ValidationRules;
 
-type TConsistentValidationRules<
+type TConsistentValidationRulesWithoutAnyAndUnknown<
 ValidationRules extends Partial<TValidationRules>,
 PrevRulesSuccessDataIntersection = unknown,
-> = ValidationRules extends [TValidationRule<PrevRulesSuccessDataIntersection>]
-  ? [TValidationRule<PrevRulesSuccessDataIntersection>]
-  : ValidationRules extends [infer First, ...infer Tail extends Partial<TValidationRules>]
-    ? First extends TValidationRule<infer FirstInput>
-      ? IsAnyOrUnknown<FirstInput> extends true
-        ? IsAnyOrUnknown<PrevRulesSuccessDataIntersection> extends true
-          ? First extends TValidationRule<PrevRulesSuccessDataIntersection, ISuccess<infer RuleSuccessData>>
-            ? [First, ...TConsistentValidationRules<Tail, PrevRulesSuccessDataIntersection & RuleSuccessData>]
-            : [TValidationRule<PrevRulesSuccessDataIntersection>, ...Tail]
-          : never
-        : First extends TValidationRule<PrevRulesSuccessDataIntersection, ISuccess<infer RuleSuccessData>>
-          ? [First, ...TConsistentValidationRules<Tail, PrevRulesSuccessDataIntersection & RuleSuccessData>]
+> = ValidationRules extends [TValidationRule<infer InputData>]
+  ? IsAnyOrUnknown<InputData> extends false
+    ? InputData extends PrevRulesSuccessDataIntersection
+      ? ValidationRules
+      : [TValidationRule<PrevRulesSuccessDataIntersection>]
+    : never
+// если оставить следующую строку вместо этой, то желанной ошибки не будет
+// (value: any) => TResult<ISuccess<any>, IError<string, undefined>> принимается,
+// даже не смотря что требуется TValidationRule<например string>
+    // : [TValidationRule<PrevRulesSuccessDataIntersection>]
+  : ValidationRules extends [infer First extends TValidationRule, ...infer Tail extends Partial<TValidationRules>]
+    ? First extends TValidationRule<infer InputData, ISuccess<infer RuleSuccessData>>
+      ? IsAnyOrUnknown<InputData> extends false
+        ? InputData extends PrevRulesSuccessDataIntersection
+          ? [First, ...TConsistentValidationRulesWithoutAnyAndUnknown<Tail, PrevRulesSuccessDataIntersection & RuleSuccessData>]
           : [TValidationRule<PrevRulesSuccessDataIntersection>, ...Tail]
+        : [TValidationRule<PrevRulesSuccessDataIntersection>, ...Tail]
       : [TValidationRule<PrevRulesSuccessDataIntersection>, ...Tail]
     : ValidationRules;
 
@@ -68,10 +63,7 @@ export type TSuccessValidationRulesData<
       : ValidationRules[0],
 > = ValidationRules extends [TValidationRule<InputData, ISuccess<infer SuccessValidationRulesData>>]
   ? SuccessValidationRulesData
-  : ValidationRules extends [
-    infer First extends TValidationRule<InputData>,
-    ...infer Tail extends TValidationRules,
-  ]
+  : ValidationRules extends [infer First extends TValidationRule<InputData>, ...infer Tail extends TValidationRules]
     ? TRetrieveValidationSuccessData<First>['data'] & TSuccessValidationRulesData<Tail, InputData>
     : TUnionToIntersection<ValidationRules extends Array<TValidationRule<any, ISuccess<infer DesiredType>>>
       ? DesiredType
@@ -111,7 +103,7 @@ export default function validateValueFromRules<
   = Params['separator'] extends string ? Params['separator'] : typeof DEFAULT_AND_SEPARATOR ,
 >(
   value: Value,
-  rules: TGetConsistentValidationRulesWithCheckedInput<Rules>,
+  rules: TConsistentValidationRules<Rules>,
   params?: Params,
 ) {
   const localErrors = [] as Array<IError<string, any>>;
@@ -141,11 +133,12 @@ export default function validateValueFromRules<
   >;
 }
 
-const aaaa = validateValueFromRules(30, [isString, isNumber]);
-const bbbb = validateValueFromRules('ass', [isString, isOnlyDigitsString]);
-const bbbb2 = validateValueFromRules('ass', [isString, isOnlyDigitsString, isPositiveNumber]);
-const сссс = validateValueFromRules('ass', [isString, isPositiveNumber]);
-const dddd = validateValueFromRules(46, [isPositiveNumber]);
-const eeee = validateValueFromRules(30, [isString]);
-const ffff = validateValueFromRules(30, []);
-const gggg = validateValueFromRules(30, [(value: any[]) => ({} as TResult<ISuccess<any[]>, IError<string, undefined>>)]);
+// const aaaa = validateValueFromRules(30, [isString, isNumber]);
+// const bbbb = validateValueFromRules('ass', [isString, isOnlyDigitsString]);
+// const bbbb2 = validateValueFromRules('ass', [isString, isOnlyDigitsString, isNumber]);
+// const bbbb3 = validateValueFromRules('ass', [isString, isOnlyDigitsString, isPositiveNumber]);
+// const сссс = validateValueFromRules('ass', [isString, isPositiveNumber]);
+// const dddd = validateValueFromRules(46, [isPositiveNumber]);
+// const eeee = validateValueFromRules(30, [isString]);
+// const ffff = validateValueFromRules(30, []);
+// const gggg = validateValueFromRules(30, [(value: any[]) => ({} as TResult<ISuccess<any[]>, IError<string, undefined>>)]);

@@ -12,7 +12,7 @@ import { ISuccess } from '../../../_Root/domain/types/Result/ISuccess';
 import { IError } from '../../../_Root/domain/types/Result/IError';
 import ErrorResult from '../../../_Root/domain/factories/ErrorResult';
 import validateValueFromRules, {
-  TGetConsistentValidationRulesWithCheckedInput,
+  TConsistentValidationRules,
   TErrorValidationRulesData,
   TSuccessValidationRulesData,
   TErrorValidationMessage,
@@ -23,7 +23,7 @@ export const DEFAULT_OR_SEPARATOR = ' or ' as const;
 
 export type TConsistentORValidators<ORValidators extends Partial<TORValidators>> = {
   [Key in keyof ORValidators]: ORValidators[Key] extends TValidationRules
-    ? TGetConsistentValidationRulesWithCheckedInput<ORValidators[Key]>
+    ? TConsistentValidationRules<ORValidators[Key]>
     : ORValidators[Key]
 };
 
