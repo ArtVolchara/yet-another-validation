@@ -8,14 +8,32 @@ export const IS_NULL_ERROR_MESSAGE = 'Value should be null' as const;
 export type TIsNullValidationError = IError<typeof IS_NULL_ERROR_MESSAGE, undefined>;
 export type TIsNullValidationSuccess = ISuccess<null>;
 
-export default function isNull(value: any): TIsNullValidationSuccess | TIsNullValidationError {
+export default function isNull<const Error extends IError<string, undefined>>(
+  value: any,
+  error: Error
+): TIsNullValidationSuccess | Error;
+
+export default function isNull(
+  value: any
+): TIsNullValidationSuccess | TIsNullValidationError;
+
+export default function isNull(
+  value: any,
+  error?: IError<string, undefined>,
+) {
   try {
     if (value === null) {
       return new SuccessResult(null);
     }
+    if (error) {
+      return error;
+    }
     return new ErrorResult(IS_NULL_ERROR_MESSAGE, undefined);
   } catch (e) {
     console.error(e);
+    if (error) {
+      return error;
+    }
     return new ErrorResult(IS_NULL_ERROR_MESSAGE, undefined);
   }
 } 

@@ -8,14 +8,32 @@ export const IS_ARRAY_ERROR_MESSAGE = 'Value should be array' as const;
 export type TIsArrayValidationError = IError<typeof IS_ARRAY_ERROR_MESSAGE, undefined>;
 export type TIsArrayValidationSuccess = ISuccess<any[]>;
 
-export default function isArray(value: any): TIsArrayValidationSuccess | TIsArrayValidationError {
+export default function isArray<const Error extends IError<string, undefined>>(
+  value: any,
+  error: Error
+): TIsArrayValidationSuccess | Error;
+
+export default function isArray(
+  value: any
+): TIsArrayValidationSuccess | TIsArrayValidationError;
+
+export default function isArray(
+  value: any,
+  error?: IError<string, undefined>,
+) {
   try {
     if (Array.isArray(value)) {
       return new SuccessResult(value);
     }
+    if (error) {
+      return error;
+    }
     return new ErrorResult(IS_ARRAY_ERROR_MESSAGE, undefined);
   } catch (e) {
     console.error(e);
+    if (error) {
+      return error;
+    }
     return new ErrorResult(IS_ARRAY_ERROR_MESSAGE, undefined);
   }
 }

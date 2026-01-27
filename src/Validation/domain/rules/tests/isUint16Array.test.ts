@@ -2,6 +2,7 @@ import { describe, test, expect } from "vitest";
 import isUint16Array, { IS_UINT16_ARRAY_ERROR_MESSAGE } from '../isUint16Array';
 import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
 import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
+import ruleCustomErrorDecorator from '../../factories/ruleCustomErrorDecorator';
 
 describe('isUint16Array validation rule test', () => {
   describe('Primitive values', () => {
@@ -79,6 +80,36 @@ describe('isUint16Array validation rule test', () => {
         // Assert
         expect(actualResult).toEqual(expectedResult);
       });
+    });
+  });
+
+  describe('Custom error with ruleCustomErrorDecorator', () => {
+    test('Should return custom error when validation fails', () => {
+      // Arrange
+      const inputValue = 'not a uint16array';
+      const customError = new ErrorResult('Custom uint16array error', undefined);
+      const validator = ruleCustomErrorDecorator(isUint16Array, customError);
+      const expectedResult = customError;
+
+      // Act
+      const actualResult = validator(inputValue);
+
+      // Assert
+      expect(actualResult).toEqual(expectedResult);
+    });
+
+    test('Should return success when validation passes with custom error decorator', () => {
+      // Arrange
+      const inputValue = new Uint16Array([1, 2, 3]);
+      const customError = new ErrorResult('Custom uint16array error', undefined);
+      const validator = ruleCustomErrorDecorator(isUint16Array, customError);
+      const expectedResult = new SuccessResult(inputValue);
+
+      // Act
+      const actualResult = validator(inputValue);
+
+      // Assert
+      expect(actualResult).toEqual(expectedResult);
     });
   });
 });

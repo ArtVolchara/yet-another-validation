@@ -2,4 +2,5 @@
 export { default as composeValidator } from './composeValidator';
 export { default as createArrayValidationRule } from './createArrayValidationRule';
 export { default as createObjectValidationRule } from './createObjectValidationRule';
-export { default as createTupleValidationRule } from './createTupleValidationRule'; 
+export { default as createTupleValidationRule } from './createTupleValidationRule';
+export { default as ruleCustomErrorDecorator } from './ruleCustomErrorDecorator';

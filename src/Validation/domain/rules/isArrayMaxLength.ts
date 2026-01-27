@@ -9,15 +9,50 @@ export type TIsArrayMaxLengthNominal<Number extends number> = { readonly [MaxLen
 export type TIsArrayMaxLengthValidationError<MaxLength extends number> = IError<`Array should contain less than ${MaxLength} elements`, undefined>;
 export type TIsArrayMaxLengthValidationSuccess<MaxLength extends number> = ISuccess<TIsArrayMaxLengthNominal<MaxLength>>;
 
-export default function generateArrayMaxLengthValidator<MaxLength extends number>(maxLength: MaxLength) {
-  return function isArrayMaxLength<Value extends Array<unknown>>(value: Value): TIsArrayMaxLengthValidationSuccess<MaxLength> | TIsArrayMaxLengthValidationError<MaxLength> {
+type TIsArrayMaxLengthValidationRule<
+  MaxLength extends number,
+  DefaultError extends IError<string, any> = TIsArrayMaxLengthValidationError<MaxLength>,
+> = {
+  <const Error extends IError<string, undefined>>(value: Array<any>, error: Error): TIsArrayMaxLengthValidationSuccess<MaxLength> | Error;
+  (value: Array<any>): TIsArrayMaxLengthValidationSuccess<MaxLength> | DefaultError;
+};
+
+export default function generateArrayMaxLengthValidator<MaxLength extends number, const Error extends IError<string, undefined>>(
+  maxLength: MaxLength,
+  error: Error
+): TIsArrayMaxLengthValidationRule<MaxLength, Error>;
+
+export default function generateArrayMaxLengthValidator<MaxLength extends number>(
+  maxLength: MaxLength
+): TIsArrayMaxLengthValidationRule<MaxLength>;
+
+export default function generateArrayMaxLengthValidator<MaxLength extends number>(
+  maxLength: MaxLength,
+  defaultError?: IError<string, undefined>,
+) {
+  return function isArrayMaxLength(
+    value: Array<any>,
+    error?: IError<string, undefined>,
+  ) {
     try {
-      if (value.length <= maxLength) {
+      if (Array.isArray(value) && value.length <= maxLength) {
         return new SuccessResult(value as unknown as TIsArrayMaxLengthNominal<MaxLength>);
+      }
+      if (error) {
+        return error;
+      }
+      if (defaultError) {
+        return defaultError;
       }
       return new ErrorResult(`Array should contain less than ${maxLength} elements`, undefined);
     } catch (e) {
       console.error(e);
+      if (error) {
+        return error;
+      }
+      if (defaultError) {
+        return defaultError;
+      }
       return new ErrorResult(`Array should contain less than ${maxLength} elements`, undefined);
     }
   };

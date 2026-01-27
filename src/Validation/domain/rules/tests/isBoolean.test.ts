@@ -2,6 +2,7 @@ import { describe, test, expect } from "vitest";
 import isBoolean, { IS_BOOLEAN_ERROR_MESSAGE } from '../isBoolean';
 import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
 import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
+import ruleCustomErrorDecorator from '../../factories/ruleCustomErrorDecorator';
 
 describe('isBoolean validation rule test', () => {
   describe('Primitive values', () => {
@@ -80,6 +81,36 @@ describe('isBoolean validation rule test', () => {
         // Assert
         expect(actualResult).toEqual(expectedResult);
       });
+    });
+  });
+
+  describe('Custom error with ruleCustomErrorDecorator', () => {
+    test('Should return custom error when validation fails', () => {
+      // Arrange
+      const inputValue = 'not a boolean';
+      const customError = new ErrorResult('Custom boolean error', undefined);
+      const validator = ruleCustomErrorDecorator(isBoolean, customError);
+      const expectedResult = customError;
+
+      // Act
+      const actualResult = validator(inputValue);
+
+      // Assert
+      expect(actualResult).toEqual(expectedResult);
+    });
+
+    test('Should return success when validation passes with custom error decorator', () => {
+      // Arrange
+      const inputValue = true;
+      const customError = new ErrorResult('Custom boolean error', undefined);
+      const validator = ruleCustomErrorDecorator(isBoolean, customError);
+      const expectedResult = new SuccessResult(true);
+
+      // Act
+      const actualResult = validator(inputValue);
+
+      // Assert
+      expect(actualResult).toEqual(expectedResult);
     });
   });
 });

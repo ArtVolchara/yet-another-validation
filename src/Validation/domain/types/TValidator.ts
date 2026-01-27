@@ -7,7 +7,7 @@ export type TValidationRule<
     InputData extends any = any,
     Success extends ISuccess = ISuccess,
     Error extends IError<string, any> = IError<string, any>,
-> = <Input extends InputData = InputData>(value: Input) => TResult<Success, Error>;
+> = (value: InputData) => TResult<Success, Error>;
 
 export type TValidationRules = [TValidationRule, ...Array<TValidationRule>]
 | Readonly<[TValidationRule, ...Array<TValidationRule>]>;
@@ -18,7 +18,7 @@ export type TValidator<
     Success extends ISuccess = ISuccess,
     Error extends IError<string, Array<Array<IError<string, any>>>
     > = IError<string, Array<Array<IError<string, any>>>>,
-> = <Input extends InputData = InputData>(value: Input) => TResult<Success, Error>;
+> = (value: InputData) => TResult<Success, Error>;
 
 export type TValidators = [TValidator, ...Array<TValidator>] | Readonly<[TValidator, ...Array<TValidator>]>;
 

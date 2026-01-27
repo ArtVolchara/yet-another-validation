@@ -2,6 +2,7 @@ import { describe, test, expect } from "vitest";
 import isPromise, { IS_PROMISE_ERROR_MESSAGE } from '../isPromise';
 import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
 import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
+import ruleCustomErrorDecorator from '../../factories/ruleCustomErrorDecorator';
 
 describe('isPromise validation rule test', () => {
   describe('Primitive values', () => {
@@ -84,6 +85,36 @@ describe('isPromise validation rule test', () => {
         // Assert
         expect(actualResult).toEqual(expectedResult);
       });
+    });
+  });
+
+  describe('Custom error with ruleCustomErrorDecorator', () => {
+    test('Should return custom error when validation fails', () => {
+      // Arrange
+      const inputValue = 'not a promise';
+      const customError = new ErrorResult('Custom promise error', undefined);
+      const validator = ruleCustomErrorDecorator(isPromise, customError);
+      const expectedResult = customError;
+
+      // Act
+      const actualResult = validator(inputValue);
+
+      // Assert
+      expect(actualResult).toEqual(expectedResult);
+    });
+
+    test('Should return success when validation passes with custom error decorator', () => {
+      // Arrange
+      const inputValue = Promise.resolve('test');
+      const customError = new ErrorResult('Custom promise error', undefined);
+      const validator = ruleCustomErrorDecorator(isPromise, customError);
+      const expectedResult = new SuccessResult(inputValue);
+
+      // Act
+      const actualResult = validator(inputValue);
+
+      // Assert
+      expect(actualResult).toEqual(expectedResult);
     });
   });
 });

@@ -10,14 +10,32 @@ export type TPositiveNumberNominal = { readonly [positive_number_brand]:'Positiv
 export type TIsPositiveNumberValidationError = IError<typeof IS_ONLY_POSITIVE_NUMBER_ERROR_MESSAGE, undefined>;
 export type TIsPositiveNumberValidationSuccess = ISuccess<TPositiveNumberNominal>;
 
-export default function isPositiveNumber(value: number): TIsPositiveNumberValidationSuccess | TIsPositiveNumberValidationError {
+export default function isPositiveNumber<const Error extends IError<string, undefined>>(
+  value: number,
+  error: Error
+): TIsPositiveNumberValidationSuccess | Error;
+
+export default function isPositiveNumber(
+  value: number
+): TIsPositiveNumberValidationSuccess | TIsPositiveNumberValidationError;
+
+export default function isPositiveNumber(
+  value: number,
+  error?: IError<string, undefined>,
+) {
   try {
     if (value > 0) {
       return new SuccessResult(value as unknown as TPositiveNumberNominal);
     }
+    if (error) {
+      return error;
+    }
     return new ErrorResult(IS_ONLY_POSITIVE_NUMBER_ERROR_MESSAGE, undefined);
   } catch (e) {
     console.error(e);
+    if (error) {
+      return error;
+    }
     return new ErrorResult(IS_ONLY_POSITIVE_NUMBER_ERROR_MESSAGE, undefined);
   }
 }

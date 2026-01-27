@@ -16,8 +16,8 @@ describe('createObjectValidationRule', () => {
         const inputValue = { name: 'John', age: 25 };
         const expectedData = { name: 'John', age: 25 };
         const objectValidationRule = createObjectValidationRule({
-          name: composeValidator([isString]),
-          age: composeValidator([isNumber]),
+          name: composeValidator([[isString]]),
+          age: composeValidator([[isNumber]]),
         });
         // Act
         const actualResult = objectValidationRule(inputValue);
@@ -32,7 +32,7 @@ describe('createObjectValidationRule', () => {
         const inputValue = { name: 'Single' };
         const expectedData = { name: 'Single' };
         const objectValidationRule = createObjectValidationRule({
-          name: composeValidator([isString]),
+          name: composeValidator([[isString]]),
         });
         // Act
         const actualResult = objectValidationRule(inputValue);
@@ -48,8 +48,8 @@ describe('createObjectValidationRule', () => {
         // Arrange
         const inputValue = { name: 123, age: 'not a number' };
         const objectValidationRule = createObjectValidationRule({
-          name: composeValidator([isString]),
-          age: composeValidator([isNumber]),
+          name: composeValidator([[isString]]),
+          age: composeValidator([[isNumber]]),
         });
         // Act
         const actualResult = objectValidationRule(inputValue);
@@ -72,7 +72,7 @@ describe('createObjectValidationRule', () => {
         // Arrange
         const inputValue = { name: 123 };
         const objectValidationRule = createObjectValidationRule({
-          name: composeValidator([isString]),
+          name: composeValidator([[isString]]),
         });
         // Act
         const actualResult = objectValidationRule(inputValue);
@@ -100,10 +100,10 @@ describe('createObjectValidationRule', () => {
         };
         const expectedData = { ...inputValue };
         const objectValidationRule = createObjectValidationRule({
-          name: composeValidator([isString]),
-          age: composeValidator([isPositiveNumber]),
-          isActive: composeValidator([isBoolean]),
-          score: composeValidator([isNumber]),
+          name: composeValidator([[isString]]),
+          age: composeValidator([[isNumber, isPositiveNumber]]),
+          isActive: composeValidator([[isBoolean]]),
+          score: composeValidator([[isNumber]]),
         });
         // Act
         const actualResult = objectValidationRule(inputValue);
@@ -124,10 +124,10 @@ describe('createObjectValidationRule', () => {
           score: 100,
         };
         const objectValidationRule = createObjectValidationRule({
-          name: composeValidator([isString]),
-          age: composeValidator([isPositiveNumber]),
-          isActive: composeValidator([isBoolean]),
-          score: composeValidator([isNumber]),
+          name: composeValidator([[isString]]),
+          age: composeValidator([[isNumber, isPositiveNumber]]),
+          isActive: composeValidator([[isBoolean]]),
+          score: composeValidator([[isNumber]]),
         });
         // Act
         const actualResult = objectValidationRule(inputValue);
@@ -152,9 +152,9 @@ describe('createObjectValidationRule', () => {
           isActive: null,
         };
         const objectValidationRule = createObjectValidationRule({
-          name: composeValidator([isString]),
-          age: composeValidator([isNumber]),
-          isActive: composeValidator([isBoolean]),
+          name: composeValidator([[isString]]),
+          age: composeValidator([[isNumber]]),
+          isActive: composeValidator([[isBoolean]]),
         });
         // Act
         const actualResult = objectValidationRule(inputValue);
@@ -178,7 +178,7 @@ describe('createObjectValidationRule', () => {
       it('should validate successfully when field is a string', () => {
         // Arrange
         const objectValidationRule = createObjectValidationRule({
-          optionalField: composeValidator([isString], [isUndefined]),
+          optionalField: composeValidator([[isString], [isUndefined]]),
         });
         const inputValue = { optionalField: 'test' };
         const expectedData = { optionalField: 'test' };
@@ -193,7 +193,7 @@ describe('createObjectValidationRule', () => {
       it('should validate successfully when field is undefined', () => {
         // Arrange
         const objectValidationRule = createObjectValidationRule({
-          optionalField: composeValidator([isString], [isUndefined]),
+          optionalField: composeValidator([[isString], [isUndefined]]),
         });
         const inputValue = { optionalField: undefined };
         const expectedData = { optionalField: undefined };
@@ -210,7 +210,7 @@ describe('createObjectValidationRule', () => {
       it('should fail when field is not string or undefined', () => {
         // Arrange
         const objectValidationRule = createObjectValidationRule({
-          optionalField: composeValidator([isString], [isUndefined]),
+          optionalField: composeValidator([[isString], [isUndefined]]),
         });
         const inputValue = { optionalField: 123 };
         // Act
@@ -246,8 +246,8 @@ describe('createObjectValidationRule', () => {
         // Arrange
         const inputValue = 'not an object';
         const objectValidationRule = createObjectValidationRule({
-          name: composeValidator([isString]),
-          age: composeValidator([isNumber]),
+          name: composeValidator([[isString]]),
+          age: composeValidator([[isNumber]]),
         });
         // Act
         const actualResult = objectValidationRule(inputValue as any);
@@ -262,8 +262,8 @@ describe('createObjectValidationRule', () => {
       it('should handle undefined fields correctly', () => {
         // Arrange
         const objectValidationRule = createObjectValidationRule({
-          name: composeValidator([isString]),
-          age: composeValidator([isNumber]),
+          name: composeValidator([[isString]]),
+          age: composeValidator([[isNumber]]),
         });
         // Act
         const result = objectValidationRule({ name: 'John', age: undefined } as any);
@@ -297,9 +297,9 @@ describe('createObjectValidationRule', () => {
           isActive: null,
         };
         const objectValidationRule = createObjectValidationRule({
-          name: composeValidator([isString]),
-          age: composeValidator([isNumber]),
-          isActive: composeValidator([isBoolean]),
+          name: composeValidator([[isString]]),
+          age: composeValidator([[isNumber]]),
+          isActive: composeValidator([[isBoolean]]),
         });
         // Act
         const actualResult = objectValidationRule(inputValue);
@@ -320,8 +320,8 @@ describe('createObjectValidationRule', () => {
       it('should have correct object validation error structure', () => {
         // Arrange
         const objectValidationRule = createObjectValidationRule({
-          name: composeValidator([isString]),
-          age: composeValidator([isNumber]),
+          name: composeValidator([[isString]]),
+          age: composeValidator([[isNumber]]),
         });
         // Act
         const result = objectValidationRule({ name: 123, age: 'invalid' });
@@ -346,8 +346,8 @@ describe('createObjectValidationRule', () => {
       it('should have correct error message type', () => {
         // Arrange
         const objectValidationRule = createObjectValidationRule({
-          name: composeValidator([isString]),
-          age: composeValidator([isNumber]),
+          name: composeValidator([[isString]]),
+          age: composeValidator([[isNumber]]),
         });
         // Act
         const result = objectValidationRule({ name: 123, age: 'invalid' });
@@ -363,10 +363,10 @@ describe('createObjectValidationRule', () => {
       it('should maintain type safety for complex object schemas', () => {
         // Arrange
         const complexValidator = createObjectValidationRule({
-          name: composeValidator([isString]),
-          age: composeValidator([isPositiveNumber]),
-          isActive: composeValidator([isBoolean]),
-          score: composeValidator([isNumber]),
+          name: composeValidator([[isString]]),
+          age: composeValidator([[isNumber, isPositiveNumber]]),
+          isActive: composeValidator([[isBoolean]]),
+          score: composeValidator([[isNumber]]),
         });
         // Act
         const result = complexValidator({

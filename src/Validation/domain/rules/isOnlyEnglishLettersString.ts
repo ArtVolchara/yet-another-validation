@@ -11,16 +11,34 @@ export const IS_ONLY_ENGLISH_LETTERS_STRING_ERROR_MESSAGE = 'Value should contai
 export type TIsOnlyEnglishLettersStringValidationError = IError<typeof IS_ONLY_ENGLISH_LETTERS_STRING_ERROR_MESSAGE, undefined>;
 export type TIsOnlyEnglishLettersStringValidationSuccess = ISuccess<TOnlyEnglishLettersNominal>;
 
-export default function isOnlyEnglishLettersString(value: string): TIsOnlyEnglishLettersStringValidationSuccess | TIsOnlyEnglishLettersStringValidationError {
+export default function isOnlyEnglishLettersString<const Error extends IError<string, undefined>>(
+  value: string,
+  error: Error
+): TIsOnlyEnglishLettersStringValidationSuccess | Error;
+
+export default function isOnlyEnglishLettersString(
+  value: string
+): TIsOnlyEnglishLettersStringValidationSuccess | TIsOnlyEnglishLettersStringValidationError;
+
+export default function isOnlyEnglishLettersString(
+  value: string,
+  error?: IError<string, undefined>,
+) {
   try {
     if (typeof value === 'string') {
       if (/^[a-zA-Z]+$/.test(value)) {
         return new SuccessResult(value as unknown as TOnlyEnglishLettersNominal);
       }
     }
+    if (error) {
+      return error;
+    }
     return new ErrorResult(IS_ONLY_ENGLISH_LETTERS_STRING_ERROR_MESSAGE, undefined);
   } catch (e) {
     console.error(e);
+    if (error) {
+      return error;
+    }
     return new ErrorResult(IS_ONLY_ENGLISH_LETTERS_STRING_ERROR_MESSAGE, undefined);
   }
 }

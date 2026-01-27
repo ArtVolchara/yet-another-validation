@@ -8,6 +8,10 @@ import isArrayMinLength from '../../rules/isArrayMinLength';
 import isUndefined, { IS_UNDEFINED_ERROR_MESSAGE } from '../../rules/isUndefined';
 import isBoolean, { IS_BOOLEAN_ERROR_MESSAGE } from '../../rules/isBoolean';
 import composeValidator from '../composeValidator';
+import ruleCustomErrorDecorator from '../ruleCustomErrorDecorator';
+import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
+import { DEFAULT_AND_SEPARATOR } from '../../functions/validateValueFromRules';
+import { DEFAULT_OR_SEPARATOR } from '../../functions/validateValue';
 
 describe('composeValidator', () => {
   describe('Single OR validator', () => {
@@ -15,7 +19,7 @@ describe('composeValidator', () => {
       // Arrange
       const inputValue = 'Hello';
       const expectedData = 'Hello';
-      const validator = composeValidator([isString]);
+      const validator = composeValidator([[isString]]);
 
       // Act
       const actualResult = validator(inputValue);
@@ -31,7 +35,7 @@ describe('composeValidator', () => {
       // Arrange
       const inputValue = 123;
       const expectedMessage = IS_STRING_ERROR_MESSAGE;
-      const validator = composeValidator([isString]);
+      const validator = composeValidator([[isString]]);
 
       // Act
       const actualResult = validator(inputValue);
@@ -50,7 +54,7 @@ describe('composeValidator', () => {
       // Arrange
       const inputValue = ['a', 'b', 'c'];
       const expectedData = ['a', 'b', 'c'];
-      const validator = composeValidator([isArray, isArrayMinLength(2)]);
+      const validator = composeValidator([[isArray, isArrayMinLength(2)]]);
 
       // Act
       const actualResult = validator(inputValue);
@@ -65,8 +69,8 @@ describe('composeValidator', () => {
     it('should return error when single validator fails', () => {
       // Arrange
       const inputValue = null;
-      const expectedMessage = `${IS_ARRAY_ERROR_MESSAGE}. Array should contain more than 2 elements`;
-      const validator = composeValidator([isArray, isArrayMinLength(2)]);
+      const expectedMessage = `${IS_ARRAY_ERROR_MESSAGE}${DEFAULT_AND_SEPARATOR}Array should contain more than 2 elements`;
+      const validator = composeValidator([[isArray, isArrayMinLength(2)]]);
 
       // Act
       const actualResult = validator(inputValue);
@@ -88,7 +92,7 @@ describe('composeValidator', () => {
       // Arrange
       const inputValue = undefined;
       const expectedData = undefined;
-      const validator = composeValidator([isUndefined]);
+      const validator = composeValidator([[isUndefined]]);
 
       // Act
       const actualResult = validator(inputValue);
@@ -104,7 +108,7 @@ describe('composeValidator', () => {
       // Arrange
       const inputValue = null;
       const expectedMessage = IS_UNDEFINED_ERROR_MESSAGE;
-      const validator = composeValidator([isUndefined]);
+      const validator = composeValidator([[isUndefined]]);
 
       // Act
       const actualResult = validator(inputValue);
@@ -123,7 +127,7 @@ describe('composeValidator', () => {
       // Arrange
       const inputValue = true;
       const expectedData = true;
-      const validator = composeValidator([isBoolean]);
+      const validator = composeValidator([[isBoolean]]);
 
       // Act
       const actualResult = validator(inputValue);
@@ -139,7 +143,7 @@ describe('composeValidator', () => {
       // Arrange
       const inputValue = 'not a boolean';
       const expectedMessage = IS_BOOLEAN_ERROR_MESSAGE;
-      const validator = composeValidator([isBoolean]);
+      const validator = composeValidator([[isBoolean]]);
 
       // Act
       const actualResult = validator(inputValue);
@@ -160,10 +164,10 @@ describe('composeValidator', () => {
       // Arrange
       const inputValue = 'Hello';
       const expectedData = 'Hello';
-      const validator = composeValidator(
+      const validator = composeValidator([
         [isString, isOnlyEnglishLettersString],
         [isNumber, isPositiveNumber],
-      );
+      ]);
 
       // Act
       const actualResult = validator(inputValue);
@@ -179,10 +183,10 @@ describe('composeValidator', () => {
       // Arrange
       const inputValue = 42;
       const expectedData = 42;
-      const validator = composeValidator(
+      const validator = composeValidator([
         [isString, isOnlyEnglishLettersString],
         [isNumber, isPositiveNumber],
-      );
+      ]);
 
       // Act
       const actualResult = validator(inputValue);
@@ -197,11 +201,13 @@ describe('composeValidator', () => {
     it('should return error when all validators fail', () => {
       // Arrange
       const inputValue = null;
-      const expectedMessage = `${IS_STRING_ERROR_MESSAGE}. ${IS_ONLY_ENGLISH_LETTERS_STRING_ERROR_MESSAGE} OR ${IS_NUMBER_ERROR_MESSAGE}. ${IS_ONLY_POSITIVE_NUMBER_ERROR_MESSAGE}`;
-      const validator = composeValidator(
+      const expectedMessage = `${IS_STRING_ERROR_MESSAGE}${DEFAULT_AND_SEPARATOR}`
+        + `${IS_ONLY_ENGLISH_LETTERS_STRING_ERROR_MESSAGE}${DEFAULT_OR_SEPARATOR}`
+        + `${IS_NUMBER_ERROR_MESSAGE}${DEFAULT_AND_SEPARATOR}${IS_ONLY_POSITIVE_NUMBER_ERROR_MESSAGE}`;
+      const validator = composeValidator([
         [isString, isOnlyEnglishLettersString],
         [isNumber, isPositiveNumber],
-      );
+      ]);
 
       // Act
       const actualResult = validator(inputValue);
@@ -214,16 +220,16 @@ describe('composeValidator', () => {
         expect(actualResult.data[0]).toHaveLength(2); // First AND group
         expect(actualResult.data[1]).toHaveLength(2); // Second AND group
       }
-  });
+    });
 
     it('should return success with validation rules and validator', () => {
       // Arrange
       const inputValue = 'Hello';
       const expectedData = 'Hello';
-      const validator = composeValidator(
+      const validator = composeValidator([
         [isString, isOnlyEnglishLettersString],
-        composeValidator([isNumber, isPositiveNumber]),
-      );
+        composeValidator([[isNumber, isPositiveNumber]]),
+      ]);
 
       // Act
       const actualResult = validator(inputValue);
@@ -238,11 +244,13 @@ describe('composeValidator', () => {
     it('should return error when both validator and validation rules fail', () => {
       // Arrange
       const inputValue = null;
-      const expectedMessage = `${IS_STRING_ERROR_MESSAGE}. ${IS_ONLY_ENGLISH_LETTERS_STRING_ERROR_MESSAGE} OR ${IS_NUMBER_ERROR_MESSAGE}. ${IS_ONLY_POSITIVE_NUMBER_ERROR_MESSAGE}`;
-      const validator = composeValidator(
+      const expectedMessage = `${IS_STRING_ERROR_MESSAGE}${DEFAULT_AND_SEPARATOR}`
+        + `${IS_ONLY_ENGLISH_LETTERS_STRING_ERROR_MESSAGE}${DEFAULT_OR_SEPARATOR}`
+        + `${IS_NUMBER_ERROR_MESSAGE}${DEFAULT_AND_SEPARATOR}${IS_ONLY_POSITIVE_NUMBER_ERROR_MESSAGE}`;
+      const validator = composeValidator([
         [isString, isOnlyEnglishLettersString],
-        composeValidator([isNumber, isPositiveNumber]),
-      );
+        composeValidator([[isNumber, isPositiveNumber]]),
+      ]);
 
       // Act
       const actualResult = validator(inputValue);
@@ -267,13 +275,13 @@ describe('composeValidator', () => {
       // Arrange
       const inputValue = ['a', 'b', 'c'];
       const expectedData = ['a', 'b', 'c'];
-      const validator = composeValidator(
+      const validator = composeValidator([
         [isString, isOnlyEnglishLettersString],
-        composeValidator(
+        composeValidator([
           [isString, isOnlyEnglishLettersString],
-          composeValidator([isArray, isArrayMinLength(2)]),
-        ),
-      );
+          composeValidator([[isArray, isArrayMinLength(2)]]),
+        ]),
+      ]);
 
       // Act
       const actualResult = validator(inputValue);
@@ -288,14 +296,18 @@ describe('composeValidator', () => {
     it('should return error when deeply nested validators fail', () => {
       // Arrange
       const inputValue = null;
-      const expectedMessage = `${IS_STRING_ERROR_MESSAGE}. ${IS_ONLY_ENGLISH_LETTERS_STRING_ERROR_MESSAGE} OR ${IS_NUMBER_ERROR_MESSAGE}. ${IS_ONLY_POSITIVE_NUMBER_ERROR_MESSAGE} OR ${IS_ARRAY_ERROR_MESSAGE}. Array should contain more than 2 elements`;
-      const validator = composeValidator(
+      const expectedMessage = `${IS_STRING_ERROR_MESSAGE}${DEFAULT_AND_SEPARATOR}`
+        + `${IS_ONLY_ENGLISH_LETTERS_STRING_ERROR_MESSAGE}${DEFAULT_OR_SEPARATOR}`
+        + `${IS_NUMBER_ERROR_MESSAGE}${DEFAULT_AND_SEPARATOR}`
+        + `${IS_ONLY_POSITIVE_NUMBER_ERROR_MESSAGE}${DEFAULT_OR_SEPARATOR}`
+        + `${IS_ARRAY_ERROR_MESSAGE}${DEFAULT_AND_SEPARATOR}Array should contain more than 2 elements`;
+      const validator = composeValidator([
         [isString, isOnlyEnglishLettersString],
-        composeValidator(
+        composeValidator([
           [isNumber, isPositiveNumber],
-          composeValidator([isArray, isArrayMinLength(2)]),
-        ),
-      );
+          composeValidator([[isArray, isArrayMinLength(2)]]),
+        ]),
+      ]);
 
       // Act
       const actualResult = validator(inputValue);
@@ -321,7 +333,7 @@ describe('composeValidator', () => {
       // Arrange
       const inputValue = 'Hello';
       const expectedData = 'Hello';
-      const validator = composeValidator(
+      const validator = composeValidator([
         [isString, isOnlyEnglishLettersString],
         (value: any) => {
           if (typeof value === 'string') {
@@ -329,7 +341,7 @@ describe('composeValidator', () => {
           }
           return { status: 'error' as const, message: 'Custom error', data: [[{ status: 'error' as const, message: 'Custom error', data: undefined }]] };
         },
-      );
+      ]);
 
       // Act
       const actualResult = validator(inputValue);
@@ -339,13 +351,14 @@ describe('composeValidator', () => {
       if (actualResult.status === 'success') {
         expect(actualResult.data).toBe(expectedData);
       }
-  });
+    });
 
     it('should handle custom validator errors correctly', () => {
       // Arrange
       const inputValue = 123;
-      const expectedMessage = `${IS_STRING_ERROR_MESSAGE}. ${IS_ONLY_ENGLISH_LETTERS_STRING_ERROR_MESSAGE} OR Custom error`;
-      const validator = composeValidator(
+      const expectedMessage = `${IS_STRING_ERROR_MESSAGE}${DEFAULT_AND_SEPARATOR}`
+        + `${IS_ONLY_ENGLISH_LETTERS_STRING_ERROR_MESSAGE}${DEFAULT_OR_SEPARATOR}Custom error`;
+      const validator = composeValidator([
         [isString, isOnlyEnglishLettersString],
         (value: any) => {
           if (typeof value === 'string') {
@@ -353,7 +366,7 @@ describe('composeValidator', () => {
           }
           return { status: 'error' as const, message: 'Custom error', data: [[{ status: 'error' as const, message: 'Custom error', data: undefined }]] };
         },
-      );
+      ]);
 
       // Act
       const actualResult = validator(inputValue);
@@ -367,6 +380,102 @@ describe('composeValidator', () => {
     });
   });
 
+  describe('With ruleCustomErrorDecorator', () => {
+    it('should return custom error when using ruleCustomErrorDecorator with single rule', () => {
+      // Arrange
+      const inputValue = 123;
+      const customError = new ErrorResult('Custom string error', undefined);
+      const decoratedValidator = ruleCustomErrorDecorator(isString, customError);
+      const validator = composeValidator([[decoratedValidator]]);
 
+      // Act
+      const actualResult = validator(inputValue);
 
+      // Assert
+      expect(actualResult.status).toBe('error');
+      if (actualResult.status === 'error') {
+        expect(actualResult.message).toBe('Custom string error');
+        expect(actualResult.data).toHaveLength(1);
+        expect(actualResult.data[0]).toHaveLength(1);
+        expect(actualResult.data[0][0]?.message).toBe('Custom string error');
+      }
+    });
+
+    it('should return success when validation passes with decorated rule', () => {
+      // Arrange
+      const inputValue = 'Hello';
+      const expectedData = 'Hello';
+      const customError = new ErrorResult('Custom string error', undefined);
+      const decoratedValidator = ruleCustomErrorDecorator(isString, customError);
+      const validator = composeValidator([[decoratedValidator]]);
+
+      // Act
+      const actualResult = validator(inputValue);
+
+      // Assert
+      expect(actualResult.status).toBe('success');
+      if (actualResult.status === 'success') {
+        expect(actualResult.data).toBe(expectedData);
+      }
+    });
+
+    it('should work with AND logic using decorated validators', () => {
+      // Arrange
+      const inputValue = 'Hello123';
+      const customStringError = new ErrorResult('Custom: not only letters', undefined);
+      const decoratedOnlyLetters = ruleCustomErrorDecorator(isOnlyEnglishLettersString, customStringError);
+      const validator = composeValidator([[isString, decoratedOnlyLetters]]);
+
+      // Act
+      const actualResult = validator(inputValue);
+
+      // Assert
+      expect(actualResult.status).toBe('error');
+      if (actualResult.status === 'error') {
+        expect(actualResult.message).toContain('Custom: not only letters');
+        expect(actualResult.data).toHaveLength(1);
+        expect(actualResult.data[0]).toHaveLength(1);
+      }
+    });
+
+    it('should work with OR logic using decorated validators', () => {
+      // Arrange
+      const inputValue = 'Hello';
+      const customNumberError = new ErrorResult('Custom number error', undefined);
+      const decoratedNumber = ruleCustomErrorDecorator(isNumber, customNumberError);
+      const validator = composeValidator([[isString], [decoratedNumber]]);
+
+      // Act
+      const actualResult = validator(inputValue);
+
+      // Assert
+      expect(actualResult.status).toBe('success');
+      if (actualResult.status === 'success') {
+        expect(actualResult.data).toBe('Hello');
+      }
+    });
+
+    it('should return custom error for both OR branches when both fail', () => {
+      // Arrange
+      const inputValue = true;
+      const customStringError = new ErrorResult('Custom string error', undefined);
+      const customNumberError = new ErrorResult('Custom number error', undefined);
+      const decoratedString = ruleCustomErrorDecorator(isString, customStringError);
+      const decoratedNumber = ruleCustomErrorDecorator(isNumber, customNumberError);
+      const validator = composeValidator([[decoratedString], [decoratedNumber]]);
+
+      // Act
+      const actualResult = validator(inputValue);
+
+      // Assert
+      expect(actualResult.status).toBe('error');
+      if (actualResult.status === 'error') {
+        expect(actualResult.data).toHaveLength(2);
+        expect(actualResult.data[0]).toHaveLength(1);
+        expect(actualResult.data[0][0]?.message).toBe('Custom string error');
+        expect(actualResult.data[1]).toHaveLength(1);
+        expect(actualResult.data[1][0]?.message).toBe('Custom number error');
+      }
+    });
+  });
 });
