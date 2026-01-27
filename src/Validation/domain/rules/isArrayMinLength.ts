@@ -9,15 +9,50 @@ export type TIsArrayMinLengthNominal<Number extends number> = { readonly [MinLen
 export type TIsArrayMinLengthValidationError<MinLength extends number> = IError<`Array should contain more than ${MinLength} elements`, undefined>;
 export type TIsArrayMinLengthValidationSuccess<MinLength extends number> = ISuccess<TIsArrayMinLengthNominal<MinLength>>;
 
-export default function generateArrayMinLengthValidator<MinLength extends number>(minLength: MinLength) {
-  return function isArrayMinLength<Value extends Array<unknown>>(value: Value): TIsArrayMinLengthValidationSuccess<MinLength> | TIsArrayMinLengthValidationError<MinLength> {
+type TIsArrayMinLengthValidationRule<
+  MinLength extends number,
+  DefaultError extends IError<string, any> = TIsArrayMinLengthValidationError<MinLength>
+> = {
+  <const Error extends IError<string, undefined>>(value: Array<any>, error: Error): TIsArrayMinLengthValidationSuccess<MinLength> | Error;
+  (value: Array<any>): TIsArrayMinLengthValidationSuccess<MinLength> | DefaultError;
+};
+
+export default function generateArrayMinLengthValidator<MinLength extends number, const Error extends IError<string, undefined>>(
+  minLength: MinLength,
+  error: Error
+): TIsArrayMinLengthValidationRule<MinLength, Error>;
+
+export default function generateArrayMinLengthValidator<MinLength extends number>(
+  minLength: MinLength
+): TIsArrayMinLengthValidationRule<MinLength>;
+
+export default function generateArrayMinLengthValidator<MinLength extends number>(
+  minLength: MinLength,
+  defaultError?: IError<string, undefined>
+) {
+  return function isArrayMinLength(
+    value: Array<any>,
+    error?: IError<string, undefined>
+  ) {
     try {
-      if (value.length >= minLength) {
+      if (Array.isArray(value) && value.length >= minLength) {
         return new SuccessResult(value as unknown as TIsArrayMinLengthNominal<MinLength>);
+      }
+      if (error) {
+        return error;
+      }
+      if (defaultError) {
+        return defaultError;
       }
       return new ErrorResult(`Array should contain more than ${minLength} elements`, undefined);
     } catch (e) {
       console.error(e);
+      if (error) {
+        return error;
+      }
+      if (defaultError) {
+        return defaultError;
+      }
       return new ErrorResult(`Array should contain more than ${minLength} elements`, undefined);
     }
   };

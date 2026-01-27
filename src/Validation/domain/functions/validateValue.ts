@@ -147,7 +147,7 @@ export default function validateValue<
   return new ErrorResult(
     errors.map((localErrors) => localErrors.map(
       (el) => el.message,
-    )?.join('. '))?.join(params?.separatorOR || DEFAULT_OR_SEPARATOR),
+    )?.join(params?.separatorAND || DEFAULT_AND_SEPARATOR))?.join(params?.separatorOR || DEFAULT_OR_SEPARATOR),
     errors as TErrorORValidationErrorData<ORValidators>,
   ) as IError<
   TErrorORValidationErrorMessage<ORValidators, SeparatorOR, SeparatorAND>,

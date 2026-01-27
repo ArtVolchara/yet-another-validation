@@ -1,5 +1,5 @@
 import { describe, test, expect } from "vitest";
-import isOnlyDigitsString, { IS_ONLY_DIGITS_STRING_ERROR_MESSAGE } from '../isOnlyDigitsString';
+import isOnlyDigitsString, { IS_ONLY_DIGITS_STRING_DEFAULT_ERROR_MESSAGE } from '../isOnlyDigitsString';
 import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
 import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
 
@@ -25,7 +25,7 @@ describe('isOnlyDigitsString validation rule test', () => {
       test(`Should return error result for ${description}`, () => {
         // Arrange
         const inputValue = input as unknown as string;
-        const expectedResult = new ErrorResult(IS_ONLY_DIGITS_STRING_ERROR_MESSAGE, undefined);
+        const expectedResult = new ErrorResult(IS_ONLY_DIGITS_STRING_DEFAULT_ERROR_MESSAGE, undefined);
 
         // Act
         const actualResult = isOnlyDigitsString(inputValue);
@@ -72,7 +72,7 @@ describe('isOnlyDigitsString validation rule test', () => {
       test(`Should return error result for ${description}`, () => {
         // Arrange
         const inputValue = input as unknown as string;
-        const expectedResult = new ErrorResult(IS_ONLY_DIGITS_STRING_ERROR_MESSAGE, undefined);
+        const expectedResult = new ErrorResult(IS_ONLY_DIGITS_STRING_DEFAULT_ERROR_MESSAGE, undefined);
 
         // Act
         const actualResult = isOnlyDigitsString(inputValue);

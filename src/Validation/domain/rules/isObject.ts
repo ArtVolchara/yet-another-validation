@@ -8,7 +8,19 @@ export const IS_OBJECT_ERROR_MESSAGE = 'Value should be object' as const;
 export type TIsObjectValidationError = IError<typeof IS_OBJECT_ERROR_MESSAGE, undefined>;
 export type TIsObjectValidationSuccess = ISuccess<Record<string | symbol, any>>;
 
-export default function isObject(value: any): TIsObjectValidationSuccess | TIsObjectValidationError {
+export default function isObject<const Error extends IError<string, undefined>>(
+  value: any,
+  error: Error
+): TIsObjectValidationSuccess | Error;
+
+export default function isObject(
+  value: any
+): TIsObjectValidationSuccess | TIsObjectValidationError;
+
+export default function isObject(
+  value: any,
+  error?: IError<string, undefined>,
+) {
   try {
     if (
       value !== null &&
@@ -18,9 +30,15 @@ export default function isObject(value: any): TIsObjectValidationSuccess | TIsOb
     ) {
       return new SuccessResult(value as Record<string, any>);
     }
+    if (error) {
+      return error;
+    }
     return new ErrorResult(IS_OBJECT_ERROR_MESSAGE, undefined);
-  } catch (error) {
-    console.error(error);
+  } catch (e) {
+    console.error(e);
+    if (error) {
+      return error;
+    }
     return new ErrorResult(IS_OBJECT_ERROR_MESSAGE, undefined);
   }
 }

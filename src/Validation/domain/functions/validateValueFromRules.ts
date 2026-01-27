@@ -6,14 +6,10 @@ import {
 } from '../types/TValidator';
 import { ISuccess } from '../../../_Root/domain/types/Result/ISuccess';
 import { IsAnyOrUnknown, TUnionToIntersection } from '../../../_Root/domain/types/utils';
-import { TResult, TRetrieveError } from '../../../_Root/domain/types/Result/TResult';
+import { TRetrieveError } from '../../../_Root/domain/types/Result/TResult';
 import { IError, isInternalError } from '../../../_Root/domain/types/Result/IError';
 import SuccessResult from '../../../_Root/domain/factories/SuccessResult';
 import ErrorResult from '../../../_Root/domain/factories/ErrorResult';
-import isString from '../rules/isString';
-import isNumber from '../rules/isNumber';
-import isOnlyDigitsString from '../rules/isOnlyDigitsString';
-import isPositiveNumber from '../rules/isPositiveNumber';
 
 export const DEFAULT_AND_SEPARATOR = '. ' as const;
 
@@ -41,11 +37,11 @@ PrevRulesSuccessDataIntersection = unknown,
     ? InputData extends PrevRulesSuccessDataIntersection
       ? ValidationRules
       : [TValidationRule<PrevRulesSuccessDataIntersection>]
+      // если оставить следующую строку вместо never, то желанной ошибки не будет
+      // (value: any) => TResult<ISuccess<any>, IError<string, undefined>> принимается,
+      // даже не смотря что требуется TValidationRule<например string>
+      // : [TValidationRule<PrevRulesSuccessDataIntersection>]
     : never
-// если оставить следующую строку вместо этой, то желанной ошибки не будет
-// (value: any) => TResult<ISuccess<any>, IError<string, undefined>> принимается,
-// даже не смотря что требуется TValidationRule<например string>
-    // : [TValidationRule<PrevRulesSuccessDataIntersection>]
   : ValidationRules extends [infer First extends TValidationRule, ...infer Tail extends Partial<TValidationRules>]
     ? First extends TValidationRule<infer InputData, ISuccess<infer RuleSuccessData>>
       ? IsAnyOrUnknown<InputData> extends false
@@ -109,7 +105,7 @@ export default function validateValueFromRules<
   const localErrors = [] as Array<IError<string, any>>;
   const result = rules.reduce((acc, validator) => {
     try {
-      const res = (validator as any)(acc);
+      const res = validator(acc);
       if (res.status === 'error') {
         localErrors.push(res);
         return acc;
@@ -132,13 +128,3 @@ export default function validateValueFromRules<
   TErrorValidationRulesData<Rules>
   >;
 }
-
-// const aaaa = validateValueFromRules(30, [isString, isNumber]);
-// const bbbb = validateValueFromRules('ass', [isString, isOnlyDigitsString]);
-// const bbbb2 = validateValueFromRules('ass', [isString, isOnlyDigitsString, isNumber]);
-// const bbbb3 = validateValueFromRules('ass', [isString, isOnlyDigitsString, isPositiveNumber]);
-// const сссс = validateValueFromRules('ass', [isString, isPositiveNumber]);
-// const dddd = validateValueFromRules(46, [isPositiveNumber]);
-// const eeee = validateValueFromRules(30, [isString]);
-// const ffff = validateValueFromRules(30, []);
-// const gggg = validateValueFromRules(30, [(value: any[]) => ({} as TResult<ISuccess<any[]>, IError<string, undefined>>)]);
