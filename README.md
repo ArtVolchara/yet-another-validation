@@ -97,26 +97,6 @@ const actualResult = validateValueFromRules('abc', isString, isOnlyEnglishLetter
 > **💡 Совет:**<br/>
 Не следует каждый раз при создании новых частных правил валидации, например строки, включать проверку на string. Лучше укажите тип параметра как string. При композицировании typescript потребует, чтобы перед этим правилом в цепочку правил было вставлено правило, проверяющее на string.
 
-> **🔴 Ограничение:**<br/>
-Следите, чтобы тип параметра каждого последующего валидационного правила, переданного в validateValueFromRules, был логически совместим с типом возвращаемого значения предыдущего правила. В случае, когда тип параметра валидационного правила к примеру "any", вы можете случайно поместить это правило в середину цепочки правил, т.к. тип-пересечение возвращаемых значений предыдущих правил будет в любом случае совместим с типом "any". Таким образом вызов validateValueFromRules с этим набором правил в runtime всегда будет возвращать ErrorResult. 
-Обратите внимание на код ниже, иллюстрирующий ещё один аспект этой проблемы - внутри ISuccess в первом случае мы увидим never, как невозможное пересечение string и number типов:
-```typescript
-import isString from '@validation/rules/isString';
-import isNumber from '@validation/rules/isNumber';
-import validateValueFromRules from '@validation/functions/validateValueFromRules';
-
-const actualResult = validateValueFromRules('abc', isString, isNumber);
-/*const actualResult: ISuccess<never> | IError<...>*/
-``` 
-А во втором случае мы получим string & any[], т.к. typescript допускает пересечение примитивного и непримитивного типов (в частности для поддержки номинальной типизации):
-```typescript
-import isString from '@validation/rules/isString';
-import isArray from '@validation/rules/isArray';
-import validateValueFromRules from '@validation/functions/validateValueFromRules';
-
-const actualResult = validateValueFromRules('abc', isString, isArray);
-/*const actualResult: ISuccess<string & any[]> | IError<...>*/
-``` 
 > **🟡 Важно:**<br/>
 Валидационные правила будут вызываться последовательно все, даже если в первом из них была обнаружена ошибка валидации. Поэтому каждое правило должно быть готово вне зависимости от типа аргумента обработать любое значение из рантайма и для этого иметь catch внутри себя, в котором возвращается (не выбрасывается) IError c нужным сообщением об ошибке.
 
