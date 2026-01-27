@@ -8,35 +8,49 @@ import { TRetrieveError, TRetrieveSuccess } from '../../../_Root/domain/types/Re
 import isObject, { TIsObjectValidationError } from '../rules/isObject';
 
 export type TObjectValidatorsSchema = Record<string, TValidator>;
-type TObjectValidatorsSuccessSchema<ValidatorsSchema extends TObjectValidatorsSchema> = {
-  [Key in keyof ValidatorsSchema]: TRetrieveSuccess<ReturnType<ValidatorsSchema[Key]>>['data']
-};
-type TObjectValidatorsErrorsSchema<ValidatorsSchema extends TObjectValidatorsSchema> = {
-  [Key in keyof ValidatorsSchema]: TRetrieveError<ReturnType<ValidatorsSchema[Key]>>
-};
 
 // Validation rule type with overloads
 type TObjectValidationRule<
   ValidatorsSchema extends TObjectValidatorsSchema,
-  DefaultErrorFactoryOrError extends IError<string, TObjectValidatorsErrorsSchema<ValidatorsSchema>>
-  | { (data: TObjectValidatorsErrorsSchema<ValidatorsSchema>): IError<string, TObjectValidatorsErrorsSchema<ValidatorsSchema>> }
-  = IError<string, TObjectValidatorsErrorsSchema<ValidatorsSchema>>,
+  DefaultErrorFactoryOrError extends IError<string, {
+    [Key in keyof ValidatorsSchema]: TRetrieveError<ReturnType<ValidatorsSchema[Key]>>
+  }>
+  | { (data: { [Key in keyof ValidatorsSchema]: TRetrieveError<ReturnType<ValidatorsSchema[Key]>> }): IError<string, {
+    [Key in keyof ValidatorsSchema]: TRetrieveError<ReturnType<ValidatorsSchema[Key]>>
+  }> }
+  = IError<string, {
+    [Key in keyof ValidatorsSchema]: TRetrieveError<ReturnType<ValidatorsSchema[Key]>>
+  }>,
 > = {
-  <const ErrorFactory extends (data: TObjectValidatorsErrorsSchema<ValidatorsSchema>) => IError<string, TObjectValidatorsErrorsSchema<ValidatorsSchema>>>(
+  <const ErrorFactory extends (data: {
+    [Key in keyof ValidatorsSchema]: TRetrieveError<ReturnType<ValidatorsSchema[Key]>>
+  }) => IError<string, {
+    [Key in keyof ValidatorsSchema]: TRetrieveError<ReturnType<ValidatorsSchema[Key]>>
+  }>>(
     value: Record<string | symbol, any>,
     errorFactory: ErrorFactory,
-  ): ISuccess<TObjectValidatorsSuccessSchema<ValidatorsSchema>> | ReturnType<ErrorFactory> | TIsObjectValidationError;
+  ): ISuccess<{ [Key in keyof ValidatorsSchema]: TRetrieveSuccess<ReturnType<ValidatorsSchema[Key]>>['data'] }>
+  | ReturnType<ErrorFactory>
+  | TIsObjectValidationError;
 
-  (value: Record<string | symbol, any>): ISuccess<TObjectValidatorsSuccessSchema<ValidatorsSchema>>
+  (value: Record<string | symbol, any>): ISuccess<{
+    [Key in keyof ValidatorsSchema]: TRetrieveSuccess<ReturnType<ValidatorsSchema[Key]>>['data']
+  }>
   | TIsObjectValidationError
-  | (DefaultErrorFactoryOrError extends IError<string, TObjectValidatorsErrorsSchema<ValidatorsSchema>>
+  | (DefaultErrorFactoryOrError extends IError<string, {
+    [Key in keyof ValidatorsSchema]: TRetrieveError<ReturnType<ValidatorsSchema[Key]>>
+  }>
     ? DefaultErrorFactoryOrError
     : ReturnType<Exclude<DefaultErrorFactoryOrError, IError<string, any>>>)
 };
 
 type TValidationAccumulator<ValidatorsSchema extends TObjectValidatorsSchema> = {
-  validResults: TObjectValidatorsSuccessSchema<ValidatorsSchema>;
-  errors: TObjectValidatorsErrorsSchema<ValidatorsSchema>;
+  validResults: {
+    [Key in keyof ValidatorsSchema]: TRetrieveSuccess<ReturnType<ValidatorsSchema[Key]>>['data']
+  };
+  errors: {
+    [Key in keyof ValidatorsSchema]: TRetrieveError<ReturnType<ValidatorsSchema[Key]>>
+  };
   errorMessages: string[];
   isError: boolean;
 };
@@ -45,8 +59,12 @@ type TValidationAccumulator<ValidatorsSchema extends TObjectValidatorsSchema> = 
 export default function createObjectValidationRule<
   const ValidatorsSchema extends TObjectValidatorsSchema,
   const ErrorFactory extends (
-    data: TObjectValidatorsErrorsSchema<ValidatorsSchema>
-  ) => IError<string, TObjectValidatorsErrorsSchema<ValidatorsSchema>>,
+    data: {
+      [Key in keyof ValidatorsSchema]: TRetrieveError<ReturnType<ValidatorsSchema[Key]>>
+    }
+  ) => IError<string, {
+    [Key in keyof ValidatorsSchema]: TRetrieveError<ReturnType<ValidatorsSchema[Key]>>
+  }>,
 
 >(
   validatorsSchema: ValidatorsSchema,
@@ -63,8 +81,12 @@ export default function createObjectValidationRule<ValidatorsSchema extends TObj
 export default function createObjectValidationRule<
   const ValidatorsSchema extends TObjectValidatorsSchema,
   const DefaultErrorFactory extends (
-    data: TObjectValidatorsErrorsSchema<ValidatorsSchema>
-  ) => IError<string, TObjectValidatorsErrorsSchema<ValidatorsSchema>>,
+    data: {
+      [Key in keyof ValidatorsSchema]: TRetrieveError<ReturnType<ValidatorsSchema[Key]>>
+    }
+  ) => IError<string, {
+    [Key in keyof ValidatorsSchema]: TRetrieveError<ReturnType<ValidatorsSchema[Key]>>
+  }>,
 >(
   validatorsSchema: ValidatorsSchema,
   defaultErrorFactory?: DefaultErrorFactory,
@@ -72,12 +94,20 @@ export default function createObjectValidationRule<
   const schemaEntries = Object.entries(validatorsSchema) as TObjectEntries<typeof validatorsSchema>;
 
   return <const ErrorFactory extends (
-    data: TObjectValidatorsErrorsSchema<ValidatorsSchema>
-  ) => IError<string, TObjectValidatorsErrorsSchema<ValidatorsSchema>>>(
+    data: {
+      [Key in keyof ValidatorsSchema]: TRetrieveError<ReturnType<ValidatorsSchema[Key]>>
+    }
+  ) => IError<string, {
+    [Key in keyof ValidatorsSchema]: TRetrieveError<ReturnType<ValidatorsSchema[Key]>>
+  }>>(
     value: Record<string | symbol, any>,
     errorFactory?: ErrorFactory,
-  ): ISuccess<TObjectValidatorsSuccessSchema<ValidatorsSchema>>
-  | IError<string, TObjectValidatorsErrorsSchema<ValidatorsSchema>> | TIsObjectValidationError => {
+  ): ISuccess<{
+    [Key in keyof ValidatorsSchema]: TRetrieveSuccess<ReturnType<ValidatorsSchema[Key]>>['data']
+  }>
+  | IError<string, {
+    [Key in keyof ValidatorsSchema]: TRetrieveError<ReturnType<ValidatorsSchema[Key]>>
+  }> | TIsObjectValidationError => {
     try {
       const objectValidation = isObject(value);
       if (objectValidation.status === 'error') {
@@ -86,8 +116,12 @@ export default function createObjectValidationRule<
 
       const objectValue = objectValidation.data;
       const initialAcc: TValidationAccumulator<ValidatorsSchema> = {
-        validResults: {} as TObjectValidatorsSuccessSchema<ValidatorsSchema>,
-        errors: {} as TObjectValidatorsErrorsSchema<ValidatorsSchema>,
+        validResults: {} as {
+          [Key in keyof ValidatorsSchema]: TRetrieveSuccess<ReturnType<ValidatorsSchema[Key]>>['data']
+        },
+        errors: {} as {
+          [Key in keyof ValidatorsSchema]: TRetrieveError<ReturnType<ValidatorsSchema[Key]>>
+        },
         errorMessages: [],
         isError: false,
       };
