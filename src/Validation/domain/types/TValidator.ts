@@ -23,11 +23,9 @@ export type TValidator<
 export type TValidators = [TValidator, ...Array<TValidator>] | Readonly<[TValidator, ...Array<TValidator>]>;
 
 export type TRetrieveValidationInputData<Validator extends TValidator | TValidationRule> =
-    Validator extends (value: infer ValidatorInput) => TResult<ISuccess>
-      ? ValidatorInput
-      : Validator extends (value: infer ValidationRuleInput) => TResult<ISuccess>
-        ? ValidationRuleInput
-        : never;
+    Validator extends (value: infer Input) => TResult<ISuccess>
+      ? Input
+      : never;
 
 export type TRetrieveValidationSuccessData<
     Validator extends TValidator | TValidationRule,

@@ -1,3 +1,4 @@
+import { isOnlyDigitsString, isString } from '@validation/rules';
 import {
   TRetrieveValidationInputData,
   TRetrieveValidationSuccessData,
@@ -77,8 +78,10 @@ Separator extends string | undefined = undefined,
       ...infer Tail extends TValidationRules,
     ]
       ? Separator extends string
-        ? `${TRetrieveError<ReturnType<First>>['message']}${Separator}${TErrorValidationMessage<Tail, Separator>}`
-        : `${TRetrieveError<ReturnType<First>>['message']}${TErrorValidationMessage<Tail>}`
+        ? TErrorValidationMessage<Tail>
+        | `${TRetrieveError<ReturnType<First>>['message']}${Separator}${TErrorValidationMessage<Tail, Separator>}`
+        : TErrorValidationMessage<Tail>
+        | `${TRetrieveError<ReturnType<First>>['message']}${TErrorValidationMessage<Tail>}`
       : '';
 
 export type TErrorValidationRulesData<ValidationRules extends TValidationRules> =
@@ -128,3 +131,5 @@ export default function validateValueFromRules<
   TErrorValidationRulesData<Rules>
   >;
 }
+
+const aaaa = validateValueFromRules('1', [isString, isOnlyDigitsString]);
