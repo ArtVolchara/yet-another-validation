@@ -14,11 +14,6 @@ export default function isString<const Error extends IError<string, undefined>>(
 
 export default function isString(value: any): TIsStringValidationSuccess | TIsStringValidationDefaultError;
 
-export default function isString<const Error extends IError<string, undefined>>(
-  value: any,
-  error?: Error
-): TIsStringValidationSuccess | (typeof error extends undefined ? TIsStringValidationDefaultError : Error);
-
 export default function isString(
   value: any,
   error?: IError<string, undefined>,

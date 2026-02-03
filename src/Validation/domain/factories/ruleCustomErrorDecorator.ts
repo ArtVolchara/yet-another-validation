@@ -11,20 +11,10 @@ import createArrayValidationRule from './createArrayValidationRule';
 
 type TValidationRuleError = IError<string, undefined | IError<string, Array<IError<string, any> | undefined>> | Record<string, IError<string, any> | undefined>>;
 
-type TExtractValidationRuleData<T> =
-T extends {
-  (value: any, errorFactory: (data: infer Data) => TValidationRuleError): TValidationRuleError
-  (value: any, error: TValidationRuleError): TValidationRuleError
-}
-  ? Data
-  : T extends (value: any, errorFactory: (data: infer Data) => TValidationRuleError) => TValidationRuleError
-    ? Data
-    : never;
-
 export default function ruleCustomErrorDecorator<
-    const ValidationRule extends { (value: any, error: TValidationRuleError): ISuccess | TValidationRuleError }
-    | ((value: any, error: TValidationRuleError) => ISuccess | TValidationRuleError),
-    const Error extends TValidationRuleError,
+  const ValidationRule extends { (value: any, error: Error): ISuccess | TValidationRuleError }
+    | ((value: any, error: Error) => ISuccess | TValidationRuleError),
+  const Error extends TValidationRuleError,
   >(
   validationRule: ValidationRule,
   error: Error,
@@ -38,11 +28,11 @@ export default function ruleCustomErrorDecorator<
     ): ISuccess | TValidationRuleError
   }
   | ((value: any, errorFactory: (data: any) => TValidationRuleError) => ISuccess | TValidationRuleError),
-  const CustomErrorFactory extends (data: TExtractValidationRuleData<ValidationRule>) => TValidationRuleError,
+  const CustomErrorFactory extends Parameters<ValidationRule>[1],
 >(
   validationRule: ValidationRule,
-  errorFactory: CustomErrorFactory
-): TValidationRule<Parameters<ValidationRule>[0], Extract<ReturnType<ValidationRule>, ISuccess>, ReturnType<typeof errorFactory>>;
+  errorFactory: CustomErrorFactory,
+): TValidationRule<Parameters<ValidationRule>[0], Extract<ReturnType<ValidationRule>, ISuccess>, ReturnType<CustomErrorFactory>>;
 
 export default function ruleCustomErrorDecorator<
   const ValidationRule extends (value: any, errorOrFactory: ErrorOrFactory) => ISuccess | TValidationRuleError,
@@ -101,16 +91,16 @@ type bbb = Parameters<typeof isString>[1]
 type ccc = Parameters<typeof tupleRule>
 type ddd = Parameters<typeof arrayRule>[1]
 
-
+const bl = isString(1)
 const validator = composeValidator([[isString, isOnlyEnglishLettersString]]);
 const tupleRule = createTupleValidationRule([validator]);
 const arrayRule = createArrayValidationRule(validator);
-type bb = Parameters<typeof arrayRule>[1];
+type bb = Parameters<typeof arrayRule>
 
 
 const rule1 = ruleCustomErrorDecorator(isString, new ErrorResult('Custom error', undefined));
 const rule2 = ruleCustomErrorDecorator(tupleRule, new ErrorResult('Custom error', undefined));
-const rule3 = ruleCustomErrorDecorator(() => new ErrorResult('Custom error', undefined), new ErrorResult('Custom error', undefined));
+const rule3 = ruleCustomErrorDecorator(() => new ErrorResult('1', undefined), new ErrorResult('Custom error', undefined));
 const rule4 = ruleCustomErrorDecorator(tupleRule, (data) => new ErrorResult('Custom error', data));
 const rule5 = ruleCustomErrorDecorator(tupleRule, new ErrorResult('Custom error', undefined));
 const rule6 = ruleCustomErrorDecorator(arrayRule, (data) => new ErrorResult('Custom error', data));
