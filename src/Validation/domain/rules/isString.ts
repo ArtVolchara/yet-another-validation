@@ -14,9 +14,20 @@ export default function isString<const Error extends IError<string, undefined>>(
 
 export default function isString(value: any): TIsStringValidationSuccess | TIsStringValidationDefaultError;
 
-export default function isString(
+export default function isString<
+const Error extends IError<string, undefined> | unknown = unknown,
+const Result extends unknown extends Error ? (TIsStringValidationSuccess | TIsStringValidationDefaultError) : (TIsStringValidationSuccess | Error)
+= unknown extends Error ? (TIsStringValidationSuccess | TIsStringValidationDefaultError) : (TIsStringValidationSuccess | Error),
+>(
   value: any,
-  error?: IError<string, undefined>,
+  error?: Error
+): Result;
+
+export default function isString<
+const Error extends IError<string, undefined> | unknown = unknown,
+>(
+  value: any,
+  error?: Error,
 ) {
   try {
     if (typeof value === 'string') {

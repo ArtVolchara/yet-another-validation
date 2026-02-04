@@ -8,16 +8,15 @@ import isOnlyEnglishLettersString from '../rules/isOnlyEnglishLettersString';
 import createTupleValidationRule from './createTupleValidationRule';
 import createArrayValidationRule from './createArrayValidationRule';
 
-
 type TValidationRuleError = IError<string, undefined | IError<string, Array<IError<string, any> | undefined>> | Record<string, IError<string, any> | undefined>>;
 
 export default function ruleCustomErrorDecorator<
   const ValidationRule extends { (value: any, error: Error): ISuccess | TValidationRuleError }
-    | ((value: any, error: Error) => ISuccess | TValidationRuleError),
+  | ((value: any, error: Error) => ISuccess | TValidationRuleError),
   const Error extends TValidationRuleError,
   >(
   validationRule: ValidationRule,
-  error: Error,
+  error: Parameters<ValidationRule>[1] extends undefined ? never : Error,
 ): TValidationRule<Parameters<ValidationRule>[0], Extract<ReturnType<ValidationRule>, ISuccess>, Error>;
 
 export default function ruleCustomErrorDecorator<
