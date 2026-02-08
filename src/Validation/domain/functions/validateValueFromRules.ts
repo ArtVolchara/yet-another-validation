@@ -1,4 +1,3 @@
-import { isOnlyDigitsString, isString } from '@validation/rules';
 import {
   TRetrieveValidationInputData,
   TRetrieveValidationSuccessData,
@@ -131,5 +130,3 @@ export default function validateValueFromRules<
   TErrorValidationRulesData<Rules>
   >;
 }
-
-const aaaa = validateValueFromRules('1', [isString, isOnlyDigitsString]);

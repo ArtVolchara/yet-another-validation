@@ -1,7 +1,7 @@
-import { IResultType } from './TResult';
+export type TErrorStatus = 'error';
 
-export interface IError<Message extends string = string, Data extends any = undefined> extends IResultType {
-  status: 'error',
+export interface IError<Message extends string = string, Data extends any = undefined> {
+  status: TErrorStatus,
   message: Message,
   data: Data
 }

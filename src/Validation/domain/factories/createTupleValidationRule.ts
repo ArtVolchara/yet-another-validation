@@ -21,46 +21,96 @@ export type TInputValue<Validators extends Partial<TValidators>> = Validators ex
     ? [TRetrieveValidationInputData<First>, ...TInputValue<Rest>]
     : [];
 
-export type TSuccessValidationData<Validators extends Partial<TValidators>> = Validators extends [infer First extends TValidator]
+export type TSuccessTupleValidationData<Validators extends Partial<TValidators>> = Validators extends [infer First extends TValidator]
   ? [TRetrieveValidationSuccessData<First>['data']]
   : Validators extends [
     infer First extends TValidator,
     ...infer Rest extends TValidators,
   ]
-    ? [TRetrieveValidationSuccessData<First>['data'], ...TSuccessValidationData<Rest>]
+    ? [TRetrieveValidationSuccessData<First>['data'], ...TSuccessTupleValidationData<Rest>]
     : [];
 
-export type TErrorValidationData<Validators extends Partial<TValidators>> = Validators extends [infer First extends TValidator]
+export type TErrorTupleValidationData<Validators extends Partial<TValidators>> = Validators extends [infer First extends TValidator]
   ? [TRetrieveErrorData<First> | undefined]
   : Validators extends [
     infer First extends TValidator,
     ...infer Rest extends TValidators,
   ]
-    ? [TRetrieveErrorData<First> | undefined, ...TErrorValidationData<Rest>]
+    ? [TRetrieveErrorData<First> | undefined, ...TErrorTupleValidationData<Rest>]
     : [];
 
+export type TTupleValidatorErrorFactory<Validators extends Partial<TValidators>> = {
+  (data: TErrorTupleValidationData<Validators>): IError<string, typeof data>
+} | ((data: TErrorTupleValidationData<Validators>) => IError<string, typeof data>);
+
 // Validation rule type with overloads
-type TTupleValidationRule<
+export type TTupleValidationRule<
   Validators extends TValidators,
-  DefaultErrorFactoryOrError extends IError<string, TErrorValidationData<Validators>> |
-  { (data: TErrorValidationData<Validators>): IError<string, TErrorValidationData<Validators>> }
-  = IError<string, TErrorValidationData<Validators>>,
+  DefaultErrorFactoryOrError extends IError<string, any> | TTupleValidatorErrorFactory<Validators> | undefined = undefined,
 > = {
-  <const ErrorFactory extends (data: TErrorValidationData<Validators>) => IError<string, any>>(
+  // overload for usage without any custom Error or custom ErrorFactory
+  (value: TInputValue<Validators> | Readonly<TInputValue<Validators>>): ISuccess<TSuccessTupleValidationData<Validators>>
+  | (
+    undefined extends DefaultErrorFactoryOrError
+      ? IError<string, TErrorTupleValidationData<Validators>>
+      : (
+        DefaultErrorFactoryOrError extends IError<string, any>
+          ? DefaultErrorFactoryOrError
+          : ReturnType<Extract<DefaultErrorFactoryOrError, (...args: any[]) => any>>
+      )
+  )
+  | TIsArrayValidationError
+
+  // overload for usage with custom Error
+  <const Error extends TTupleValidatorErrorFactory<Validators>>(
+    value: TInputValue<Validators> | Readonly<TInputValue<Validators>>,
+    error: Error,
+  ): ISuccess<TSuccessTupleValidationData<Validators>> | Error | TIsArrayValidationError;
+
+  // overload for usage with custom ErrorFactory
+  <const ErrorFactory extends TTupleValidatorErrorFactory<Validators>>(
     value: TInputValue<Validators> | Readonly<TInputValue<Validators>>,
     errorFactory: ErrorFactory,
-  ): ISuccess<TSuccessValidationData<Validators>> | ReturnType<ErrorFactory> | TIsArrayValidationError;
+  ): ISuccess<TSuccessTupleValidationData<Validators>> | ReturnType<ErrorFactory> | TIsArrayValidationError;
 
-  (value: TInputValue<Validators> | Readonly<TInputValue<Validators>>): ISuccess<TSuccessValidationData<Validators>>
-  | TIsArrayValidationError
-  | (DefaultErrorFactoryOrError extends IError<string, TErrorValidationData<Validators>>
-    ? DefaultErrorFactoryOrError
-    : ReturnType<Extract<DefaultErrorFactoryOrError, (data: any) => any>>)
+  // overload for usage with or without custom Error or custom ErrorFactory
+  <
+    const ErrorFactoryOrError extends TTupleValidatorErrorFactory<Validators> | IError<string, any> | undefined = undefined,
+    const Result extends undefined extends ErrorFactoryOrError
+      ? ISuccess<TSuccessTupleValidationData<Validators>>
+      | (
+        DefaultErrorFactoryOrError extends IError<string, any>
+          ? DefaultErrorFactoryOrError
+          : ReturnType<Extract<DefaultErrorFactoryOrError, (...args: any[]) => any>>
+      )
+      | TIsArrayValidationError
+      : ISuccess<TSuccessTupleValidationData<Validators>>
+      | (
+        ErrorFactoryOrError extends IError<string, any>
+          ? ErrorFactoryOrError
+          : ReturnType<Extract<ErrorFactoryOrError, (...args: any[]) => any>>
+      ) | TIsArrayValidationError = undefined extends ErrorFactoryOrError
+      ? ISuccess<TSuccessTupleValidationData<Validators>>
+      | (
+        DefaultErrorFactoryOrError extends IError<string, any>
+          ? DefaultErrorFactoryOrError
+          : ReturnType<Extract<DefaultErrorFactoryOrError, (...args: any[]) => any>>
+      ) | TIsArrayValidationError
+      : ISuccess<TSuccessTupleValidationData<Validators>>
+      | (
+        ErrorFactoryOrError extends IError<string, any>
+          ? ErrorFactoryOrError
+          : ReturnType<Extract<ErrorFactoryOrError, (...args: any[]) => any>>
+      ) | TIsArrayValidationError,
+  >(
+    value: TInputValue<Validators> | Readonly<TInputValue<Validators>>,
+    errorFactoryOrError?: ErrorFactoryOrError,
+  ): Result
 };
 
 type TValidationAccumulator<Validators extends TValidators> = {
-  validResults: TSuccessValidationData<Validators>;
-  errors: TErrorValidationData<Validators>;
+  validResults: TSuccessTupleValidationData<Validators>;
+  errors: TErrorTupleValidationData<Validators>;
   errorMessages: string[];
   isError: boolean;
 };
@@ -68,26 +118,58 @@ type TValidationAccumulator<Validators extends TValidators> = {
 // Rule factory type with overloads
 export default function createTupleValidationRule<
   const Validators extends TValidators,
-  const ErrorFactory extends (data: TErrorValidationData<Validators>) => IError<string, TErrorValidationData<Validators>>,
+  const ErrorFactory extends (data: TErrorTupleValidationData<Validators>) => IError<string, TErrorTupleValidationData<Validators>>,
 >(
   validators: Validators,
   errorFactory: ErrorFactory,
 ): TTupleValidationRule<Validators, ErrorFactory>;
 
+// overload for usage without any custom Error or custom ErrorFactory
 export default function createTupleValidationRule<const Validators extends TValidators>(
   validators: Validators,
 ): TTupleValidationRule<Validators>;
 
+
+// overload for usage with custom ErrorFactory
+export default function createTupleValidationRule<
+  const Validators extends TValidators,
+
+  const ErrorFactory extends TTupleValidatorErrorFactory<Validators>,
+>(
+  validators: Validators,
+  defaultErrorFactory: ErrorFactory,
+): TTupleValidationRule<Validators, ErrorFactory>;
+
+// overload for usage with custom Error
+export default function createTupleValidationRule<
+  const Validators extends TValidators,
+  const Error extends IError<string, any>,
+>(
+  validator: Validators,
+  defaultError: Error,
+): TTupleValidationRule<Validators, Error>;
+
+// overload for usage with or without custom Error or custom ErrorFactory
+export default function createTupleValidationRule<
+  const Validators extends TValidators,
+  const ErrorOrFactory extends IError<string, any> | TTupleValidatorErrorFactory<Validators> | undefined = undefined,
+>(
+  Validators: Validators,
+  defaultErrorOrFactory?: ErrorOrFactory,
+): ErrorOrFactory extends TTupleValidatorErrorFactory<Validators> | IError<string, any>
+  ? TTupleValidationRule<Validators, ErrorOrFactory>
+  : TTupleValidationRule<Validators>;
+
 export default function createTupleValidationRule<const Validators extends TValidators>(
   validators: Validators,
-  defaultErrorFactory?: (data: TErrorValidationData<Validators>) => IError<string, TErrorValidationData<Validators>>,
+  defaultErrorFactory?: (data: TErrorTupleValidationData<Validators>) => IError<string, TErrorTupleValidationData<Validators>>,
 ) {
   return <const Values extends TInputValue<Validators> | Readonly<TInputValue<Validators>>>(
     value: Values,
-    errorFactory?: (data: TErrorValidationData<Validators>) => IError<string, TErrorValidationData<Validators>>,
-  ): ISuccess<TSuccessValidationData<Validators>>
+    errorFactory?: (data: TErrorTupleValidationData<Validators>) => IError<string, TErrorTupleValidationData<Validators>>,
+  ): ISuccess<TSuccessTupleValidationData<Validators>>
   | (
-    IError<string, TErrorValidationData<Validators>>
+    IError<string, TErrorTupleValidationData<Validators>>
     | TIsArrayValidationError
   ) => {
     const arrayValidation = isArray(value);
@@ -96,8 +178,8 @@ export default function createTupleValidationRule<const Validators extends TVali
     }
 
     const initialAcc: TValidationAccumulator<Validators> = {
-      validResults: [] as unknown as TSuccessValidationData<Validators>,
-      errors: [] as unknown as TErrorValidationData<Validators>,
+      validResults: [] as unknown as TSuccessTupleValidationData<Validators>,
+      errors: [] as unknown as TErrorTupleValidationData<Validators>,
       errorMessages: [],
       isError: false,
     };

@@ -1,109 +1,84 @@
-import { IError } from 'src/_Root/domain/types/Result/IError';
 import { ISuccess } from 'src/_Root/domain/types/Result/ISuccess';
 import { ErrorResult } from '@validation/utils';
-import { TValidationRule } from '../types/TValidator';
+import { TRetrieveError } from 'src/_Root/domain/types/Result/TResult';
+import { isArray, isNumber, isUndefined } from '@validation/rules';
+import { TValidationRule, TValidationRuleError, TValidationRules } from '../types/TValidator';
 import composeValidator from './composeValidator';
 import isString from '../rules/isString';
 import isOnlyEnglishLettersString from '../rules/isOnlyEnglishLettersString';
-import createTupleValidationRule from './createTupleValidationRule';
 import createArrayValidationRule from './createArrayValidationRule';
+import createObjectValidationRule from './createObjectValidationRule';
+import createTupleValidationRule from './createTupleValidationRule';
 
-type TValidationRuleError = IError<string, undefined | IError<string, Array<IError<string, any> | undefined>> | Record<string, IError<string, any> | undefined>>;
-
-export default function ruleCustomErrorDecorator<
-  const ValidationRule extends { (value: any, error: Error): ISuccess | TValidationRuleError }
-  | ((value: any, error: Error) => ISuccess | TValidationRuleError),
-  const Error extends TValidationRuleError,
-  >(
-  validationRule: ValidationRule,
-  error: Parameters<ValidationRule>[1] extends undefined ? never : Error,
-): TValidationRule<Parameters<ValidationRule>[0], Extract<ReturnType<ValidationRule>, ISuccess>, Error>;
-
-export default function ruleCustomErrorDecorator<
+function ruleCustomErrorDecorator<
   const ValidationRule extends {
     (
       value: any,
-      errorFactory: ((data: any) => TValidationRuleError) | { (data: any): TValidationRuleError }
+      errorOrFactory?: ((data: any) => TValidationRuleError) | { (data: any): TValidationRuleError } | TValidationRuleError
     ): ISuccess | TValidationRuleError
-  }
-  | ((value: any, errorFactory: (data: any) => TValidationRuleError) => ISuccess | TValidationRuleError),
-  const CustomErrorFactory extends Parameters<ValidationRule>[1],
+  } | ((
+    value: any,
+    errorOrFactory?: ((data: any) => TValidationRuleError) | { (data: any): TValidationRuleError } | TValidationRuleError
+  ) => ISuccess | TValidationRuleError
+  ),
+  const ErrorOrFactory extends Parameters<ValidationRule>[1],
 >(
   validationRule: ValidationRule,
-  errorFactory: CustomErrorFactory,
-): TValidationRule<Parameters<ValidationRule>[0], Extract<ReturnType<ValidationRule>, ISuccess>, ReturnType<CustomErrorFactory>>;
+  errorOrFactory?: ErrorOrFactory,
+): TValidationRule<
+Parameters<ValidationRule>[0],
+Extract<ReturnType<ValidationRule>, ISuccess>,
+undefined extends ErrorOrFactory
+  ? TRetrieveError<ReturnType<ValidationRule>>
+  : (
+    ErrorOrFactory extends TValidationRuleError
+      ? ErrorOrFactory
+      : ReturnType<Exclude<ErrorOrFactory, undefined | TValidationRuleError>>
+  )
+>;
 
-export default function ruleCustomErrorDecorator<
-  const ValidationRule extends (value: any, errorOrFactory: ErrorOrFactory) => ISuccess | TValidationRuleError,
-  const ErrorOrFactory extends TValidationRuleError
-  | ((data: any) => TValidationRuleError),
+function ruleCustomErrorDecorator<
+   const ValidationRule extends { (value: any, errorOrFactory: ErrorOrFactory): ISuccess | TValidationRuleError },
+   const ErrorOrFactory extends TValidationRuleError | ((data: any) => TValidationRuleError),
 >(rule: ValidationRule, errorOrFactory: Parameters<ValidationRule>[1]) {
   return (value: Parameters<ValidationRule>[0]) => rule(value, errorOrFactory);
 }
 
-// type TValidatorError = IError<string, Array<Array<IError<string, any>>>>;
+export default ruleCustomErrorDecorator;
 
-// type TExtractValidatorData<T> =
-// T extends {
-//   (value: any, errorFactory: (data: infer Data) => TValidatorError): TValidatorError
-//   (value: any, error: TValidatorError): TValidatorError
+// const validator = composeValidator([[isString, isOnlyEnglishLettersString], [isUndefined]]);
+// const arrayRule = createArrayValidationRule(validator);
+// const tupleRule = createTupleValidationRule([validator]);
+// const res1 = arrayRule([])
+// const res2 = tupleRule([1]);
+// if (res2.status === 'error') {
+//   const aa = res2.data;
 // }
-//   ? Data
-//   : T extends (value: any, errorFactory: (data: infer Data) => TValidatorError) => TValidatorError
-//     ? Data
-//     : never;
+// const objectRule = createObjectValidationRule({ a: validator, b: composeValidator([[isNumber], [isUndefined]]) });
+// const objectRule2 = createObjectValidationRule({ a: validator, b: composeValidator([[isNumber], [isUndefined]]) }, (data) => new ErrorResult('bla', data));
+// const res3 = objectRule([]);
 
-// export function validatorCustomErrorDecorator<
-//     const Validator extends (value: any, error: Error) => ISuccess | TValidatorError,
-//     const Error extends TExtractValidatorData<Validator> extends never ? never : TValidatorError,
-//   >(
-//   validator: Validator,
-//   error: Error
-// ): TValidator<Parameters<Validator>[0], Extract<ReturnType<Validator>, ISuccess>, Error>;
+// const rule1 = ruleCustomErrorDecorator(isString, new ErrorResult('Custom error', undefined));
+// const rule2 = ruleCustomErrorDecorator(objectRule, new ErrorResult('Custom error', undefined));
+// const rule3 = ruleCustomErrorDecorator(objectRule2, (data) => new ErrorResult('Custom error', data));
+// const rule4 = ruleCustomErrorDecorator(() => new ErrorResult('1', undefined));
+// const rule6 = ruleCustomErrorDecorator(tupleRule, (data) => new ErrorResult('Custom error', data));
+// const rule7 = ruleCustomErrorDecorator(tupleRule, new ErrorResult('Custom error', undefined));
+// const rule8 = ruleCustomErrorDecorator(arrayRule, (data) => new ErrorResult('Custom error', data));
+// const rule9 = ruleCustomErrorDecorator(arrayRule, new ErrorResult('Custom error', undefined));
+// const rule10 = ruleCustomErrorDecorator(isOnlyEnglishLettersString, new ErrorResult('Custom error', undefined));
+// const rule11 = ruleCustomErrorDecorator(validator, (data) => new ErrorResult('Custom error', data));
+// // const validatorr = validatorCustomErrorDecorator(validator, (data) => new ErrorResult('Custom error', data));
+// // const validatorr2 = validatorCustomErrorDecorator(validator, new ErrorResult('Custom error', undefined));
 
-// export function validatorCustomErrorDecorator<
-//   const Validator extends { (value: any, errorFactory: (data: any) => TValidatorError): ISuccess | TValidatorError }
-//   | ((value: any, errorFactory: (data: any) => TValidatorError) => ISuccess | TValidatorError),
-//   const CustomErrorFactory extends TExtractValidatorData<Validator> extends never ? never : (data: TExtractValidatorData<Validator>) => TValidatorError,
-// >(
-//   validationRule: Validator,
-//   errorFactory: CustomErrorFactory
-// ): TValidationRule<Parameters<Validator>[0], Extract<ReturnType<Validator>, ISuccess>, ReturnType<typeof errorFactory>>;
-
-// export function validatorCustomErrorDecorator<
-//   const Validator extends (value: any, errorOrFactory: ErrorOrFactory) => ISuccess | TValidatorError,
-//   const ErrorOrFactory extends TExtractValidatorData<Validator> extends never ? never : TValidatorError
-//   | ((data: any) => TValidatorError),
-// >(validator: Validator, errorOrFactory: Parameters<Validator>[1]) {
-//   return (value: Parameters<Validator>[0]) => validator(value, errorOrFactory);
+// function decorateRules<Rules extends {
+//   (
+//     value: any,
+//     errorOrFactory?: ((data: any) => TValidationRuleError) | { (data: any): TValidationRuleError } | TValidationRuleError
+//   ): ISuccess | TValidationRuleError
+// }[]>(rules: Rules) {
+//   return rules.map((rule) => ruleCustomErrorDecorator(rule, new ErrorResult('Custom error', undefined)));
 // }
+// const res = decorateRules([isString, isOnlyEnglishLettersString] as const);
 
-type blaaa<T> =
-T extends {
-  (...args: infer Args): TValidationRuleError
-}
-  ? Args
-  : never
-
-type aaa = Parameters<<Error extends IError<string, undefined>>(value: any, error: Error) => ISuccess | TValidationRuleError>
-type bbb = Parameters<typeof isString>[1]
-type ccc = Parameters<typeof tupleRule>
-type ddd = Parameters<typeof arrayRule>[1]
-
-const bl = isString(1)
-const validator = composeValidator([[isString, isOnlyEnglishLettersString]]);
-const tupleRule = createTupleValidationRule([validator]);
-const arrayRule = createArrayValidationRule(validator);
-type bb = Parameters<typeof arrayRule>
-
-
-const rule1 = ruleCustomErrorDecorator(isString, new ErrorResult('Custom error', undefined));
-const rule2 = ruleCustomErrorDecorator(tupleRule, new ErrorResult('Custom error', undefined));
-const rule3 = ruleCustomErrorDecorator(() => new ErrorResult('1', undefined), new ErrorResult('Custom error', undefined));
-const rule4 = ruleCustomErrorDecorator(tupleRule, (data) => new ErrorResult('Custom error', data));
-const rule5 = ruleCustomErrorDecorator(tupleRule, new ErrorResult('Custom error', undefined));
-const rule6 = ruleCustomErrorDecorator(arrayRule, (data) => new ErrorResult('Custom error', data));
-const rule7 = ruleCustomErrorDecorator(arrayRule, new ErrorResult('Custom error', undefined));
-const rule8 = ruleCustomErrorDecorator(isString, (data) => new ErrorResult('Custom error', data));
-// const validatorr = validatorCustomErrorDecorator(validator, (data) => new ErrorResult('Custom error', data));
-// const validatorr2 = validatorCustomErrorDecorator(validator, new ErrorResult('Custom error', undefined));
+// // const complexValidator = composeValidator([decorateRules([isString, isOnlyEnglishLettersString]), [isUndefined]], { separatorOR: '|' });

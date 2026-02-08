@@ -8,76 +8,133 @@ import { TRetrieveError, TRetrieveSuccess } from '../../../_Root/domain/types/Re
 import isObject, { TIsObjectValidationError } from '../rules/isObject';
 
 export type TObjectValidatorsSchema = Record<string, TValidator>;
-type TObjectValidatorsSuccessSchema<ValidatorsSchema extends TObjectValidatorsSchema> = {
-  [Key in keyof ValidatorsSchema]: TRetrieveSuccess<ReturnType<ValidatorsSchema[Key]>>['data']
-};
-type TObjectValidatorsErrorsSchema<ValidatorsSchema extends TObjectValidatorsSchema> = {
-  [Key in keyof ValidatorsSchema]: TRetrieveError<ReturnType<ValidatorsSchema[Key]>>
-};
+
+export type TObjectValidatorErrorFactory<ValidatorsSchema extends TObjectValidatorsSchema> = {
+  (data: { [Key in keyof ValidatorsSchema]: TRetrieveError<ReturnType<ValidatorsSchema[Key]>> }): IError<string, typeof data>
+} | ((data: { [Key in keyof ValidatorsSchema]: TRetrieveError<ReturnType<ValidatorsSchema[Key]>> }) => IError<string, typeof data>);
 
 // Validation rule type with overloads
-type TObjectValidationRule<
+export type TObjectValidationRule<
   ValidatorsSchema extends TObjectValidatorsSchema,
-  DefaultErrorFactoryOrError extends IError<string, TObjectValidatorsErrorsSchema<ValidatorsSchema>>
-  | { (data: TObjectValidatorsErrorsSchema<ValidatorsSchema>): IError<string, TObjectValidatorsErrorsSchema<ValidatorsSchema>> }
-  = IError<string, TObjectValidatorsErrorsSchema<ValidatorsSchema>>,
+  DefaultErrorFactoryOrError extends IError<string, { [Key in keyof ValidatorsSchema]: TRetrieveError<ReturnType<ValidatorsSchema[Key]>> }>
+  | TObjectValidatorErrorFactory<ValidatorsSchema> | undefined = undefined,
 > = {
-  <const ErrorFactory extends (data: TObjectValidatorsErrorsSchema<ValidatorsSchema>) => IError<string, TObjectValidatorsErrorsSchema<ValidatorsSchema>>>(
+
+  // overload for usage without any custom Error or custom ErrorFactory
+  (value: Record<string | symbol, any>): ISuccess<{ [Key in keyof ValidatorsSchema]: TRetrieveSuccess<ReturnType<ValidatorsSchema[Key]>>['data'] }>
+  | (
+    undefined extends DefaultErrorFactoryOrError
+      ? IError<string, { [Key in keyof ValidatorsSchema]: TRetrieveError<ReturnType<ValidatorsSchema[Key]>> }>
+      : (
+        DefaultErrorFactoryOrError extends IError<string, any>
+          ? DefaultErrorFactoryOrError
+          : ReturnType<Extract<DefaultErrorFactoryOrError, (...args: any[]) => any>>
+      )
+  )
+  | TIsObjectValidationError
+
+  // overload for usage with custom Error
+  <const Error extends TObjectValidatorErrorFactory<ValidatorsSchema>>(
+    value: Record<string | symbol, any>,
+    error: Error,
+  ): ISuccess<{ [Key in keyof ValidatorsSchema]: TRetrieveSuccess<ReturnType<ValidatorsSchema[Key]>>['data'] }> | Error | TIsObjectValidationError;
+
+  // overload for usage with ErrorFactory
+  <const ErrorFactory extends TObjectValidatorErrorFactory<ValidatorsSchema>>(
     value: Record<string | symbol, any>,
     errorFactory: ErrorFactory,
-  ): ISuccess<TObjectValidatorsSuccessSchema<ValidatorsSchema>> | ReturnType<ErrorFactory> | TIsObjectValidationError;
+  ): ISuccess<{ [Key in keyof ValidatorsSchema]: TRetrieveSuccess<ReturnType<ValidatorsSchema[Key]>>['data'] }> | ReturnType<ErrorFactory> | TIsObjectValidationError;
 
-  (value: Record<string | symbol, any>): ISuccess<TObjectValidatorsSuccessSchema<ValidatorsSchema>>
-  | TIsObjectValidationError
-  | (DefaultErrorFactoryOrError extends IError<string, TObjectValidatorsErrorsSchema<ValidatorsSchema>>
-    ? DefaultErrorFactoryOrError
-    : ReturnType<Exclude<DefaultErrorFactoryOrError, IError<string, any>>>)
+  // overload for usage without any custom Error or custom ErrorFactory
+  <
+    const ErrorFactoryOrError extends TObjectValidatorErrorFactory<ValidatorsSchema> | IError<string, any> | undefined = undefined,
+    const Result extends undefined extends ErrorFactoryOrError
+      ? ISuccess<{ [Key in keyof ValidatorsSchema]: TRetrieveSuccess<ReturnType<ValidatorsSchema[Key]>>['data'] }>
+      | (
+        DefaultErrorFactoryOrError extends IError<string, any>
+          ? DefaultErrorFactoryOrError
+          : ReturnType<Extract<DefaultErrorFactoryOrError, (...args: any[]) => any>>
+      )
+      | TIsObjectValidationError
+      : ISuccess<{ [Key in keyof ValidatorsSchema]: TRetrieveSuccess<ReturnType<ValidatorsSchema[Key]>>['data'] }>
+      | (
+        ErrorFactoryOrError extends IError<string, any>
+          ? ErrorFactoryOrError
+          : ReturnType<Extract<ErrorFactoryOrError, (...args: any[]) => any>>
+      ) | TIsObjectValidationError = undefined extends ErrorFactoryOrError
+      ? ISuccess<{ [Key in keyof ValidatorsSchema]: TRetrieveSuccess<ReturnType<ValidatorsSchema[Key]>>['data'] }>
+      | (
+        DefaultErrorFactoryOrError extends IError<string, any>
+          ? DefaultErrorFactoryOrError
+          : ReturnType<Extract<DefaultErrorFactoryOrError, (...args: any[]) => any>>
+      ) | TIsObjectValidationError
+      : ISuccess<{ [Key in keyof ValidatorsSchema]: TRetrieveSuccess<ReturnType<ValidatorsSchema[Key]>>['data'] }>
+      | (
+        ErrorFactoryOrError extends IError<string, any>
+          ? ErrorFactoryOrError
+          : ReturnType<Extract<ErrorFactoryOrError, (...args: any[]) => any>>
+      ) | TIsObjectValidationError,
+  >(
+    value: Record<string | symbol, any>,
+    errorFactoryOrError?: ErrorFactoryOrError,
+  ): Result
 };
 
 type TValidationAccumulator<ValidatorsSchema extends TObjectValidatorsSchema> = {
-  validResults: TObjectValidatorsSuccessSchema<ValidatorsSchema>;
-  errors: TObjectValidatorsErrorsSchema<ValidatorsSchema>;
+  validResults: { [Key in keyof ValidatorsSchema]: TRetrieveSuccess<ReturnType<ValidatorsSchema[Key]>>['data'] };
+  errors: { [Key in keyof ValidatorsSchema]: TRetrieveError<ReturnType<ValidatorsSchema[Key]>> };
   errorMessages: string[];
   isError: boolean;
 };
 
-// Rule factory type with overloads
-export default function createObjectValidationRule<
-  const ValidatorsSchema extends TObjectValidatorsSchema,
-  const ErrorFactory extends (
-    data: TObjectValidatorsErrorsSchema<ValidatorsSchema>
-  ) => IError<string, TObjectValidatorsErrorsSchema<ValidatorsSchema>>,
-
->(
-  validatorsSchema: ValidatorsSchema,
-  errorFactory: ErrorFactory,
-): TObjectValidationRule<ValidatorsSchema, ErrorFactory>;
-
+// overload for usage without any custom Error or custom ErrorFactory
 export default function createObjectValidationRule<ValidatorsSchema extends TObjectValidatorsSchema>(
   validatorsSchema: ValidatorsSchema,
 ): TObjectValidationRule<ValidatorsSchema>;
 
-// Валидационные правила схемы для каждого свойства должны быть готовы вне зависимости от типа аргумента (но тип нужен)
-// обработать любое значение из рантайма и для этого иметь catch внутри себя, в котором возвращается (не выбрасывается)
-// ErrorResult c нужным message.
+// overload for usage with custom ErrorFactory
 export default function createObjectValidationRule<
   const ValidatorsSchema extends TObjectValidatorsSchema,
-  const DefaultErrorFactory extends (
-    data: TObjectValidatorsErrorsSchema<ValidatorsSchema>
-  ) => IError<string, TObjectValidatorsErrorsSchema<ValidatorsSchema>>,
+  const ErrorFactory extends TObjectValidatorErrorFactory<ValidatorsSchema>,
+>(
+  validatorsSchema: ValidatorsSchema,
+  defaultErrorFactory: ErrorFactory,
+): TObjectValidationRule<ValidatorsSchema, ErrorFactory>;
+
+// overload for usage with custom Error
+export default function createObjectValidationRule<
+  const ValidatorsSchema extends TObjectValidatorsSchema,
+  const Error extends IError<string, any>,
+>(
+  validatorsSchema: ValidatorsSchema,
+  defaultError: Error,
+): TObjectValidationRule<ValidatorsSchema, Error>;
+
+// overload for usage with or without custom Error or custom ErrorFactory
+export default function createObjectValidationRule<
+  const ValidatorsSchema extends TObjectValidatorsSchema,
+  const ErrorOrFactory extends IError<string, any> | TObjectValidatorErrorFactory<ValidatorsSchema> | undefined = undefined,
+>(
+  validatorsSchema: ValidatorsSchema,
+  defaultErrorOrFactory?: ErrorOrFactory,
+): ErrorOrFactory extends TObjectValidatorErrorFactory<ValidatorsSchema> | IError<string, any>
+  ? TObjectValidationRule<ValidatorsSchema, ErrorOrFactory>
+  : TObjectValidationRule<ValidatorsSchema>;
+
+export default function createObjectValidationRule<
+  const ValidatorsSchema extends TObjectValidatorsSchema,
+  const DefaultErrorFactory extends TObjectValidatorErrorFactory<ValidatorsSchema>,
 >(
   validatorsSchema: ValidatorsSchema,
   defaultErrorFactory?: DefaultErrorFactory,
 ) {
   const schemaEntries = Object.entries(validatorsSchema) as TObjectEntries<typeof validatorsSchema>;
 
-  return <const ErrorFactory extends (
-    data: TObjectValidatorsErrorsSchema<ValidatorsSchema>
-  ) => IError<string, TObjectValidatorsErrorsSchema<ValidatorsSchema>>>(
+  return <const ErrorFactory extends TObjectValidatorErrorFactory<ValidatorsSchema>>(
     value: Record<string | symbol, any>,
     errorFactory?: ErrorFactory,
-  ): ISuccess<TObjectValidatorsSuccessSchema<ValidatorsSchema>>
-  | IError<string, TObjectValidatorsErrorsSchema<ValidatorsSchema>> | TIsObjectValidationError => {
+  ): ISuccess<{ [Key in keyof ValidatorsSchema]: TRetrieveSuccess<ReturnType<ValidatorsSchema[Key]>>['data'] }>
+  | IError<string, { [Key in keyof ValidatorsSchema]: TRetrieveError<ReturnType<ValidatorsSchema[Key]>> }> | TIsObjectValidationError => {
     try {
       const objectValidation = isObject(value);
       if (objectValidation.status === 'error') {
@@ -86,8 +143,8 @@ export default function createObjectValidationRule<
 
       const objectValue = objectValidation.data;
       const initialAcc: TValidationAccumulator<ValidatorsSchema> = {
-        validResults: {} as TObjectValidatorsSuccessSchema<ValidatorsSchema>,
-        errors: {} as TObjectValidatorsErrorsSchema<ValidatorsSchema>,
+        validResults: {} as { [Key in keyof ValidatorsSchema]: TRetrieveSuccess<ReturnType<ValidatorsSchema[Key]>>['data'] },
+        errors: {} as { [Key in keyof ValidatorsSchema]: TRetrieveError<ReturnType<ValidatorsSchema[Key]>> },
         errorMessages: [],
         isError: false,
       };

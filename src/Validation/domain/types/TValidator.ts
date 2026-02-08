@@ -2,22 +2,25 @@ import { TResult, TRetrieveError, TRetrieveSuccess } from '../../../_Root/domain
 import { ISuccess } from '../../../_Root/domain/types/Result/ISuccess';
 import { IError } from '../../../_Root/domain/types/Result/IError';
 
+export type TValidationRuleError = IError<string, undefined | Array<IError<string, any>> | Record<string | symbol, IError<string, any>>>;
+
 // Атомарное валидационное правило
 export type TValidationRule<
     InputData extends any = any,
     Success extends ISuccess = ISuccess,
-    Error extends IError<string, any> = IError<string, any>,
+    Error extends TValidationRuleError = TValidationRuleError,
 > = (value: InputData) => TResult<Success, Error>;
 
 export type TValidationRules = [TValidationRule, ...Array<TValidationRule>]
 | Readonly<[TValidationRule, ...Array<TValidationRule>]>;
 
+export type TValidatorError = IError<string, Array<Array<IError<string, any>>>>;
+
 // Валидатор - реализует возможность валидирования по принципу "ИЛИ" (OR)
 export type TValidator<
     InputData extends any = any,
     Success extends ISuccess = ISuccess,
-    Error extends IError<string, Array<Array<IError<string, any>>>
-    > = IError<string, Array<Array<IError<string, any>>>>,
+    Error extends TValidatorError = TValidatorError,
 > = (value: InputData) => TResult<Success, Error>;
 
 export type TValidators = [TValidator, ...Array<TValidator>] | Readonly<[TValidator, ...Array<TValidator>]>;
