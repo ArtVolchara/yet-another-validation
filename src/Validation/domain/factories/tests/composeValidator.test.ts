@@ -380,8 +380,8 @@ describe('composeValidator', () => {
     });
   });
 
-  describe('With ruleCustomErrorDecorator', () => {
-    it('should return custom error when using ruleCustomErrorDecorator with single rule', () => {
+  describe('With customErrorDecorator', () => {
+    it('should return custom error when using customErrorDecorator with single rule', () => {
       // Arrange
       const inputValue = 123;
       const customError = new ErrorResult('Custom string error', undefined);
