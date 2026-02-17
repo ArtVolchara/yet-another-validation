@@ -11,7 +11,7 @@ export type TIsArrayMinLengthValidationSuccess<MinLength extends number> = ISucc
 
 type TIsArrayMinLengthValidationRule<
   MinLength extends number,
-  DefaultError extends IError<string, any> = TIsArrayMinLengthValidationError<MinLength>
+  DefaultError extends IError<string, any> = TIsArrayMinLengthValidationError<MinLength>,
 > = {
   <const Error extends IError<string, undefined>>(value: Array<any>, error: Error): TIsArrayMinLengthValidationSuccess<MinLength> | Error;
   (value: Array<any>): TIsArrayMinLengthValidationSuccess<MinLength> | DefaultError;
@@ -37,11 +37,11 @@ export default function generateArrayMinLengthValidator<MinLength extends number
 
 export default function generateArrayMinLengthValidator<MinLength extends number>(
   minLength: MinLength,
-  defaultError?: IError<string, undefined>
+  defaultError?: IError<string, undefined>,
 ) {
   return function isArrayMinLength(
     value: Array<any>,
-    error?: IError<string, undefined>
+    error?: IError<string, undefined>,
   ) {
     try {
       if (Array.isArray(value) && value.length >= minLength) {

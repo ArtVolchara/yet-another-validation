@@ -26,16 +26,16 @@ type TIsArrayMaxLengthValidationRule<
   >(value: Array<any>, error?: Error): Result;
 };
 
-export default function generateArrayMaxLengthValidator<MaxLength extends number, const Error extends IError<string, undefined>>(
+export default function generateArrayMaxLengthValidationRule<MaxLength extends number, const Error extends IError<string, undefined>>(
   maxLength: MaxLength,
   error: Error
 ): TIsArrayMaxLengthValidationRule<MaxLength, Error>;
 
-export default function generateArrayMaxLengthValidator<MaxLength extends number>(
+export default function generateArrayMaxLengthValidationRule<MaxLength extends number>(
   maxLength: MaxLength
 ): TIsArrayMaxLengthValidationRule<MaxLength>;
 
-export default function generateArrayMaxLengthValidator<MaxLength extends number>(
+export default function generateArrayMaxLengthValidationRule<MaxLength extends number>(
   maxLength: MaxLength,
   defaultError?: IError<string, undefined>,
 ) {
