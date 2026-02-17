@@ -105,7 +105,7 @@ TRemoveReadonly<ORValidators> extends [
 // ErrorResult c нужным message.
 export default function validateValue<
     const Value extends TORValidationFirstParameter<ORValidators>,
-    ORValidators extends TORValidators = [],
+    ORValidators extends TORValidators,
     const Params extends { separatorOR?: string, separatorAND?: string } 
     = { separatorOR: typeof DEFAULT_OR_SEPARATOR, separatorAND: typeof DEFAULT_AND_SEPARATOR },
     const SeparatorOR extends Params['separatorOR'] extends string ? Params['separatorOR'] : typeof DEFAULT_OR_SEPARATOR
