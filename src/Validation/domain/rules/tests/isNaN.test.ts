@@ -2,7 +2,7 @@ import { describe, test, expect } from "vitest";
 import isNaN, { IS_NAN_ERROR_MESSAGE } from '../isNaN';
 import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
 import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
-import ruleCustomErrorDecorator from '../../factories/ruleCustomErrorDecorator';
+import customErrorDecorator from '../../utils/customErrorDecorator';
 
 describe('isNaN validation rule test', () => {
   describe('Primitive values', () => {
@@ -81,7 +81,7 @@ describe('isNaN validation rule test', () => {
       // Arrange
       const inputValue = 123;
       const customError = new ErrorResult('Custom NaN error', undefined);
-      const validator = ruleCustomErrorDecorator(isNaN, customError);
+      const validator = customErrorDecorator(isNaN, customError);
       const expectedResult = customError;
 
       // Act
@@ -95,7 +95,7 @@ describe('isNaN validation rule test', () => {
       // Arrange
       const inputValue = NaN;
       const customError = new ErrorResult('Custom NaN error', undefined);
-      const validator = ruleCustomErrorDecorator(isNaN, customError);
+      const validator = customErrorDecorator(isNaN, customError);
       const expectedResult = new SuccessResult(inputValue);
 
       // Act

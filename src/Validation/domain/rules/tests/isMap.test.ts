@@ -2,7 +2,7 @@ import { describe, test, expect } from "vitest";
 import isMap, { IS_MAP_ERROR_MESSAGE } from '../isMap';
 import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
 import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
-import ruleCustomErrorDecorator from '../../factories/ruleCustomErrorDecorator';
+import customErrorDecorator from '../../utils/customErrorDecorator';
 
 describe('isMap validation rule test', () => {
   describe('Primitive values', () => {
@@ -94,7 +94,7 @@ describe('isMap validation rule test', () => {
       // Arrange
       const inputValue = 'not a map';
       const customError = new ErrorResult('Custom map error', undefined);
-      const validator = ruleCustomErrorDecorator(isMap, customError);
+      const validator = customErrorDecorator(isMap, customError);
       const expectedResult = customError;
 
       // Act
@@ -108,7 +108,7 @@ describe('isMap validation rule test', () => {
       // Arrange
       const inputValue = new Map([['key', 'value']]);
       const customError = new ErrorResult('Custom map error', undefined);
-      const validator = ruleCustomErrorDecorator(isMap, customError);
+      const validator = customErrorDecorator(isMap, customError);
       const expectedResult = new SuccessResult(inputValue);
 
       // Act

@@ -17,6 +17,19 @@ export default function isSymbol(
   value: any
 ): TIsSymbolValidationSuccess | TIsSymbolValidationError;
 
+export default function isSymbol<
+const Error extends IError<string, undefined> | undefined = undefined,
+const Result extends undefined extends Error
+  ? (TIsSymbolValidationSuccess | TIsSymbolValidationError)
+  : (TIsSymbolValidationSuccess | Error)
+= undefined extends Error
+  ? (TIsSymbolValidationSuccess | TIsSymbolValidationError)
+  : (TIsSymbolValidationSuccess | Error),
+>(
+  value: any,
+  error?: Error
+): Result;
+
 export default function isSymbol(
   value: any,
   error?: IError<string, undefined>,

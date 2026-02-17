@@ -17,6 +17,19 @@ export default function isUint8ClampedArray(
   value: any
 ): TIsUint8ClampedArrayValidationSuccess | TIsUint8ClampedArrayValidationError;
 
+export default function isUint8ClampedArray<
+const Error extends IError<string, undefined> | undefined = undefined,
+const Result extends undefined extends Error
+  ? (TIsUint8ClampedArrayValidationSuccess | TIsUint8ClampedArrayValidationError)
+  : (TIsUint8ClampedArrayValidationSuccess | Error)
+= undefined extends Error
+  ? (TIsUint8ClampedArrayValidationSuccess | TIsUint8ClampedArrayValidationError)
+  : (TIsUint8ClampedArrayValidationSuccess | Error),
+>(
+  value: any,
+  error?: Error
+): Result;
+
 export default function isUint8ClampedArray(
   value: any,
   error?: IError<string, undefined>,

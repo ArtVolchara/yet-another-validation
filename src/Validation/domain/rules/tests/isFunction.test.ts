@@ -2,7 +2,7 @@ import { describe, test, expect } from "vitest";
 import isFunction, { IS_FUNCTION_ERROR_MESSAGE } from '../isFunction';
 import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
 import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
-import ruleCustomErrorDecorator from '../../factories/ruleCustomErrorDecorator';
+import customErrorDecorator from '../../utils/customErrorDecorator';
 
 describe('isFunction validation rule test', () => {
   describe('Primitive values', () => {
@@ -97,7 +97,7 @@ describe('isFunction validation rule test', () => {
       // Arrange
       const inputValue = 'not a function';
       const customError = new ErrorResult('Custom function error', undefined);
-      const validator = ruleCustomErrorDecorator(isFunction, customError);
+      const validator = customErrorDecorator(isFunction, customError);
       const expectedResult = customError;
 
       // Act
@@ -111,7 +111,7 @@ describe('isFunction validation rule test', () => {
       // Arrange
       const inputValue = () => {};
       const customError = new ErrorResult('Custom function error', undefined);
-      const validator = ruleCustomErrorDecorator(isFunction, customError);
+      const validator = customErrorDecorator(isFunction, customError);
       const expectedResult = new SuccessResult(inputValue);
 
       // Act

@@ -21,6 +21,19 @@ export default function isOnlyDigitsString(
   value: string
 ): TIsOnlyDigitsStringValidationSuccess | TIsOnlyDigitsStringValidationDefaultError;
 
+export default function isOnlyDigitsString<
+const Error extends IError<string, undefined> | undefined = undefined,
+const Result extends undefined extends Error
+  ? (TIsOnlyDigitsStringValidationSuccess | TIsOnlyDigitsStringValidationDefaultError)
+  : (TIsOnlyDigitsStringValidationSuccess | Error)
+= undefined extends Error
+  ? (TIsOnlyDigitsStringValidationSuccess | TIsOnlyDigitsStringValidationDefaultError)
+  : (TIsOnlyDigitsStringValidationSuccess | Error),
+>(
+  value: string,
+  error?: Error
+): Result;
+
 export default function isOnlyDigitsString(
   value: string,
   error?: IError<string, undefined>,

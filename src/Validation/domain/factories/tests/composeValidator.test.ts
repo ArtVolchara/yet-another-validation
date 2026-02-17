@@ -8,7 +8,7 @@ import isArrayMinLength from '../../rules/isArrayMinLength';
 import isUndefined, { IS_UNDEFINED_ERROR_MESSAGE } from '../../rules/isUndefined';
 import isBoolean, { IS_BOOLEAN_ERROR_MESSAGE } from '../../rules/isBoolean';
 import composeValidator from '../composeValidator';
-import ruleCustomErrorDecorator from '../ruleCustomErrorDecorator';
+import customErrorDecorator from '../../utils/customErrorDecorator';
 import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
 import { DEFAULT_AND_SEPARATOR } from '../../functions/validateValueFromRules';
 import { DEFAULT_OR_SEPARATOR } from '../../functions/validateValue';
@@ -385,7 +385,7 @@ describe('composeValidator', () => {
       // Arrange
       const inputValue = 123;
       const customError = new ErrorResult('Custom string error', undefined);
-      const decoratedValidator = ruleCustomErrorDecorator(isString, customError);
+      const decoratedValidator = customErrorDecorator(isString, customError);
       const validator = composeValidator([[decoratedValidator]]);
 
       // Act
@@ -406,7 +406,7 @@ describe('composeValidator', () => {
       const inputValue = 'Hello';
       const expectedData = 'Hello';
       const customError = new ErrorResult('Custom string error', undefined);
-      const decoratedValidator = ruleCustomErrorDecorator(isString, customError);
+      const decoratedValidator = customErrorDecorator(isString, customError);
       const validator = composeValidator([[decoratedValidator]]);
 
       // Act
@@ -423,7 +423,7 @@ describe('composeValidator', () => {
       // Arrange
       const inputValue = 'Hello123';
       const customStringError = new ErrorResult('Custom: not only letters', undefined);
-      const decoratedOnlyLetters = ruleCustomErrorDecorator(isOnlyEnglishLettersString, customStringError);
+      const decoratedOnlyLetters = customErrorDecorator(isOnlyEnglishLettersString, customStringError);
       const validator = composeValidator([[isString, decoratedOnlyLetters]]);
 
       // Act
@@ -442,7 +442,7 @@ describe('composeValidator', () => {
       // Arrange
       const inputValue = 'Hello';
       const customNumberError = new ErrorResult('Custom number error', undefined);
-      const decoratedNumber = ruleCustomErrorDecorator(isNumber, customNumberError);
+      const decoratedNumber = customErrorDecorator(isNumber, customNumberError);
       const validator = composeValidator([[isString], [decoratedNumber]]);
 
       // Act
@@ -460,8 +460,8 @@ describe('composeValidator', () => {
       const inputValue = true;
       const customStringError = new ErrorResult('Custom string error', undefined);
       const customNumberError = new ErrorResult('Custom number error', undefined);
-      const decoratedString = ruleCustomErrorDecorator(isString, customStringError);
-      const decoratedNumber = ruleCustomErrorDecorator(isNumber, customNumberError);
+      const decoratedString = customErrorDecorator(isString, customStringError);
+      const decoratedNumber = customErrorDecorator(isNumber, customNumberError);
       const validator = composeValidator([[decoratedString], [decoratedNumber]]);
 
       // Act

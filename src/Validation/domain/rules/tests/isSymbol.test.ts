@@ -2,7 +2,7 @@ import { describe, test, expect } from "vitest";
 import isSymbol, { IS_SYMBOL_ERROR_MESSAGE } from '../isSymbol';
 import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
 import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
-import ruleCustomErrorDecorator from '../../factories/ruleCustomErrorDecorator';
+import customErrorDecorator from '../../utils/customErrorDecorator';
 
 describe('isSymbol validation rule test', () => {
   describe('Primitive values', () => {
@@ -81,7 +81,7 @@ describe('isSymbol validation rule test', () => {
       // Arrange
       const inputValue = 'not a symbol';
       const customError = new ErrorResult('Custom symbol error', undefined);
-      const validator = ruleCustomErrorDecorator(isSymbol, customError);
+      const validator = customErrorDecorator(isSymbol, customError);
       const expectedResult = customError;
 
       // Act
@@ -95,7 +95,7 @@ describe('isSymbol validation rule test', () => {
       // Arrange
       const inputValue = Symbol('test');
       const customError = new ErrorResult('Custom symbol error', undefined);
-      const validator = ruleCustomErrorDecorator(isSymbol, customError);
+      const validator = customErrorDecorator(isSymbol, customError);
       const expectedResult = new SuccessResult(inputValue);
 
       // Act

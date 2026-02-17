@@ -2,7 +2,7 @@ import { describe, test, expect } from "vitest";
 import isArray, { IS_ARRAY_ERROR_MESSAGE } from '../isArray';
 import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
 import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
-import ruleCustomErrorDecorator from '../../factories/ruleCustomErrorDecorator';
+import customErrorDecorator from '../../utils/customErrorDecorator';
 
 describe('isArray validation rule test', () => {
   describe('Primitive values', () => {
@@ -92,7 +92,7 @@ describe('isArray validation rule test', () => {
       // Arrange
       const inputValue = 'not an array';
       const customError = new ErrorResult('Custom array error', undefined);
-      const validator = ruleCustomErrorDecorator(isArray, customError);
+      const validator = customErrorDecorator(isArray, customError);
       const expectedResult = customError;
 
       // Act
@@ -106,7 +106,7 @@ describe('isArray validation rule test', () => {
       // Arrange
       const inputValue = [1, 2, 3];
       const customError = new ErrorResult('Custom array error', undefined);
-      const validator = ruleCustomErrorDecorator(isArray, customError);
+      const validator = customErrorDecorator(isArray, customError);
       const expectedResult = new SuccessResult([1, 2, 3]);
 
       // Act

@@ -19,6 +19,19 @@ export default function isPositiveNumber(
   value: number
 ): TIsPositiveNumberValidationSuccess | TIsPositiveNumberValidationError;
 
+export default function isPositiveNumber<
+const Error extends IError<string, undefined> | undefined = undefined,
+const Result extends undefined extends Error
+  ? (TIsPositiveNumberValidationSuccess | TIsPositiveNumberValidationError)
+  : (TIsPositiveNumberValidationSuccess | Error)
+= undefined extends Error
+  ? (TIsPositiveNumberValidationSuccess | TIsPositiveNumberValidationError)
+  : (TIsPositiveNumberValidationSuccess | Error),
+>(
+  value: number,
+  error?: Error
+): Result;
+
 export default function isPositiveNumber(
   value: number,
   error?: IError<string, undefined>,

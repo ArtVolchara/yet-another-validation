@@ -2,7 +2,7 @@ import { describe, test, expect } from "vitest";
 import isUint8Array, { IS_UINT8_ARRAY_ERROR_MESSAGE } from '../isUint8Array';
 import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
 import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
-import ruleCustomErrorDecorator from '../../factories/ruleCustomErrorDecorator';
+import customErrorDecorator from '../../utils/customErrorDecorator';
 
 describe('isUint8Array validation rule test', () => {
   describe('Primitive values', () => {
@@ -88,7 +88,7 @@ describe('isUint8Array validation rule test', () => {
       // Arrange
       const inputValue = 'not a uint8array';
       const customError = new ErrorResult('Custom uint8array error', undefined);
-      const validator = ruleCustomErrorDecorator(isUint8Array, customError);
+      const validator = customErrorDecorator(isUint8Array, customError);
       const expectedResult = customError;
 
       // Act
@@ -102,7 +102,7 @@ describe('isUint8Array validation rule test', () => {
       // Arrange
       const inputValue = new Uint8Array([1, 2, 3]);
       const customError = new ErrorResult('Custom uint8array error', undefined);
-      const validator = ruleCustomErrorDecorator(isUint8Array, customError);
+      const validator = customErrorDecorator(isUint8Array, customError);
       const expectedResult = new SuccessResult(inputValue);
 
       // Act

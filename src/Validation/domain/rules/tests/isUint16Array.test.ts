@@ -2,7 +2,7 @@ import { describe, test, expect } from "vitest";
 import isUint16Array, { IS_UINT16_ARRAY_ERROR_MESSAGE } from '../isUint16Array';
 import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
 import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
-import ruleCustomErrorDecorator from '../../factories/ruleCustomErrorDecorator';
+import customErrorDecorator from '../../utils/customErrorDecorator';
 
 describe('isUint16Array validation rule test', () => {
   describe('Primitive values', () => {
@@ -88,7 +88,7 @@ describe('isUint16Array validation rule test', () => {
       // Arrange
       const inputValue = 'not a uint16array';
       const customError = new ErrorResult('Custom uint16array error', undefined);
-      const validator = ruleCustomErrorDecorator(isUint16Array, customError);
+      const validator = customErrorDecorator(isUint16Array, customError);
       const expectedResult = customError;
 
       // Act
@@ -102,7 +102,7 @@ describe('isUint16Array validation rule test', () => {
       // Arrange
       const inputValue = new Uint16Array([1, 2, 3]);
       const customError = new ErrorResult('Custom uint16array error', undefined);
-      const validator = ruleCustomErrorDecorator(isUint16Array, customError);
+      const validator = customErrorDecorator(isUint16Array, customError);
       const expectedResult = new SuccessResult(inputValue);
 
       // Act

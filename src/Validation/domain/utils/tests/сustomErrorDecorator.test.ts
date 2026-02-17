@@ -1,11 +1,11 @@
 import { describe, test, expect } from 'vitest';
-import ruleCustomErrorDecorator from '../ruleCustomErrorDecorator';
 import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
 import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
 import { IError } from '../../../../_Root/domain/types/Result/IError';
 import { ISuccess } from '../../../../_Root/domain/types/Result/ISuccess';
+import customErrorDecorator from '../customErrorDecorator';
 
-describe('ruleCustomErrorDecorator', () => {
+describe('сustomErrorDecorator', () => {
   describe('With static error', () => {
     test('Should return custom error when validation fails', () => {
       // Arrange
@@ -16,7 +16,7 @@ describe('ruleCustomErrorDecorator', () => {
         return new SuccessResult(value);
       };
       const customError = new ErrorResult('Custom error message', undefined);
-      const decorator = ruleCustomErrorDecorator(mockValidationRule, customError);
+      const decorator = customErrorDecorator(mockValidationRule, customError);
       const inputValue = 123;
       const expectedResult = customError;
 
@@ -36,7 +36,7 @@ describe('ruleCustomErrorDecorator', () => {
         return new SuccessResult(value);
       };
       const customError = new ErrorResult('Custom error message', undefined);
-      const decorator = ruleCustomErrorDecorator(mockValidationRule, customError);
+      const decorator = customErrorDecorator(mockValidationRule, customError);
       const inputValue = 'hello';
       const expectedResult = new SuccessResult('hello');
 
@@ -56,7 +56,7 @@ describe('ruleCustomErrorDecorator', () => {
         return new SuccessResult(value);
       };
       const customError = new ErrorResult('Must be a number', undefined);
-      const decorator = ruleCustomErrorDecorator(isNumberRule, customError);
+      const decorator = customErrorDecorator(isNumberRule, customError);
 
       // Act & Assert - with invalid value
       expect(decorator('not a number')).toEqual(customError);
@@ -76,7 +76,7 @@ describe('ruleCustomErrorDecorator', () => {
         return new SuccessResult(value);
       };
       const errorFactory = (data: { actualType: string }) => new ErrorResult(`Expected array but got ${data.actualType}`, data);
-      const decorator = ruleCustomErrorDecorator(mockValidationRule, errorFactory);
+      const decorator = customErrorDecorator(mockValidationRule, errorFactory);
       const inputValue = 'not an array';
       const expectedResult = new ErrorResult('Expected array but got string', { actualType: 'string' });
 
@@ -96,7 +96,7 @@ describe('ruleCustomErrorDecorator', () => {
         return new SuccessResult(value);
       };
       const errorFactory = (data: { actualType: string }) => new ErrorResult(`Expected array but got ${data.actualType}`, data);
-      const decorator = ruleCustomErrorDecorator(mockValidationRule, errorFactory);
+      const decorator = customErrorDecorator(mockValidationRule, errorFactory);
       const inputValue = [1, 2, 3];
       const expectedResult = new SuccessResult([1, 2, 3]);
 
@@ -116,7 +116,7 @@ describe('ruleCustomErrorDecorator', () => {
         return new SuccessResult(value);
       };
       const errorFactory = (data: undefined) => new ErrorResult('Invalid value', data);
-      const decorator = ruleCustomErrorDecorator(mockValidationRule, errorFactory);
+      const decorator = customErrorDecorator(mockValidationRule, errorFactory);
       const inputValue = -5;
       const expectedResult = new ErrorResult('Invalid value', -5);
 
@@ -133,7 +133,7 @@ describe('ruleCustomErrorDecorator', () => {
       // Arrange
       const alwaysSuccessRule = (value: any, error: IError<string, undefined>) => new SuccessResult(value);
       const customError = new ErrorResult('Should not appear', undefined);
-      const decorator = ruleCustomErrorDecorator(alwaysSuccessRule, customError);
+      const decorator = customErrorDecorator(alwaysSuccessRule, customError);
 
       // Act & Assert
       expect(decorator('anything')).toEqual(new SuccessResult('anything'));
@@ -145,7 +145,7 @@ describe('ruleCustomErrorDecorator', () => {
       // Arrange
       const alwaysFailRule = (value: any, error: IError<string, undefined>) => error;
       const customError = new ErrorResult('Always fails', undefined);
-      const decorator = ruleCustomErrorDecorator(alwaysFailRule, customError);
+      const decorator = customErrorDecorator(alwaysFailRule, customError);
 
       // Act & Assert
       expect(decorator('anything')).toEqual(customError);
@@ -162,7 +162,7 @@ describe('ruleCustomErrorDecorator', () => {
         return new SuccessResult(value);
       };
       const customError = new ErrorResult('Invalid object', undefined);
-      const decorator = ruleCustomErrorDecorator(complexRule, customError);
+      const decorator = customErrorDecorator(complexRule, customError);
 
       // Act & Assert - valid object
       const validObject = { id: 1, name: 'test' };
@@ -184,7 +184,7 @@ describe('ruleCustomErrorDecorator', () => {
         return new SuccessResult(value);
       };
       const customError = new ErrorResult('Must be string', undefined);
-      const decorator = ruleCustomErrorDecorator(stringRule, customError);
+      const decorator = customErrorDecorator(stringRule, customError);
 
       // Act
       const result = decorator('test');

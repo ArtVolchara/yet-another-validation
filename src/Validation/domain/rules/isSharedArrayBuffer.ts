@@ -17,6 +17,19 @@ export default function isSharedArrayBuffer(
   value: any
 ): TIsSharedArrayBufferValidationSuccess | TIsSharedArrayBufferValidationError;
 
+export default function isSharedArrayBuffer<
+const Error extends IError<string, undefined> | undefined = undefined,
+const Result extends undefined extends Error
+  ? (TIsSharedArrayBufferValidationSuccess | TIsSharedArrayBufferValidationError)
+  : (TIsSharedArrayBufferValidationSuccess | Error)
+= undefined extends Error
+  ? (TIsSharedArrayBufferValidationSuccess | TIsSharedArrayBufferValidationError)
+  : (TIsSharedArrayBufferValidationSuccess | Error),
+>(
+  value: any,
+  error?: Error
+): Result;
+
 export default function isSharedArrayBuffer(
   value: any,
   error?: IError<string, undefined>,

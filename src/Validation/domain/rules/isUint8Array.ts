@@ -17,6 +17,19 @@ export default function isUint8Array(
   value: any
 ): TIsUint8ArrayValidationSuccess | TIsUint8ArrayValidationError;
 
+export default function isUint8Array<
+const Error extends IError<string, undefined> | undefined = undefined,
+const Result extends undefined extends Error
+  ? (TIsUint8ArrayValidationSuccess | TIsUint8ArrayValidationError)
+  : (TIsUint8ArrayValidationSuccess | Error)
+= undefined extends Error
+  ? (TIsUint8ArrayValidationSuccess | TIsUint8ArrayValidationError)
+  : (TIsUint8ArrayValidationSuccess | Error),
+>(
+  value: any,
+  error?: Error
+): Result;
+
 export default function isUint8Array(
   value: any,
   error?: IError<string, undefined>,

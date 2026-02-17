@@ -17,6 +17,19 @@ export default function isUint16Array(
   value: any
 ): TIsUint16ArrayValidationSuccess | TIsUint16ArrayValidationError;
 
+export default function isUint16Array<
+const Error extends IError<string, undefined> | undefined = undefined,
+const Result extends undefined extends Error
+  ? (TIsUint16ArrayValidationSuccess | TIsUint16ArrayValidationError)
+  : (TIsUint16ArrayValidationSuccess | Error)
+= undefined extends Error
+  ? (TIsUint16ArrayValidationSuccess | TIsUint16ArrayValidationError)
+  : (TIsUint16ArrayValidationSuccess | Error),
+>(
+  value: any,
+  error?: Error
+): Result;
+
 export default function isUint16Array(
   value: any,
   error?: IError<string, undefined>,

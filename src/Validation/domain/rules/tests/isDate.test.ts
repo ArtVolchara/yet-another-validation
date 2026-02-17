@@ -2,7 +2,7 @@ import { describe, test, expect } from "vitest";
 import isDate, { IS_DATE_ERROR_MESSAGE } from '../isDate';
 import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
 import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
-import ruleCustomErrorDecorator from '../../factories/ruleCustomErrorDecorator';
+import customErrorDecorator from '../../utils/customErrorDecorator';
 
 describe('isDate validation rule test', () => {
   describe('Primitive values', () => {
@@ -96,7 +96,7 @@ describe('isDate validation rule test', () => {
       // Arrange
       const inputValue = 'not a date';
       const customError = new ErrorResult('Custom date error', undefined);
-      const validator = ruleCustomErrorDecorator(isDate, customError);
+      const validator = customErrorDecorator(isDate, customError);
       const expectedResult = customError;
 
       // Act
@@ -110,7 +110,7 @@ describe('isDate validation rule test', () => {
       // Arrange
       const inputValue = new Date();
       const customError = new ErrorResult('Custom date error', undefined);
-      const validator = ruleCustomErrorDecorator(isDate, customError);
+      const validator = customErrorDecorator(isDate, customError);
       const expectedResult = new SuccessResult(inputValue);
 
       // Act
