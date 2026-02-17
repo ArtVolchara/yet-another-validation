@@ -2,7 +2,7 @@ import { describe, test, expect } from "vitest";
 import isOnlyEnglishLettersString, { IS_ONLY_ENGLISH_LETTERS_STRING_ERROR_MESSAGE } from '../isOnlyEnglishLettersString';
 import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
 import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
-import ruleCustomErrorDecorator from '../../factories/ruleCustomErrorDecorator';
+import customErrorDecorator from '../../utils/customErrorDecorator';
 
 describe('isOnlyEnglishLettersString validation rule test', () => {
   describe('Primitive values', () => {
@@ -93,7 +93,7 @@ describe('isOnlyEnglishLettersString validation rule test', () => {
       // Arrange
       const inputValue = 'abc123';
       const customError = new ErrorResult('Custom english letters error', undefined);
-      const validator = ruleCustomErrorDecorator(isOnlyEnglishLettersString, customError);
+      const validator = customErrorDecorator(isOnlyEnglishLettersString, customError);
       const expectedResult = customError;
 
       // Act
@@ -107,7 +107,7 @@ describe('isOnlyEnglishLettersString validation rule test', () => {
       // Arrange
       const inputValue = 'abcDEF';
       const customError = new ErrorResult('Custom english letters error', undefined);
-      const validator = ruleCustomErrorDecorator(isOnlyEnglishLettersString, customError);
+      const validator = customErrorDecorator(isOnlyEnglishLettersString, customError);
       const expectedResult = new SuccessResult(inputValue);
 
       // Act

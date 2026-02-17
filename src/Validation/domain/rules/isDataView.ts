@@ -17,6 +17,19 @@ export default function isDataView(
   value: any
 ): TIsDataViewValidationSuccess | TIsDataViewValidationError;
 
+export default function isDataView<
+const Error extends IError<string, undefined> | undefined = undefined,
+const Result extends undefined extends Error
+  ? (TIsDataViewValidationSuccess | TIsDataViewValidationError)
+  : (TIsDataViewValidationSuccess | Error)
+= undefined extends Error
+  ? (TIsDataViewValidationSuccess | TIsDataViewValidationError)
+  : (TIsDataViewValidationSuccess | Error),
+>(
+  value: any,
+  error?: Error
+): Result;
+
 export default function isDataView(
   value: any,
   error?: IError<string, undefined>,

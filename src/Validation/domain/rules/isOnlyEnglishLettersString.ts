@@ -8,7 +8,7 @@ export type TOnlyEnglishLettersNominal = { readonly [only_english_letters_brand]
 
 export const IS_ONLY_ENGLISH_LETTERS_STRING_ERROR_MESSAGE = 'Value should contain only English letters' as const;
 
-export type TIsOnlyEnglishLettersStringValidationError = IError<typeof IS_ONLY_ENGLISH_LETTERS_STRING_ERROR_MESSAGE, undefined>;
+export type TIsOnlyEnglishLettersStringValidationDefaultError = IError<typeof IS_ONLY_ENGLISH_LETTERS_STRING_ERROR_MESSAGE, undefined>;
 export type TIsOnlyEnglishLettersStringValidationSuccess = ISuccess<TOnlyEnglishLettersNominal>;
 
 export default function isOnlyEnglishLettersString<const Error extends IError<string, undefined>>(
@@ -18,11 +18,26 @@ export default function isOnlyEnglishLettersString<const Error extends IError<st
 
 export default function isOnlyEnglishLettersString(
   value: string
-): TIsOnlyEnglishLettersStringValidationSuccess | TIsOnlyEnglishLettersStringValidationError;
+): TIsOnlyEnglishLettersStringValidationSuccess | TIsOnlyEnglishLettersStringValidationDefaultError;
 
-export default function isOnlyEnglishLettersString(
+export default function isOnlyEnglishLettersString<
+const Error extends IError<string, undefined> | undefined = undefined,
+const Result extends undefined extends Error
+  ? (TIsOnlyEnglishLettersStringValidationSuccess | TIsOnlyEnglishLettersStringValidationDefaultError)
+  : (TIsOnlyEnglishLettersStringValidationSuccess | Error)
+= undefined extends Error
+  ? (TIsOnlyEnglishLettersStringValidationSuccess | TIsOnlyEnglishLettersStringValidationDefaultError)
+  : (TIsOnlyEnglishLettersStringValidationSuccess | Error),
+>(
   value: string,
-  error?: IError<string, undefined>,
+  error?: Error
+): Result;
+
+export default function isOnlyEnglishLettersString<
+const Error extends IError<string, undefined> | undefined = undefined,
+>(
+  value: string,
+  error?: Error,
 ) {
   try {
     if (typeof value === 'string') {

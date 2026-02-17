@@ -17,6 +17,19 @@ export default function isPromise(
   value: any
 ): TIsPromiseValidationSuccess | TIsPromiseValidationError;
 
+export default function isPromise<
+const Error extends IError<string, undefined> | undefined = undefined,
+const Result extends undefined extends Error
+  ? (TIsPromiseValidationSuccess | TIsPromiseValidationError)
+  : (TIsPromiseValidationSuccess | Error)
+= undefined extends Error
+  ? (TIsPromiseValidationSuccess | TIsPromiseValidationError)
+  : (TIsPromiseValidationSuccess | Error),
+>(
+  value: any,
+  error?: Error
+): Result;
+
 export default function isPromise(
   value: any,
   error?: IError<string, undefined>,

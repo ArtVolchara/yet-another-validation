@@ -10,62 +10,106 @@ import ErrorResult from '../../../_Root/domain/factories/ErrorResult';
 import SuccessResult from '../../../_Root/domain/factories/SuccessResult';
 import isArray, { TIsArrayValidationError } from '../rules/isArray';
 
-type TInputValue<Validator extends TValidator> = Array<TRetrieveValidationInputData<Validator>>;
+export type TArrayValidatorErrorFactory<Validator extends TValidator> = {
+  (data: Array<TRetrieveError<ReturnType<Validator>> | undefined>): IError<string, typeof data>
+} | ((data: Array<TRetrieveError<ReturnType<Validator>> | undefined>) => IError<string, typeof data>);
 
-type TArrayValidationRule<
-  Validator extends TValidator,
-  DefaultErrorFactoryOrError extends IError<string, Array<TRetrieveError<ReturnType<Validator>> | undefined>> |
-  { (data: Array<TRetrieveError<ReturnType<Validator>> | undefined>): IError<string, Array<TRetrieveError<ReturnType<Validator>> | undefined>>}
-  = IError<string, Array<TRetrieveError<ReturnType<Validator>> | undefined>>,
-> = {
-  <const ErrorFactory extends (data: Array<TRetrieveError<ReturnType<Validator>> | undefined>) => IError<string, Array<TRetrieveError<ReturnType<Validator>> | undefined>>>(
-    value: TInputValue<Validator>,
-    errorFactory: ErrorFactory,
-  ): ISuccess<Array<TRetrieveValidationSuccessData<Validator>['data']>> | ReturnType<ErrorFactory> | TIsArrayValidationError;
-  (
-    value: TInputValue<Validator>,
-  ): ISuccess<Array<TRetrieveValidationSuccessData<Validator>['data']>>
-  | TIsArrayValidationError
-  | (DefaultErrorFactoryOrError extends IError<string, Array<TRetrieveError<ReturnType<Validator>> | undefined>>
-    ? DefaultErrorFactoryOrError
-    : ReturnType<Extract<DefaultErrorFactoryOrError, (data: any) => any>>);
-};
-
-type TValidationAccumulator<Validator extends TValidator> = {
+export type TValidationAccumulator<Validator extends TValidator> = {
   validResults: Array<TRetrieveValidationSuccessData<Validator>>;
   errors: Array<TRetrieveError<ReturnType<Validator>> | undefined>;
   errorMessages: string[];
   isError: boolean;
 };
 
-// Rule factory type with overloads
-export default function createArrayValidationRule<
-  const Validator extends TValidator,
-  const ErrorFactory extends { (data: Array<TRetrieveError<ReturnType<Validator>> | undefined>): IError<string, Array<TRetrieveError<ReturnType<Validator>> | undefined>>},
->(
-  validator: Validator,
-  errorFactory: ErrorFactory,
-): TArrayValidationRule<Validator, ErrorFactory>;
+// Результат валидации массива с учётом переданного дефолтного error factory
+type TArrayValidationRuleResult<
+  Validator extends TValidator,
+  ErrorFactory extends TArrayValidatorErrorFactory<Validator> | undefined,
+  DefaultErrorFactory extends TArrayValidatorErrorFactory<Validator> | undefined,
+> =
+  ISuccess<Array<TRetrieveValidationSuccessData<Validator>['data']>>
+  | (
+    // Если валидатор элементов безошибочен (возвращает только ISuccess), error-branch схлопывается в never
+    [TRetrieveError<ReturnType<Validator>>] extends [never]
+      ? never
+      : (
+        undefined extends ErrorFactory
+          ? (
+            undefined extends DefaultErrorFactory
+              ? IError<string, Array<TRetrieveError<ReturnType<Validator>>>>
+              : ReturnType<Extract<DefaultErrorFactory, (...args: any[]) => any>>
+          )
+          : ReturnType<Extract<ErrorFactory, (...args: any[]) => any>>
+      )
+  )
+  | TIsArrayValidationError;
 
+export type TArrayValidationRule<
+  Validator extends TValidator,
+  DefaultErrorFactory extends TArrayValidatorErrorFactory<Validator> | undefined = undefined,
+> = {
+  // Вызов без errorFactory
+  (value: Array<TRetrieveValidationInputData<Validator>>):
+  TArrayValidationRuleResult<Validator, undefined, DefaultErrorFactory>;
+
+  // Вызов с errorFactory
+  <const ErrorFactory extends TArrayValidatorErrorFactory<Validator>>(
+    value: Array<TRetrieveValidationInputData<Validator>>,
+    errorFactory: ErrorFactory,
+  ): TArrayValidationRuleResult<Validator, ErrorFactory, DefaultErrorFactory>;
+
+  // Catch-all
+  <
+    const ErrorFactory extends TArrayValidatorErrorFactory<Validator> | undefined = undefined,
+    const Result extends TArrayValidationRuleResult<Validator, ErrorFactory, DefaultErrorFactory>
+    = TArrayValidationRuleResult<Validator, ErrorFactory, DefaultErrorFactory>,
+  >(
+    value: Array<TRetrieveValidationInputData<Validator>>,
+    errorFactory?: ErrorFactory,
+  ): Result;
+};
+
+// Без default error factory
 export default function createArrayValidationRule<const Validator extends TValidator>(
   validator: Validator,
 ): TArrayValidationRule<Validator>;
 
-
-export default function createArrayValidationRule<const Validator extends TValidator>(
+// С default error factory
+export default function createArrayValidationRule<
+  const Validator extends TValidator,
+  const ErrorFactory extends TArrayValidatorErrorFactory<Validator>,
+>(
   validator: Validator,
-  defaultErrorFactory?: (data: Array<TRetrieveError<ReturnType<Validator>> | undefined>) => IError<string, Array<TRetrieveError<ReturnType<Validator>> | undefined>>,
+  defaultErrorFactory: ErrorFactory,
+): TArrayValidationRule<Validator, ErrorFactory>;
+
+// С или без defaultErrorFactory
+export default function createArrayValidationRule<
+  const Validator extends TValidator,
+  const ErrorFactory extends TArrayValidatorErrorFactory<Validator> | undefined = undefined,
+>(
+  validator: Validator,
+  defaultErrorFactory?: ErrorFactory,
+): ErrorFactory extends TArrayValidatorErrorFactory<Validator>
+  ? TArrayValidationRule<Validator, ErrorFactory>
+  : TArrayValidationRule<Validator>;
+
+export default function createArrayValidationRule<
+  const Validator extends TValidator,
+  const DefaultErrorFactory extends TArrayValidatorErrorFactory<Validator>,
+>(
+  validator: Validator,
+  defaultErrorFactory?: DefaultErrorFactory,
 ) {
-  return <const Values extends TInputValue<Validator>>(
-    value: Values,
+  return (
+    value: Array<TRetrieveValidationInputData<Validator>>,
     errorFactory?: (data: Array<TRetrieveError<ReturnType<Validator>> | undefined>) => IError<string, any>,
   ): ISuccess<Array<TRetrieveValidationSuccessData<Validator>['data']>>
-  | (
+    | (
     IError<string, Array<TRetrieveError<ReturnType<Validator>> | undefined>>
     | TIsArrayValidationError
-  ) => {
+    ) => {
     try {
-      // Проверка на массив в рантайме
       const arrayValidation = isArray(value);
       if (arrayValidation.status === 'error') {
         return arrayValidation;
@@ -100,7 +144,7 @@ export default function createArrayValidationRule<const Validator extends TValid
         }
         return new ErrorResult(
           `Array validation failed for the following elements:\n${result.errorMessages.join('\n')}`,
-          result.errors
+          result.errors,
         );
       }
 
@@ -110,4 +154,4 @@ export default function createArrayValidationRule<const Validator extends TValid
       throw e;
     }
   };
-};
+}

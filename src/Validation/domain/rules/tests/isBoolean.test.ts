@@ -2,7 +2,7 @@ import { describe, test, expect } from "vitest";
 import isBoolean, { IS_BOOLEAN_ERROR_MESSAGE } from '../isBoolean';
 import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
 import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
-import ruleCustomErrorDecorator from '../../factories/ruleCustomErrorDecorator';
+import customErrorDecorator from '../../utils/customErrorDecorator';
 
 describe('isBoolean validation rule test', () => {
   describe('Primitive values', () => {
@@ -89,7 +89,7 @@ describe('isBoolean validation rule test', () => {
       // Arrange
       const inputValue = 'not a boolean';
       const customError = new ErrorResult('Custom boolean error', undefined);
-      const validator = ruleCustomErrorDecorator(isBoolean, customError);
+      const validator = customErrorDecorator(isBoolean, customError);
       const expectedResult = customError;
 
       // Act
@@ -103,7 +103,7 @@ describe('isBoolean validation rule test', () => {
       // Arrange
       const inputValue = true;
       const customError = new ErrorResult('Custom boolean error', undefined);
-      const validator = ruleCustomErrorDecorator(isBoolean, customError);
+      const validator = customErrorDecorator(isBoolean, customError);
       const expectedResult = new SuccessResult(true);
 
       // Act

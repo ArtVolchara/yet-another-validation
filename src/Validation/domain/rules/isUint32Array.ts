@@ -17,6 +17,19 @@ export default function isUint32Array(
   value: any
 ): TIsUint32ArrayValidationSuccess | TIsUint32ArrayValidationError;
 
+export default function isUint32Array<
+const Error extends IError<string, undefined> | undefined = undefined,
+const Result extends undefined extends Error
+  ? (TIsUint32ArrayValidationSuccess | TIsUint32ArrayValidationError)
+  : (TIsUint32ArrayValidationSuccess | Error)
+= undefined extends Error
+  ? (TIsUint32ArrayValidationSuccess | TIsUint32ArrayValidationError)
+  : (TIsUint32ArrayValidationSuccess | Error),
+>(
+  value: any,
+  error?: Error
+): Result;
+
 export default function isUint32Array(
   value: any,
   error?: IError<string, undefined>,

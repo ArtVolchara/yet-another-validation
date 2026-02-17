@@ -17,6 +17,19 @@ export default function isFloat32Array(
   value: any
 ): TIsFloat32ArrayValidationSuccess | TIsFloat32ArrayValidationError;
 
+export default function isFloat32Array<
+const Error extends IError<string, undefined> | undefined = undefined,
+const Result extends undefined extends Error
+  ? (TIsFloat32ArrayValidationSuccess | TIsFloat32ArrayValidationError)
+  : (TIsFloat32ArrayValidationSuccess | Error)
+= undefined extends Error
+  ? (TIsFloat32ArrayValidationSuccess | TIsFloat32ArrayValidationError)
+  : (TIsFloat32ArrayValidationSuccess | Error),
+>(
+  value: any,
+  error?: Error
+): Result;
+
 export default function isFloat32Array(
   value: any,
   error?: IError<string, undefined>,

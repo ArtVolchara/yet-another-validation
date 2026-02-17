@@ -17,6 +17,19 @@ export default function isArrayBuffer(
   value: unknown
 ): TIsArrayBufferValidationSuccess | TIsArrayBufferValidationError;
 
+export default function isArrayBuffer<
+const Error extends IError<string, undefined> | undefined = undefined,
+const Result extends undefined extends Error
+  ? (TIsArrayBufferValidationSuccess | TIsArrayBufferValidationError)
+  : (TIsArrayBufferValidationSuccess | Error)
+= undefined extends Error
+  ? (TIsArrayBufferValidationSuccess | TIsArrayBufferValidationError)
+  : (TIsArrayBufferValidationSuccess | Error),
+>(
+  value: unknown,
+  error?: Error
+): Result;
+
 export default function isArrayBuffer(
   value: unknown,
   error?: IError<string, undefined>,

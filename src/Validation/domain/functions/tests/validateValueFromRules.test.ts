@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import validateValueFromRules, { DEFAULT_AND_SEPARATOR } from '../validateValueFromRules';
 import isString, { IS_STRING_ERROR_MESSAGE } from '../../rules/isString';
 import isOnlyEnglishLettersString, { IS_ONLY_ENGLISH_LETTERS_STRING_ERROR_MESSAGE } from '../../rules/isOnlyEnglishLettersString';
-import ruleCustomErrorDecorator from '../../factories/ruleCustomErrorDecorator';
+import customErrorDecorator from '../../utils/customErrorDecorator';
 import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
 
 describe('validateValueFromRules', () => {
@@ -139,7 +139,7 @@ describe('validateValueFromRules', () => {
       const inputValue = 123;
       const customSeparator = ' --- ';
       const customStringError = new ErrorResult('Custom: not a string', undefined);
-      const decoratedString = ruleCustomErrorDecorator(isString, customStringError);
+      const decoratedString = customErrorDecorator(isString, customStringError);
       const expectedMessage = `Custom: not a string${customSeparator}${IS_ONLY_ENGLISH_LETTERS_STRING_ERROR_MESSAGE}`;
 
       // Act
@@ -163,7 +163,7 @@ describe('validateValueFromRules', () => {
       // Arrange
       const inputValue = 123;
       const customError = new ErrorResult('Custom string validation error', undefined);
-      const decoratedValidator = ruleCustomErrorDecorator(isString, customError);
+      const decoratedValidator = customErrorDecorator(isString, customError);
 
       // Act
       const actualResult = validateValueFromRules(inputValue, [decoratedValidator]);
@@ -182,7 +182,7 @@ describe('validateValueFromRules', () => {
       const inputValue = 'Hello';
       const expectedData = 'Hello';
       const customError = new ErrorResult('Custom string validation error', undefined);
-      const decoratedValidator = ruleCustomErrorDecorator(isString, customError);
+      const decoratedValidator = customErrorDecorator(isString, customError);
 
       // Act
       const actualResult = validateValueFromRules(inputValue, [decoratedValidator]);
@@ -199,8 +199,8 @@ describe('validateValueFromRules', () => {
       const inputValue = 'Hello123';
       const customStringError = new ErrorResult('Custom: value is not string', undefined);
       const customLettersError = new ErrorResult('Custom: not only English letters', undefined);
-      const decoratedString = ruleCustomErrorDecorator(isString, customStringError);
-      const decoratedLetters = ruleCustomErrorDecorator(isOnlyEnglishLettersString, customLettersError);
+      const decoratedString = customErrorDecorator(isString, customStringError);
+      const decoratedLetters = customErrorDecorator(isOnlyEnglishLettersString, customLettersError);
 
       // Act
       const actualResult = validateValueFromRules(inputValue, [decoratedString, decoratedLetters]);
@@ -218,7 +218,7 @@ describe('validateValueFromRules', () => {
       // Arrange
       const inputValue = 'Hello123';
       const customLettersError = new ErrorResult('Custom: not only English letters', undefined);
-      const decoratedLetters = ruleCustomErrorDecorator(isOnlyEnglishLettersString, customLettersError);
+      const decoratedLetters = customErrorDecorator(isOnlyEnglishLettersString, customLettersError);
 
       // Act
       const actualResult = validateValueFromRules(inputValue, [isString, decoratedLetters]);
@@ -236,7 +236,7 @@ describe('validateValueFromRules', () => {
       // Arrange
       const inputValue = 123;
       const customStringError = new ErrorResult('Custom: not a string', undefined);
-      const decoratedString = ruleCustomErrorDecorator(isString, customStringError);
+      const decoratedString = customErrorDecorator(isString, customStringError);
       const expectedMessage = `Custom: not a string${DEFAULT_AND_SEPARATOR}${IS_ONLY_ENGLISH_LETTERS_STRING_ERROR_MESSAGE}`;
 
       // Act
@@ -256,7 +256,7 @@ describe('validateValueFromRules', () => {
       // Arrange
       const inputValue = 123;
       const customStringError = new ErrorResult('Custom: not a string', undefined);
-      const decoratedString = ruleCustomErrorDecorator(isString, customStringError);
+      const decoratedString = customErrorDecorator(isString, customStringError);
       const rules = [decoratedString, isOnlyEnglishLettersString] as const;
 
       // Act

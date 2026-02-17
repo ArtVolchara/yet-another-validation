@@ -15,18 +15,27 @@ type TIsArrayMaxLengthValidationRule<
 > = {
   <const Error extends IError<string, undefined>>(value: Array<any>, error: Error): TIsArrayMaxLengthValidationSuccess<MaxLength> | Error;
   (value: Array<any>): TIsArrayMaxLengthValidationSuccess<MaxLength> | DefaultError;
+  <
+    const Error extends IError<string, undefined> | undefined = undefined,
+    const Result extends undefined extends Error
+      ? (TIsArrayMaxLengthValidationSuccess<MaxLength> | DefaultError)
+      : (TIsArrayMaxLengthValidationSuccess<MaxLength> | Error)
+    = undefined extends Error
+      ? (TIsArrayMaxLengthValidationSuccess<MaxLength> | DefaultError)
+      : (TIsArrayMaxLengthValidationSuccess<MaxLength> | Error),
+  >(value: Array<any>, error?: Error): Result;
 };
 
-export default function generateArrayMaxLengthValidator<MaxLength extends number, const Error extends IError<string, undefined>>(
+export default function generateArrayMaxLengthValidationRule<MaxLength extends number, const Error extends IError<string, undefined>>(
   maxLength: MaxLength,
   error: Error
 ): TIsArrayMaxLengthValidationRule<MaxLength, Error>;
 
-export default function generateArrayMaxLengthValidator<MaxLength extends number>(
+export default function generateArrayMaxLengthValidationRule<MaxLength extends number>(
   maxLength: MaxLength
 ): TIsArrayMaxLengthValidationRule<MaxLength>;
 
-export default function generateArrayMaxLengthValidator<MaxLength extends number>(
+export default function generateArrayMaxLengthValidationRule<MaxLength extends number>(
   maxLength: MaxLength,
   defaultError?: IError<string, undefined>,
 ) {

@@ -3,7 +3,6 @@ import ErrorResult from '../../../_Root/domain/factories/ErrorResult';
 import { ISuccess } from '../../../_Root/domain/types/Result/ISuccess';
 import { IError } from '../../../_Root/domain/types/Result/IError';
 
-
 export const IS_STRING_ERROR_MESSAGE = 'Value should be string' as const;
 export type TIsStringValidationSuccess = ISuccess<string>;
 export type TIsStringValidationDefaultError = IError<typeof IS_STRING_ERROR_MESSAGE, undefined>;
@@ -13,13 +12,26 @@ export default function isString<const Error extends IError<string, undefined>>(
   error: Error
 ): TIsStringValidationSuccess | Error;
 
-export default function isString(
-  value: any
-): TIsStringValidationSuccess | TIsStringValidationDefaultError;
+export default function isString(value: any): TIsStringValidationSuccess | TIsStringValidationDefaultError;
 
-export default function isString(
+export default function isString<
+const Error extends IError<string, undefined> | undefined = undefined,
+const Result extends undefined extends Error
+  ? (TIsStringValidationSuccess | TIsStringValidationDefaultError)
+  : (TIsStringValidationSuccess | Error)
+= undefined extends Error
+  ? (TIsStringValidationSuccess | TIsStringValidationDefaultError)
+  : (TIsStringValidationSuccess | Error),
+>(
   value: any,
-  error?: IError<string, undefined>,
+  error?: Error
+): Result;
+
+export default function isString<
+  const Error extends IError<string, undefined> | undefined = undefined,
+>(
+  value: any,
+  error?: Error,
 ) {
   try {
     if (typeof value === 'string') {

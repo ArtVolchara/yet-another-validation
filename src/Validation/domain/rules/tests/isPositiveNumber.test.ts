@@ -2,7 +2,7 @@ import { describe, test, expect } from "vitest";
 import isPositiveNumber, { IS_ONLY_POSITIVE_NUMBER_ERROR_MESSAGE } from '../isPositiveNumber';
 import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
 import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
-import ruleCustomErrorDecorator from '../../factories/ruleCustomErrorDecorator';
+import customErrorDecorator from '../../utils/customErrorDecorator';
 
 // There are no tests for string and Date values, which may lead to false positive results,
 // because isPositiveNumber has the input parameter of number type, it is made as second item in validation rules chain
@@ -103,7 +103,7 @@ describe('isPositiveNumber validation rule test', () => {
       // Arrange
       const inputValue = -5;
       const customError = new ErrorResult('Custom positive number error', undefined);
-      const validator = ruleCustomErrorDecorator(isPositiveNumber, customError);
+      const validator = customErrorDecorator(isPositiveNumber, customError);
       const expectedResult = customError;
 
       // Act
@@ -117,7 +117,7 @@ describe('isPositiveNumber validation rule test', () => {
       // Arrange
       const inputValue = 42;
       const customError = new ErrorResult('Custom positive number error', undefined);
-      const validator = ruleCustomErrorDecorator(isPositiveNumber, customError);
+      const validator = customErrorDecorator(isPositiveNumber, customError);
       const expectedResult = new SuccessResult(inputValue);
 
       // Act

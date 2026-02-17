@@ -77,8 +77,10 @@ Separator extends string | undefined = undefined,
       ...infer Tail extends TValidationRules,
     ]
       ? Separator extends string
-        ? `${TRetrieveError<ReturnType<First>>['message']}${Separator}${TErrorValidationMessage<Tail, Separator>}`
-        : `${TRetrieveError<ReturnType<First>>['message']}${TErrorValidationMessage<Tail>}`
+        ? TErrorValidationMessage<Tail>
+        | `${TRetrieveError<ReturnType<First>>['message']}${Separator}${TErrorValidationMessage<Tail, Separator>}`
+        : TErrorValidationMessage<Tail>
+        | `${TRetrieveError<ReturnType<First>>['message']}${TErrorValidationMessage<Tail>}`
       : '';
 
 export type TErrorValidationRulesData<ValidationRules extends TValidationRules> =

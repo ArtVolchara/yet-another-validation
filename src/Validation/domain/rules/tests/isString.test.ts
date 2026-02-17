@@ -2,7 +2,7 @@ import { describe, test, expect } from "vitest";
 import isString, { IS_STRING_ERROR_MESSAGE } from '../isString';
 import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
 import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
-import ruleCustomErrorDecorator from '../../factories/ruleCustomErrorDecorator';
+import customErrorDecorator from '../../utils/customErrorDecorator';
 
 describe('isString validation rule test', () => {
   describe('Primitive values', () => {
@@ -89,7 +89,7 @@ describe('isString validation rule test', () => {
       // Arrange
       const inputValue = 123;
       const customError = new ErrorResult('Custom string error', undefined);
-      const validator = ruleCustomErrorDecorator(isString, customError);
+      const validator = customErrorDecorator(isString, customError);
       const expectedResult = customError;
 
       // Act
@@ -103,7 +103,7 @@ describe('isString validation rule test', () => {
       // Arrange
       const inputValue = 'hello';
       const customError = new ErrorResult('Custom string error', undefined);
-      const validator = ruleCustomErrorDecorator(isString, customError);
+      const validator = customErrorDecorator(isString, customError);
       const expectedResult = new SuccessResult('hello');
 
       // Act

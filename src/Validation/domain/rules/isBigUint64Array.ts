@@ -17,6 +17,19 @@ export default function isBigUint64Array(
   value: any
 ): TIsBigUint64ArrayValidationSuccess | TIsBigUint64ArrayValidationError;
 
+export default function isBigUint64Array<
+const Error extends IError<string, undefined> | undefined = undefined,
+const Result extends undefined extends Error
+  ? (TIsBigUint64ArrayValidationSuccess | TIsBigUint64ArrayValidationError)
+  : (TIsBigUint64ArrayValidationSuccess | Error)
+= undefined extends Error
+  ? (TIsBigUint64ArrayValidationSuccess | TIsBigUint64ArrayValidationError)
+  : (TIsBigUint64ArrayValidationSuccess | Error),
+>(
+  value: any,
+  error?: Error
+): Result;
+
 export default function isBigUint64Array(
   value: any,
   error?: IError<string, undefined>,

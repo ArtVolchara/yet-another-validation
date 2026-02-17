@@ -2,7 +2,7 @@ import { describe, test, expect } from "vitest";
 import isWeakSet, { IS_WEAK_SET_ERROR_MESSAGE } from '../isWeakSet';
 import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
 import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
-import ruleCustomErrorDecorator from '../../factories/ruleCustomErrorDecorator';
+import customErrorDecorator from '../../utils/customErrorDecorator';
 
 describe('isWeakSet validation rule test', () => {
   describe('Primitive values', () => {
@@ -94,7 +94,7 @@ describe('isWeakSet validation rule test', () => {
       // Arrange
       const inputValue = 'not a weakset';
       const customError = new ErrorResult('Custom weakset error', undefined);
-      const validator = ruleCustomErrorDecorator(isWeakSet, customError);
+      const validator = customErrorDecorator(isWeakSet, customError);
       const expectedResult = customError;
 
       // Act
@@ -108,7 +108,7 @@ describe('isWeakSet validation rule test', () => {
       // Arrange
       const inputValue = new WeakSet();
       const customError = new ErrorResult('Custom weakset error', undefined);
-      const validator = ruleCustomErrorDecorator(isWeakSet, customError);
+      const validator = customErrorDecorator(isWeakSet, customError);
       const expectedResult = new SuccessResult(inputValue);
 
       // Act

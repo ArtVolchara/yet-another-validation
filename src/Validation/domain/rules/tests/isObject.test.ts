@@ -2,7 +2,7 @@ import { describe, test, expect } from "vitest";
 import isObject, { IS_OBJECT_ERROR_MESSAGE } from '../isObject';
 import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
 import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
-import ruleCustomErrorDecorator from '../../factories/ruleCustomErrorDecorator';
+import customErrorDecorator from '../../utils/customErrorDecorator';
 
 describe('isObject validation rule test', () => {
   describe('Primitive values', () => {
@@ -99,7 +99,7 @@ describe('isObject validation rule test', () => {
       // Arrange
       const inputValue = 'not an object';
       const customError = new ErrorResult('Custom object error', undefined);
-      const validator = ruleCustomErrorDecorator(isObject, customError);
+      const validator = customErrorDecorator(isObject, customError);
       const expectedResult = customError;
 
       // Act
@@ -113,7 +113,7 @@ describe('isObject validation rule test', () => {
       // Arrange
       const inputValue = { key: 'value' };
       const customError = new ErrorResult('Custom object error', undefined);
-      const validator = ruleCustomErrorDecorator(isObject, customError);
+      const validator = customErrorDecorator(isObject, customError);
       const expectedResult = new SuccessResult(inputValue);
 
       // Act

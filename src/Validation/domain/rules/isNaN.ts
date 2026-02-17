@@ -19,6 +19,19 @@ export default function isNaN(
   value: any
 ): TIsNaNValidationSuccess | TIsNaNValidationError;
 
+export default function isNaN<
+const Error extends IError<string, undefined> | undefined = undefined,
+const Result extends undefined extends Error
+  ? (TIsNaNValidationSuccess | TIsNaNValidationError)
+  : (TIsNaNValidationSuccess | Error)
+= undefined extends Error
+  ? (TIsNaNValidationSuccess | TIsNaNValidationError)
+  : (TIsNaNValidationSuccess | Error),
+>(
+  value: any,
+  error?: Error
+): Result;
+
 export default function isNaN(
   value: any,
   error?: IError<string, undefined>,

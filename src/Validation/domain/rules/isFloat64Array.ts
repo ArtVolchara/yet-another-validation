@@ -17,6 +17,19 @@ export default function isFloat64Array(
   value: any
 ): TIsFloat64ArrayValidationSuccess | TIsFloat64ArrayValidationError;
 
+export default function isFloat64Array<
+const Error extends IError<string, undefined> | undefined = undefined,
+const Result extends undefined extends Error
+  ? (TIsFloat64ArrayValidationSuccess | TIsFloat64ArrayValidationError)
+  : (TIsFloat64ArrayValidationSuccess | Error)
+= undefined extends Error
+  ? (TIsFloat64ArrayValidationSuccess | TIsFloat64ArrayValidationError)
+  : (TIsFloat64ArrayValidationSuccess | Error),
+>(
+  value: any,
+  error?: Error
+): Result;
+
 export default function isFloat64Array(
   value: any,
   error?: IError<string, undefined>,

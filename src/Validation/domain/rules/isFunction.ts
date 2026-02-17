@@ -17,6 +17,19 @@ export default function isFunction(
   value: any
 ): TIsFunctionValidationSuccess | TIsFunctionValidationError;
 
+export default function isFunction<
+const Error extends IError<string, undefined> | undefined = undefined,
+const Result extends undefined extends Error
+  ? (TIsFunctionValidationSuccess | TIsFunctionValidationError)
+  : (TIsFunctionValidationSuccess | Error)
+= undefined extends Error
+  ? (TIsFunctionValidationSuccess | TIsFunctionValidationError)
+  : (TIsFunctionValidationSuccess | Error),
+>(
+  value: any,
+  error?: Error
+): Result;
+
 export default function isFunction(
   value: any,
   error?: IError<string, undefined>,

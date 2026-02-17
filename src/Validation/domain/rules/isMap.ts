@@ -17,6 +17,19 @@ export default function isMap(
   value: any
 ): TIsMapValidationSuccess | TIsMapValidationError;
 
+export default function isMap<
+const Error extends IError<string, undefined> | undefined = undefined,
+const Result extends undefined extends Error
+  ? (TIsMapValidationSuccess | TIsMapValidationError)
+  : (TIsMapValidationSuccess | Error)
+= undefined extends Error
+  ? (TIsMapValidationSuccess | TIsMapValidationError)
+  : (TIsMapValidationSuccess | Error),
+>(
+  value: any,
+  error?: Error
+): Result;
+
 export default function isMap(
   value: any,
   error?: IError<string, undefined>,

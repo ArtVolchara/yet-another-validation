@@ -2,7 +2,7 @@ import { describe, test, expect } from "vitest";
 import isNull, { IS_NULL_ERROR_MESSAGE } from '../isNull';
 import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
 import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
-import ruleCustomErrorDecorator from '../../factories/ruleCustomErrorDecorator';
+import customErrorDecorator from '../../utils/customErrorDecorator';
 
 describe('isNull validation rule test', () => {
   describe('Primitive values', () => {
@@ -78,7 +78,7 @@ describe('isNull validation rule test', () => {
       // Arrange
       const inputValue = 'not null';
       const customError = new ErrorResult('Custom null error', undefined);
-      const validator = ruleCustomErrorDecorator(isNull, customError);
+      const validator = customErrorDecorator(isNull, customError);
       const expectedResult = customError;
 
       // Act
@@ -92,7 +92,7 @@ describe('isNull validation rule test', () => {
       // Arrange
       const inputValue = null;
       const customError = new ErrorResult('Custom null error', undefined);
-      const validator = ruleCustomErrorDecorator(isNull, customError);
+      const validator = customErrorDecorator(isNull, customError);
       const expectedResult = new SuccessResult(null);
 
       // Act
