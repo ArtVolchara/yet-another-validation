@@ -19,16 +19,12 @@ export default function isUndefined(
 
 export default function isUndefined<
 const Error extends IError<string, undefined> | undefined = undefined,
-const Result extends undefined extends Error
-  ? (TIsUndefinedValidationSuccess | TIsUndefinedValidationError)
-  : (TIsUndefinedValidationSuccess | Error)
-= undefined extends Error
-  ? (TIsUndefinedValidationSuccess | TIsUndefinedValidationError)
-  : (TIsUndefinedValidationSuccess | Error),
 >(
   value: any,
   error?: Error
-): Result;
+): undefined extends Error
+? (TIsUndefinedValidationSuccess | TIsUndefinedValidationError)
+: (TIsUndefinedValidationSuccess | Error);
 
 export default function isUndefined(
   value: any,

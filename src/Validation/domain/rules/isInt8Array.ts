@@ -19,16 +19,12 @@ export default function isInt8Array(
 
 export default function isInt8Array<
 const Error extends IError<string, undefined> | undefined = undefined,
-const Result extends undefined extends Error
-  ? (TIsInt8ArrayValidationSuccess | TIsInt8ArrayValidationError)
-  : (TIsInt8ArrayValidationSuccess | Error)
-= undefined extends Error
-  ? (TIsInt8ArrayValidationSuccess | TIsInt8ArrayValidationError)
-  : (TIsInt8ArrayValidationSuccess | Error),
 >(
   value: any,
   error?: Error
-): Result;
+): undefined extends Error
+  ? (TIsInt8ArrayValidationSuccess | TIsInt8ArrayValidationError)
+  : (TIsInt8ArrayValidationSuccess | Error);
 
 /**
  * Checks if the value is an Int8Array

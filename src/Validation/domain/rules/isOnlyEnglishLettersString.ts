@@ -22,16 +22,12 @@ export default function isOnlyEnglishLettersString(
 
 export default function isOnlyEnglishLettersString<
 const Error extends IError<string, undefined> | undefined = undefined,
-const Result extends undefined extends Error
-  ? (TIsOnlyEnglishLettersStringValidationSuccess | TIsOnlyEnglishLettersStringValidationDefaultError)
-  : (TIsOnlyEnglishLettersStringValidationSuccess | Error)
-= undefined extends Error
-  ? (TIsOnlyEnglishLettersStringValidationSuccess | TIsOnlyEnglishLettersStringValidationDefaultError)
-  : (TIsOnlyEnglishLettersStringValidationSuccess | Error),
 >(
   value: string,
   error?: Error
-): Result;
+): undefined extends Error
+  ? (TIsOnlyEnglishLettersStringValidationSuccess | TIsOnlyEnglishLettersStringValidationDefaultError)
+  : (TIsOnlyEnglishLettersStringValidationSuccess | Error);
 
 export default function isOnlyEnglishLettersString<
 const Error extends IError<string, undefined> | undefined = undefined,

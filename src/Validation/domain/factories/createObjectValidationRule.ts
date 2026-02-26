@@ -54,12 +54,10 @@ export type TObjectValidationRule<
   // overload for usage with or without error factory
   <
     const ErrorFactory extends TObjectValidatorErrorFactory<ValidatorsSchema> | undefined = undefined,
-    const Result extends TObjectValidationRuleResult<ValidatorsSchema, ErrorFactory, DefaultErrorFactory>
-    = TObjectValidationRuleResult<ValidatorsSchema, ErrorFactory, DefaultErrorFactory>,
   >(
     value: Record<string | symbol, any> & { length?: never },
     errorFactory?: ErrorFactory,
-  ): Result;
+  ): TObjectValidationRuleResult<ValidatorsSchema, ErrorFactory, DefaultErrorFactory>;
 };
 
 // overload for usage without default error factory

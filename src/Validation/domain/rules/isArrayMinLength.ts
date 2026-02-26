@@ -17,13 +17,9 @@ type TIsArrayMinLengthValidationRule<
   (value: Array<any>): TIsArrayMinLengthValidationSuccess<MinLength> | DefaultError;
   <
     const Error extends IError<string, undefined> | undefined = undefined,
-    const Result extends undefined extends Error
-      ? (TIsArrayMinLengthValidationSuccess<MinLength> | DefaultError)
-      : (TIsArrayMinLengthValidationSuccess<MinLength> | Error)
-    = undefined extends Error
-      ? (TIsArrayMinLengthValidationSuccess<MinLength> | DefaultError)
-      : (TIsArrayMinLengthValidationSuccess<MinLength> | Error),
-  >(value: Array<any>, error?: Error): Result;
+  >(value: Array<any>, error?: Error): undefined extends Error
+    ? (TIsArrayMinLengthValidationSuccess<MinLength> | DefaultError)
+    : (TIsArrayMinLengthValidationSuccess<MinLength> | Error);
 };
 
 export default function generateArrayMinLengthValidator<MinLength extends number, const Error extends IError<string, undefined>>(

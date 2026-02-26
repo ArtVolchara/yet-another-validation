@@ -84,12 +84,10 @@ export type TTupleValidationRule<
   // Catch-all
   <
     const ErrorFactory extends TTupleValidatorErrorFactory<Validators> | undefined = undefined,
-    const Result extends TTupleValidationRuleResult<Validators, ErrorFactory, DefaultErrorFactory>
-    = TTupleValidationRuleResult<Validators, ErrorFactory, DefaultErrorFactory>,
   >(
     value: TInputValue<Validators> | Readonly<TInputValue<Validators>>,
     errorFactory?: ErrorFactory,
-  ): Result;
+  ): TTupleValidationRuleResult<Validators, ErrorFactory, DefaultErrorFactory>;
 };
 
 type TValidationAccumulator<Validators extends TValidators> = {

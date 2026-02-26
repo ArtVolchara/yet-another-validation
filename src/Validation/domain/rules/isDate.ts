@@ -19,16 +19,12 @@ export default function isDate(
 
 export default function isDate<
 const Error extends IError<string, undefined> | undefined = undefined,
-const Result extends undefined extends Error
-  ? (TIsDateValidationSuccess | TIsDateValidationError)
-  : (TIsDateValidationSuccess | Error)
-= undefined extends Error
-  ? (TIsDateValidationSuccess | TIsDateValidationError)
-  : (TIsDateValidationSuccess | Error),
 >(
   value: any,
   error?: Error
-): Result;
+): undefined extends Error
+  ? (TIsDateValidationSuccess | TIsDateValidationError)
+  : (TIsDateValidationSuccess | Error);
 
 export default function isDate(
   value: any,

@@ -19,16 +19,12 @@ export default function isSet(
 
 export default function isSet<
 const Error extends IError<string, undefined> | undefined = undefined,
-const Result extends undefined extends Error
-  ? (TIsSetValidationSuccess | TIsSetValidationError)
-  : (TIsSetValidationSuccess | Error)
-= undefined extends Error
-  ? (TIsSetValidationSuccess | TIsSetValidationError)
-  : (TIsSetValidationSuccess | Error),
 >(
   value: any,
   error?: Error
-): Result;
+): undefined extends Error
+  ? (TIsSetValidationSuccess | TIsSetValidationError)
+  : (TIsSetValidationSuccess | Error);
 
 export default function isSet(
   value: any,

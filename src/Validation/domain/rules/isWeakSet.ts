@@ -19,16 +19,12 @@ export default function isWeakSet(
 
 export default function isWeakSet<
 const Error extends IError<string, undefined> | undefined = undefined,
-const Result extends undefined extends Error
-  ? (TIsWeakSetValidationSuccess | TIsWeakSetValidationError)
-  : (TIsWeakSetValidationSuccess | Error)
-= undefined extends Error
-  ? (TIsWeakSetValidationSuccess | TIsWeakSetValidationError)
-  : (TIsWeakSetValidationSuccess | Error),
 >(
   value: any,
   error?: Error
-): Result;
+): undefined extends Error
+  ? (TIsWeakSetValidationSuccess | TIsWeakSetValidationError)
+  : (TIsWeakSetValidationSuccess | Error);
 
 export default function isWeakSet(
   value: any,
