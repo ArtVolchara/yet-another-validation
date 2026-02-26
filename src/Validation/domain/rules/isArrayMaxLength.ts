@@ -17,13 +17,9 @@ type TIsArrayMaxLengthValidationRule<
   (value: Array<any>): TIsArrayMaxLengthValidationSuccess<MaxLength> | DefaultError;
   <
     const Error extends IError<string, undefined> | undefined = undefined,
-    const Result extends undefined extends Error
-      ? (TIsArrayMaxLengthValidationSuccess<MaxLength> | DefaultError)
-      : (TIsArrayMaxLengthValidationSuccess<MaxLength> | Error)
-    = undefined extends Error
-      ? (TIsArrayMaxLengthValidationSuccess<MaxLength> | DefaultError)
-      : (TIsArrayMaxLengthValidationSuccess<MaxLength> | Error),
-  >(value: Array<any>, error?: Error): Result;
+  >(value: Array<any>, error?: Error): undefined extends Error
+    ? (TIsArrayMaxLengthValidationSuccess<MaxLength> | DefaultError)
+    : (TIsArrayMaxLengthValidationSuccess<MaxLength> | Error);
 };
 
 export default function generateArrayMaxLengthValidationRule<MaxLength extends number, const Error extends IError<string, undefined>>(

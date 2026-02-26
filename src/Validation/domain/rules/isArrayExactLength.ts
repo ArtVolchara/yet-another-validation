@@ -17,13 +17,9 @@ type TIsArrayExactLengthValidationRule<
   (value: Array<any>): TIsArrayExactLengthValidationSuccess<ExactLength> | DefaultError;
   <
     const Error extends IError<string, undefined> | undefined = undefined,
-    const Result extends undefined extends Error
-      ? (TIsArrayExactLengthValidationSuccess<ExactLength> | DefaultError)
-      : (TIsArrayExactLengthValidationSuccess<ExactLength> | Error)
-    = undefined extends Error
-      ? (TIsArrayExactLengthValidationSuccess<ExactLength> | DefaultError)
-      : (TIsArrayExactLengthValidationSuccess<ExactLength> | Error),
-  >(value: Array<any>, error?: Error): Result;
+  >(value: Array<any>, error?: Error): undefined extends Error
+    ? (TIsArrayExactLengthValidationSuccess<ExactLength> | DefaultError)
+    : (TIsArrayExactLengthValidationSuccess<ExactLength> | Error);
 };
 
 export default function generateArrayExactLengthValidator<ExactLength extends number, const Error extends IError<string, undefined>>(

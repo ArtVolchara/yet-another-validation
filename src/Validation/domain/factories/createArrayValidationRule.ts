@@ -61,12 +61,10 @@ export type TArrayValidationRule<
   // Catch-all
   <
     const ErrorFactory extends TArrayValidatorErrorFactory<Validator> | undefined = undefined,
-    const Result extends TArrayValidationRuleResult<Validator, ErrorFactory, DefaultErrorFactory>
-    = TArrayValidationRuleResult<Validator, ErrorFactory, DefaultErrorFactory>,
   >(
     value: Array<TRetrieveValidationInputData<Validator>>,
     errorFactory?: ErrorFactory,
-  ): Result;
+  ): TArrayValidationRuleResult<Validator, ErrorFactory, DefaultErrorFactory>;
 };
 
 // Без default error factory

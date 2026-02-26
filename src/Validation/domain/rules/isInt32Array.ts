@@ -19,16 +19,12 @@ export default function isInt32Array(
 
 export default function isInt32Array<
 const Error extends IError<string, undefined> | undefined = undefined,
-const Result extends undefined extends Error
-  ? (TIsInt32ArrayValidationSuccess | TIsInt32ArrayValidationError)
-  : (TIsInt32ArrayValidationSuccess | Error)
-= undefined extends Error
-  ? (TIsInt32ArrayValidationSuccess | TIsInt32ArrayValidationError)
-  : (TIsInt32ArrayValidationSuccess | Error),
 >(
   value: any,
   error?: Error
-): Result;
+): undefined extends Error
+  ? (TIsInt32ArrayValidationSuccess | TIsInt32ArrayValidationError)
+  : (TIsInt32ArrayValidationSuccess | Error);
 
 /**
  * Checks if the value is an Int32Array

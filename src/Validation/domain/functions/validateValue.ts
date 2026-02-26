@@ -1,5 +1,7 @@
 import {
+  TRetrieveErrorData,
   TRetrieveValidationInputData,
+  TRetrieveValidationSuccessData,
   TValidationRules,
   TValidator,
 } from '../types/TValidator';
@@ -7,7 +9,6 @@ import {
   TConcatWithSeparator,
   TRemoveReadonly,
 } from '../../../_Root/domain/types/utils';
-import { TRetrieveError, TRetrieveSuccess } from '../../../_Root/domain/types/Result/TResult';
 import { ISuccess } from '../../../_Root/domain/types/Result/ISuccess';
 import { IError } from '../../../_Root/domain/types/Result/IError';
 import ErrorResult from '../../../_Root/domain/factories/ErrorResult';
@@ -41,7 +42,7 @@ TRemoveReadonly<ORValidators> extends Array<infer Validators extends TValidator 
   ? Validators extends TValidationRules
     ? TSuccessValidationRulesData<Validators, InputData>
     : Validators extends TValidator
-      ? TRetrieveSuccess<ReturnType<Validators>>['data']
+      ? TRetrieveValidationSuccessData<Validators>['data']
       : never
   : never;
 
@@ -67,8 +68,7 @@ export type TORValidationErrorsMessages<
   > = ORValidators extends [infer First extends TValidator | TValidationRules, ...infer Tail]
     ? First extends TValidator
       ? [
-        TRetrieveError<
-        ReturnType<First>>['message'], ...TORValidationErrorsMessages<Tail extends TORValidators ? Tail : []
+        TRetrieveErrorData<First>['message'], ...TORValidationErrorsMessages<Tail extends TORValidators ? Tail : []
         >,
       ]
       : First extends TValidationRules
@@ -94,11 +94,31 @@ TRemoveReadonly<ORValidators> extends [
   ...infer Tail extends TORValidators,
 ]
   ? First extends TValidator
-    ? [...TRetrieveError<ReturnType<First>>['data'], ...TErrorORValidationErrorData<Tail>]
+    ? [...TRetrieveErrorData<First>['data'], ...TErrorORValidationErrorData<Tail>]
     : First extends TValidationRules | Readonly<TValidationRules>
       ? [TErrorValidationRulesData<First>, ...TErrorORValidationErrorData<Tail>]
       : []
   : [];
+
+export type TValidationParams<
+  ORValidators extends TORValidators,
+  SeparatorOR extends string | undefined,
+  SeparatorAND extends string | undefined,
+> = {
+  separatorOR?: SeparatorOR,
+  separatorAND?: SeparatorAND,
+  proxy?: (
+    result: ISuccess<TSuccessORValidationData<ORValidators>>
+    | IError<
+    TErrorORValidationErrorMessage<
+    ORValidators,
+    SeparatorOR extends undefined ? typeof DEFAULT_OR_SEPARATOR : SeparatorOR,
+    SeparatorAND extends undefined ? typeof DEFAULT_AND_SEPARATOR : SeparatorAND
+    >,
+    TErrorORValidationErrorData<ORValidators>
+    >
+  ) => void,
+};
 
 // Валидационные правила, передаваемые в pipe-функцию должны быть готовы вне зависимости от типа аргумента(но тип нужен)
 // обработать любое значение из рантайма и для этого иметь catch внутри себя, в котором возвращается (не выбрасывается)
@@ -106,16 +126,12 @@ TRemoveReadonly<ORValidators> extends [
 export default function validateValue<
     const Value extends TORValidationFirstParameter<ORValidators>,
     ORValidators extends TORValidators,
-    const Params extends { separatorOR?: string, separatorAND?: string } 
-    = { separatorOR: typeof DEFAULT_OR_SEPARATOR, separatorAND: typeof DEFAULT_AND_SEPARATOR },
-    const SeparatorOR extends Params['separatorOR'] extends string ? Params['separatorOR'] : typeof DEFAULT_OR_SEPARATOR
-    = Params['separatorOR'] extends string ? Params['separatorOR'] : typeof DEFAULT_OR_SEPARATOR,
-    const SeparatorAND extends Params['separatorAND'] extends string ? Params['separatorAND'] : typeof DEFAULT_AND_SEPARATOR
-    = Params['separatorAND'] extends string ? Params['separatorAND'] : typeof DEFAULT_AND_SEPARATOR,
+    const SeparatorOR extends string = typeof DEFAULT_OR_SEPARATOR,
+    const SeparatorAND extends string = typeof DEFAULT_AND_SEPARATOR,
 >(
   value: Value,
   validatorsOrRules: TConsistentORValidators<ORValidators>,
-  params?: Params,
+  params?: TValidationParams<ORValidators, SeparatorOR, SeparatorAND>
 ) {
   const errors = [] as Array<Array<IError<string, any>>>;
   // eslint-disable-next-line no-restricted-syntax
@@ -126,6 +142,9 @@ export default function validateValue<
         const errorsAND = result.data;
         errors.push(errorsAND);
       } else {
+        if (params?.proxy) {
+          params.proxy(result);
+        }
         return result as ISuccess<TSuccessORValidationData<ORValidators>>;
       }
     } else if (validator instanceof Function) {
@@ -140,17 +159,28 @@ export default function validateValue<
           });
         }
       } else {
+        if (params?.proxy) {
+          params.proxy(result);
+        }
         return result as ISuccess<TSuccessORValidationData<ORValidators>>;
       }
     }
   }
-  return new ErrorResult(
+  const error = new ErrorResult(
     errors.map((localErrors) => localErrors.map(
       (el) => el.message,
     )?.join(params?.separatorAND || DEFAULT_AND_SEPARATOR))?.join(params?.separatorOR || DEFAULT_OR_SEPARATOR),
     errors as TErrorORValidationErrorData<ORValidators>,
   ) as IError<
-  TErrorORValidationErrorMessage<ORValidators, SeparatorOR, SeparatorAND>,
+  TErrorORValidationErrorMessage<
+  ORValidators,
+  SeparatorOR extends undefined ? typeof DEFAULT_OR_SEPARATOR : SeparatorOR,
+  SeparatorAND extends undefined ? typeof DEFAULT_AND_SEPARATOR : SeparatorAND
+  >,
   TErrorORValidationErrorData<ORValidators>
   >;
+  if (params?.proxy) {
+    params.proxy(error);
+  }
+  return error;
 }

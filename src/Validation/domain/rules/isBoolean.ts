@@ -19,16 +19,12 @@ export default function isBoolean(
 
 export default function isBoolean<
 const Error extends IError<string, undefined> | undefined = undefined,
-const Result extends undefined extends Error
-  ? (TIsBooleanValidationSuccess | TIsBooleanValidationError)
-  : (TIsBooleanValidationSuccess | Error)
-= undefined extends Error
-  ? (TIsBooleanValidationSuccess | TIsBooleanValidationError)
-  : (TIsBooleanValidationSuccess | Error),
 >(
   value: any,
   error?: Error
-): Result;
+): undefined extends Error
+  ? (TIsBooleanValidationSuccess | TIsBooleanValidationError)
+  : (TIsBooleanValidationSuccess | Error);
 
 export default function isBoolean(
   value: any,

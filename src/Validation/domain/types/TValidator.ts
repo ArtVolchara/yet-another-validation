@@ -2,7 +2,10 @@ import { TResult, TRetrieveError, TRetrieveSuccess } from '../../../_Root/domain
 import { ISuccess } from '../../../_Root/domain/types/Result/ISuccess';
 import { IError } from '../../../_Root/domain/types/Result/IError';
 
-export type TValidationRuleError = IError<string, undefined | Array<IError<string, any>> | Record<string | symbol, IError<string, any>>>;
+export type TValidationRuleError = IError<
+string,
+undefined | Array<IError<string, any> | undefined> | Record<string | symbol, IError<string, any>>
+>;
 
 // Атомарное валидационное правило
 export type TValidationRule<

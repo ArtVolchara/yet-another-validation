@@ -19,16 +19,12 @@ export default function isNumber(
 
 export default function isNumber<
 const Error extends IError<string, undefined> | undefined = undefined,
-const Result extends undefined extends Error
-  ? (TIsNumberValidationSuccess | TIsNumberValidationError)
-  : (TIsNumberValidationSuccess | Error)
-= undefined extends Error
-  ? (TIsNumberValidationSuccess | TIsNumberValidationError)
-  : (TIsNumberValidationSuccess | Error),
 >(
   value: any,
   error?: Error
-): Result;
+): undefined extends Error
+  ? (TIsNumberValidationSuccess | TIsNumberValidationError)
+  : (TIsNumberValidationSuccess | Error);
 
 export default function isNumber(
   value: any,

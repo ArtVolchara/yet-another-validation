@@ -10,6 +10,7 @@ import createTupleValidationRule from '../createTupleValidationRule';
 import createObjectValidationRule from '../createObjectValidationRule';
 import composeValidator from '../composeValidator';
 import isObject from '../../rules/isObject';
+import { TRetrieveErrorData } from '../../types/TValidator';
 
 describe('createTupleValidationRule', () => {
   describe('Simple tuple', () => {
@@ -303,11 +304,11 @@ describe('createTupleValidationRule', () => {
         };
         const workplaceValidationRule = createObjectValidationRule(workplaceSchema);
         const workplaceValidator = composeValidator([[isObject, workplaceValidationRule]]);
-        const tupleValidationRuleRule = createTupleValidationRule([workplaceValidator]);
-        const tupleValidationRule = composeValidator([[isArray, tupleValidationRuleRule], [isUndefined]]);
+        const tupleValidationRule = createTupleValidationRule([workplaceValidator]);
+        const tupleValidator = composeValidator([[isArray, tupleValidationRule], [isUndefined]]);
         const inputValue = [{ position: 'Manager', company: 'TechCorp' }] as const;
         // Act
-        const actualResult = tupleValidationRule(inputValue);
+        const actualResult = tupleValidator(inputValue);
         // Assert
         expect(actualResult.status).toBe('success');
         if (actualResult.status === 'success') {

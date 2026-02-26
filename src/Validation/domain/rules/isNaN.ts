@@ -21,16 +21,12 @@ export default function isNaN(
 
 export default function isNaN<
 const Error extends IError<string, undefined> | undefined = undefined,
-const Result extends undefined extends Error
-  ? (TIsNaNValidationSuccess | TIsNaNValidationError)
-  : (TIsNaNValidationSuccess | Error)
-= undefined extends Error
-  ? (TIsNaNValidationSuccess | TIsNaNValidationError)
-  : (TIsNaNValidationSuccess | Error),
 >(
   value: any,
   error?: Error
-): Result;
+): undefined extends Error
+  ? (TIsNaNValidationSuccess | TIsNaNValidationError)
+  : (TIsNaNValidationSuccess | Error);
 
 export default function isNaN(
   value: any,

@@ -19,16 +19,12 @@ export default function isObject(
 
 export default function isObject<
 const Error extends IError<string, undefined> | undefined = undefined,
-const Result extends undefined extends Error
-  ? (TIsObjectValidationSuccess | TIsObjectValidationError)
-  : (TIsObjectValidationSuccess | Error)
-= undefined extends Error
-  ? (TIsObjectValidationSuccess | TIsObjectValidationError)
-  : (TIsObjectValidationSuccess | Error),
 >(
   value: any,
   error?: Error
-): Result;
+): undefined extends Error
+  ? (TIsObjectValidationSuccess | TIsObjectValidationError)
+  : (TIsObjectValidationSuccess | Error);
 
 export default function isObject(
   value: any,

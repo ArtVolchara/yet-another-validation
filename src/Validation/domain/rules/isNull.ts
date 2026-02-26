@@ -19,16 +19,12 @@ export default function isNull(
 
 export default function isNull<
 const Error extends IError<string, undefined> | undefined = undefined,
-const Result extends undefined extends Error
-  ? (TIsNullValidationSuccess | TIsNullValidationError)
-  : (TIsNullValidationSuccess | Error)
-= undefined extends Error
-  ? (TIsNullValidationSuccess | TIsNullValidationError)
-  : (TIsNullValidationSuccess | Error),
 >(
   value: any,
   error?: Error
-): Result;
+): undefined extends Error
+  ? (TIsNullValidationSuccess | TIsNullValidationError)
+  : (TIsNullValidationSuccess | Error);
 
 export default function isNull(
   value: any,

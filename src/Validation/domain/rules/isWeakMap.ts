@@ -19,16 +19,12 @@ export default function isWeakMap(
 
 export default function isWeakMap<
 const Error extends IError<string, undefined> | undefined = undefined,
-const Result extends undefined extends Error
-  ? (TIsWeakMapValidationSuccess | TIsWeakMapValidationError)
-  : (TIsWeakMapValidationSuccess | Error)
-= undefined extends Error
-  ? (TIsWeakMapValidationSuccess | TIsWeakMapValidationError)
-  : (TIsWeakMapValidationSuccess | Error),
 >(
   value: any,
   error?: Error
-): Result;
+): undefined extends Error
+  ? (TIsWeakMapValidationSuccess | TIsWeakMapValidationError)
+  : (TIsWeakMapValidationSuccess | Error);
 
 export default function isWeakMap(
   value: any,

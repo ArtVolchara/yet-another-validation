@@ -19,16 +19,12 @@ export default function isInt16Array(
 
 export default function isInt16Array<
 const Error extends IError<string, undefined> | undefined = undefined,
-const Result extends undefined extends Error
-  ? (TIsInt16ArrayValidationSuccess | TIsInt16ArrayValidationError)
-  : (TIsInt16ArrayValidationSuccess | Error)
-= undefined extends Error
-  ? (TIsInt16ArrayValidationSuccess | TIsInt16ArrayValidationError)
-  : (TIsInt16ArrayValidationSuccess | Error),
 >(
   value: any,
   error?: Error
-): Result;
+): undefined extends Error
+  ? (TIsInt16ArrayValidationSuccess | TIsInt16ArrayValidationError)
+  : (TIsInt16ArrayValidationSuccess | Error);
 
 export default function isInt16Array(
   value: any,
