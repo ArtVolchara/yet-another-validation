@@ -9,9 +9,9 @@ describe('сustomErrorDecorator', () => {
   describe('With static error', () => {
     test('Should return custom error when validation fails', () => {
       // Arrange
-      const mockValidationRule = (value: any, error: IError<string, undefined>) => {
+      const mockValidationRule = (value: any) => {
         if (typeof value !== 'string') {
-          return error;
+          return new ErrorResult('Invalid', undefined);
         }
         return new SuccessResult(value);
       };
@@ -29,9 +29,9 @@ describe('сustomErrorDecorator', () => {
 
     test('Should return success when validation passes', () => {
       // Arrange
-      const mockValidationRule = (value: any, error: IError<string, undefined>) => {
+      const mockValidationRule = (value: any) => {
         if (typeof value !== 'string') {
-          return error;
+          return new ErrorResult('Invalid', undefined);
         }
         return new SuccessResult(value);
       };
@@ -49,9 +49,9 @@ describe('сustomErrorDecorator', () => {
 
     test('Should work with different validation rules', () => {
       // Arrange
-      const isNumberRule = (value: any, error: IError<string, undefined>) => {
+      const isNumberRule = (value: any) => {
         if (typeof value !== 'number') {
-          return error;
+          return new ErrorResult('Invalid', undefined);
         }
         return new SuccessResult(value);
       };
@@ -69,13 +69,13 @@ describe('сustomErrorDecorator', () => {
   describe('With error factory', () => {
     test('Should return custom error from factory when validation fails', () => {
       // Arrange
-      const mockValidationRule = (value: any, errorFactory: (data: { actualType: string }) => IError<string, typeof data>) => {
+      const mockValidationRule = (value: any) => {
         if (!Array.isArray(value)) {
-          return errorFactory({ actualType: typeof value });
+          return new ErrorResult('Invalid', { actualType: typeof value });
         }
         return new SuccessResult(value);
       };
-      const errorFactory = (data: { actualType: string }) => new ErrorResult(`Expected array but got ${data.actualType}`, data);
+      const errorFactory = (error: IError<string, { actualType: string }>) => new ErrorResult(`Expected array but got ${error.data.actualType}`, error.data);
       const decorator = customErrorDecorator(mockValidationRule, errorFactory);
       const inputValue = 'not an array';
       const expectedResult = new ErrorResult('Expected array but got string', { actualType: 'string' });
@@ -89,13 +89,13 @@ describe('сustomErrorDecorator', () => {
 
     test('Should return success when validation passes with error factory', () => {
       // Arrange
-      const mockValidationRule = (value: any, errorFactory: (data: { actualType: string }) => IError<string, typeof data>) => {
+      const mockValidationRule = (value: any) => {
         if (!Array.isArray(value)) {
-          return errorFactory({ actualType: typeof value });
+          return new ErrorResult('Invalid', { actualType: typeof value });
         }
         return new SuccessResult(value);
       };
-      const errorFactory = (data: { actualType: string }) => new ErrorResult(`Expected array but got ${data.actualType}`, data);
+      const errorFactory = (error: IError<string, { actualType: string }>) => new ErrorResult(`Expected array but got ${error.data.actualType}`, error.data);
       const decorator = customErrorDecorator(mockValidationRule, errorFactory);
       const inputValue = [1, 2, 3];
       const expectedResult = new SuccessResult([1, 2, 3]);
@@ -109,13 +109,13 @@ describe('сustomErrorDecorator', () => {
 
     test('Should pass correct data to error factory', () => {
       // Arrange
-      const mockValidationRule = (value: any, errorFactory: (data: undefined) => IError<string, any>) => {
+      const mockValidationRule = (value: any) => {
         if (value < 0) {
-          return errorFactory(value);
+          return new ErrorResult('Invalid value', value);
         }
         return new SuccessResult(value);
       };
-      const errorFactory = (data: undefined) => new ErrorResult('Invalid value', data);
+      const errorFactory = (errorResult: IError<string, any>) => new ErrorResult('Invalid value', errorResult.data);
       const decorator = customErrorDecorator(mockValidationRule, errorFactory);
       const inputValue = -5;
       const expectedResult = new ErrorResult('Invalid value', -5);
@@ -131,7 +131,7 @@ describe('сustomErrorDecorator', () => {
   describe('Edge cases', () => {
     test('Should handle validation rule that always succeeds', () => {
       // Arrange
-      const alwaysSuccessRule = (value: any, error: IError<string, undefined>) => new SuccessResult(value);
+      const alwaysSuccessRule = (value: any) => new SuccessResult(value);
       const customError = new ErrorResult('Should not appear', undefined);
       const decorator = customErrorDecorator(alwaysSuccessRule, customError);
 
@@ -143,7 +143,7 @@ describe('сustomErrorDecorator', () => {
 
     test('Should handle validation rule that always fails', () => {
       // Arrange
-      const alwaysFailRule = (value: any, error: IError<string, undefined>) => error;
+      const alwaysFailRule = (value: any) => new ErrorResult('Always fails', undefined);
       const customError = new ErrorResult('Always fails', undefined);
       const decorator = customErrorDecorator(alwaysFailRule, customError);
 
@@ -155,9 +155,9 @@ describe('сustomErrorDecorator', () => {
 
     test('Should work with complex data types', () => {
       // Arrange
-      const complexRule = (value: any, error: IError<string, undefined>) => {
+      const complexRule = (value: any) => {
         if (!value || typeof value !== 'object' || !('id' in value)) {
-          return error;
+          return new ErrorResult('Invalid', undefined);
         }
         return new SuccessResult(value);
       };
@@ -177,9 +177,9 @@ describe('сustomErrorDecorator', () => {
   describe('Type inference', () => {
     test('Should infer correct return type for decorated validator', () => {
       // Arrange
-      const stringRule = (value: any, error: IError<string, undefined>): ISuccess<string> | IError<string, undefined> => {
+      const stringRule = (value: any): ISuccess<string> | IError<string, undefined> => {
         if (typeof value !== 'string') {
-          return error;
+          return new ErrorResult('Invalid', undefined);
         }
         return new SuccessResult(value);
       };

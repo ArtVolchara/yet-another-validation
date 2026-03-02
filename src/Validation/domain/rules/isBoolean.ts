@@ -8,41 +8,16 @@ export const IS_BOOLEAN_ERROR_MESSAGE = 'Value should be boolean' as const;
 export type TIsBooleanValidationError = IError<typeof IS_BOOLEAN_ERROR_MESSAGE, undefined>;
 export type TIsBooleanValidationSuccess = ISuccess<boolean>;
 
-export default function isBoolean<const Error extends IError<string, undefined>>(
-  value: any,
-  error: Error
-): TIsBooleanValidationSuccess | Error;
-
-export default function isBoolean(
-  value: any
-): TIsBooleanValidationSuccess | TIsBooleanValidationError;
-
-export default function isBoolean<
-const Error extends IError<string, undefined> | undefined = undefined,
->(
-  value: any,
-  error?: Error
-): undefined extends Error
-  ? (TIsBooleanValidationSuccess | TIsBooleanValidationError)
-  : (TIsBooleanValidationSuccess | Error);
-
 export default function isBoolean(
   value: any,
-  error?: IError<string, undefined>,
-) {
+): TIsBooleanValidationSuccess | TIsBooleanValidationError {
   try {
     if (typeof value === 'boolean') {
       return new SuccessResult(value);
     }
-    if (error) {
-      return error;
-    }
     return new ErrorResult(IS_BOOLEAN_ERROR_MESSAGE, undefined);
   } catch (e) {
     console.error(e);
-    if (error) {
-      return error;
-    }
     return new ErrorResult(IS_BOOLEAN_ERROR_MESSAGE, undefined);
   }
 }

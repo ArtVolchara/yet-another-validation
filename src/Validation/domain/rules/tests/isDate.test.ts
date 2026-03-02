@@ -1,8 +1,7 @@
-import { describe, test, expect } from "vitest";
+import { describe, test, expect } from 'vitest';
 import isDate, { IS_DATE_ERROR_MESSAGE } from '../isDate';
 import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
 import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
-import customErrorDecorator from '../../utils/customErrorDecorator';
 
 describe('isDate validation rule test', () => {
   describe('Primitive values', () => {
@@ -88,36 +87,6 @@ describe('isDate validation rule test', () => {
         // Assert
         expect(actualResult).toEqual(expectedResult);
       });
-    });
-  });
-
-  describe('Custom error with ruleCustomErrorDecorator', () => {
-    test('Should return custom error when validation fails', () => {
-      // Arrange
-      const inputValue = 'not a date';
-      const customError = new ErrorResult('Custom date error', undefined);
-      const validator = customErrorDecorator(isDate, customError);
-      const expectedResult = customError;
-
-      // Act
-      const actualResult = validator(inputValue);
-
-      // Assert
-      expect(actualResult).toEqual(expectedResult);
-    });
-
-    test('Should return success when validation passes with custom error decorator', () => {
-      // Arrange
-      const inputValue = new Date();
-      const customError = new ErrorResult('Custom date error', undefined);
-      const validator = customErrorDecorator(isDate, customError);
-      const expectedResult = new SuccessResult(inputValue);
-
-      // Act
-      const actualResult = validator(inputValue);
-
-      // Assert
-      expect(actualResult).toEqual(expectedResult);
     });
   });
 });

@@ -2,7 +2,6 @@ import { describe, test, expect } from "vitest";
 import isPositiveNumber, { IS_ONLY_POSITIVE_NUMBER_ERROR_MESSAGE } from '../isPositiveNumber';
 import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
 import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
-import customErrorDecorator from '../../utils/customErrorDecorator';
 
 // There are no tests for string and Date values, which may lead to false positive results,
 // because isPositiveNumber has the input parameter of number type, it is made as second item in validation rules chain
@@ -95,36 +94,6 @@ describe('isPositiveNumber validation rule test', () => {
         // Assert
         expect(actualResult).toEqual(expectedResult);
       });
-    });
-  });
-
-  describe('Custom error with ruleCustomErrorDecorator', () => {
-    test('Should return custom error when validation fails', () => {
-      // Arrange
-      const inputValue = -5;
-      const customError = new ErrorResult('Custom positive number error', undefined);
-      const validator = customErrorDecorator(isPositiveNumber, customError);
-      const expectedResult = customError;
-
-      // Act
-      const actualResult = validator(inputValue);
-
-      // Assert
-      expect(actualResult).toEqual(expectedResult);
-    });
-
-    test('Should return success when validation passes with custom error decorator', () => {
-      // Arrange
-      const inputValue = 42;
-      const customError = new ErrorResult('Custom positive number error', undefined);
-      const validator = customErrorDecorator(isPositiveNumber, customError);
-      const expectedResult = new SuccessResult(inputValue);
-
-      // Act
-      const actualResult = validator(inputValue);
-
-      // Assert
-      expect(actualResult).toEqual(expectedResult);
     });
   });
 });

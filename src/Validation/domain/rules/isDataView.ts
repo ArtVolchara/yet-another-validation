@@ -8,41 +8,16 @@ export const IS_DATA_VIEW_ERROR_MESSAGE = 'Value should be a DataView' as const;
 export type TIsDataViewValidationError = IError<typeof IS_DATA_VIEW_ERROR_MESSAGE, undefined>;
 export type TIsDataViewValidationSuccess = ISuccess<DataView>;
 
-export default function isDataView<const Error extends IError<string, undefined>>(
-  value: any,
-  error: Error
-): TIsDataViewValidationSuccess | Error;
-
-export default function isDataView(
-  value: any
-): TIsDataViewValidationSuccess | TIsDataViewValidationError;
-
-export default function isDataView<
-const Error extends IError<string, undefined> | undefined = undefined,
->(
-  value: any,
-  error?: Error
-): undefined extends Error
-  ? (TIsDataViewValidationSuccess | TIsDataViewValidationError)
-  : (TIsDataViewValidationSuccess | Error);
-
 export default function isDataView(
   value: any,
-  error?: IError<string, undefined>,
-) {
+): TIsDataViewValidationSuccess | TIsDataViewValidationError {
   try {
     if (value instanceof DataView) {
-      return new SuccessResult(value as DataView);
-    }
-    if (error) {
-      return error;
+      return new SuccessResult(value);
     }
     return new ErrorResult(IS_DATA_VIEW_ERROR_MESSAGE, undefined);
   } catch (e) {
     console.error(e);
-    if (error) {
-      return error;
-    }
     return new ErrorResult(IS_DATA_VIEW_ERROR_MESSAGE, undefined);
   }
-} 
+}

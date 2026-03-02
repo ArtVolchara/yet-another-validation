@@ -254,6 +254,123 @@ describe('createArrayValidationRule', () => {
     });
   });
 
+  describe('Params', () => {
+    describe('proxyPerElement', () => {
+      it('should call proxyPerElement for each element with success result', () => {
+        // Arrange
+        const inputValue = ['a', 'b', 'c'];
+        const proxiedResults: Array<{ result: any; index: number }> = [];
+        const arrayValidationRule = createArrayValidationRule(
+          composeValidator([[isString]]),
+          {
+            proxyPerElement: (result, index) => {
+              proxiedResults.push({ result, index });
+            },
+          },
+        );
+
+        // Act
+        arrayValidationRule(inputValue);
+
+        // Assert
+        expect(proxiedResults).toHaveLength(3);
+        expect(proxiedResults[0].index).toBe(0);
+        expect(proxiedResults[1].index).toBe(1);
+        expect(proxiedResults[2].index).toBe(2);
+        proxiedResults.forEach(({ result }) => {
+          expect(result.status).toBe('success');
+        });
+      });
+
+      it('should call proxyPerElement for each element with mixed results', () => {
+        // Arrange
+        const inputValue = ['a', 123, 'c'];
+        const proxiedResults: Array<{ result: any; index: number }> = [];
+        const arrayValidationRule = createArrayValidationRule(
+          composeValidator([[isString]]),
+          {
+            proxyPerElement: (result, index) => {
+              proxiedResults.push({ result, index });
+            },
+          },
+        );
+
+        // Act
+        arrayValidationRule(inputValue);
+
+        // Assert
+        expect(proxiedResults).toHaveLength(3);
+        expect(proxiedResults[0].result.status).toBe('success');
+        expect(proxiedResults[1].result.status).toBe('error');
+        expect(proxiedResults[2].result.status).toBe('success');
+      });
+    });
+
+    describe('errorMessageHypernym', () => {
+      it('should use custom error message hypernym', () => {
+        // Arrange
+        const inputValue = ['a', 123];
+        const customHypernym = 'Custom hypernym';
+        const arrayValidationRule = createArrayValidationRule(
+          composeValidator([[isString]]),
+          { errorMessageHypernym: customHypernym },
+        );
+
+        // Act
+        const actualResult = arrayValidationRule(inputValue);
+
+        // Assert
+        expect(actualResult.status).toBe('error');
+        if (actualResult.status === 'error') {
+          expect(actualResult.message).toContain(customHypernym);
+          expect(actualResult.message).not.toContain('Array validation failed for the following elements');
+        }
+      });
+    });
+
+    describe('errorMessageHypernymSeparator', () => {
+      it('should use custom hypernym separator', () => {
+        // Arrange
+        const inputValue = ['a', 123];
+        const customSeparator = ' ->';
+        const arrayValidationRule = createArrayValidationRule(
+          composeValidator([[isString]]),
+          { errorMessageHypernymSeparator: customSeparator },
+        );
+
+        // Act
+        const actualResult = arrayValidationRule(inputValue);
+
+        // Assert
+        expect(actualResult.status).toBe('error');
+        if (actualResult.status === 'error') {
+          expect(actualResult.message).toContain(`Array validation failed for the following elements${customSeparator}`);
+        }
+      });
+    });
+
+    describe('errorMessageIndexSeparator', () => {
+      it('should use custom index separator', () => {
+        // Arrange
+        const inputValue = ['a', 123];
+        const customSeparator = ' => ';
+        const arrayValidationRule = createArrayValidationRule(
+          composeValidator([[isString]]),
+          { errorMessageIndexSeparator: customSeparator },
+        );
+
+        // Act
+        const actualResult = arrayValidationRule(inputValue);
+
+        // Assert
+        expect(actualResult.status).toBe('error');
+        if (actualResult.status === 'error') {
+          expect(actualResult.message).toContain(`1${customSeparator}`);
+        }
+      });
+    });
+  });
+
   describe('Edge cases', () => {
     describe('Error case: error message formatting', () => {
       it('should format error messages with element indices', () => {

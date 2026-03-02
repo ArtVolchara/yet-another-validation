@@ -2,7 +2,6 @@ import { describe, test, expect } from "vitest";
 import isInt32Array, { IS_INT32_ARRAY_ERROR_MESSAGE } from '../isInt32Array';
 import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
 import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
-import customErrorDecorator from '../../utils/customErrorDecorator';
 
 describe('isInt32Array validation rule test', () => {
   describe('Primitive values', () => {
@@ -80,36 +79,6 @@ describe('isInt32Array validation rule test', () => {
         // Assert
         expect(actualResult).toEqual(expectedResult);
       });
-    });
-  });
-
-  describe('Custom error with ruleCustomErrorDecorator', () => {
-    test('Should return custom error when validation fails', () => {
-      // Arrange
-      const inputValue = 'not an int32array';
-      const customError = new ErrorResult('Custom int32array error', undefined);
-      const validator = customErrorDecorator(isInt32Array, customError);
-      const expectedResult = customError;
-
-      // Act
-      const actualResult = validator(inputValue);
-
-      // Assert
-      expect(actualResult).toEqual(expectedResult);
-    });
-
-    test('Should return success when validation passes with custom error decorator', () => {
-      // Arrange
-      const inputValue = new Int32Array([1, 2, 3]);
-      const customError = new ErrorResult('Custom int32array error', undefined);
-      const validator = customErrorDecorator(isInt32Array, customError);
-      const expectedResult = new SuccessResult(inputValue);
-
-      // Act
-      const actualResult = validator(inputValue);
-
-      // Assert
-      expect(actualResult).toEqual(expectedResult);
     });
   });
 });

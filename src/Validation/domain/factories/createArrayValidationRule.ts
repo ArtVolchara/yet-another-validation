@@ -10,98 +10,36 @@ import ErrorResult from '../../../_Root/domain/factories/ErrorResult';
 import SuccessResult from '../../../_Root/domain/factories/SuccessResult';
 import isArray, { TIsArrayValidationError } from '../rules/isArray';
 
-export type TArrayValidatorErrorFactory<Validator extends TValidator> = {
-  (data: Array<TRetrieveError<ReturnType<Validator>> | undefined>): IError<string, typeof data>
-} | ((data: Array<TRetrieveError<ReturnType<Validator>> | undefined>) => IError<string, typeof data>);
+const DEFAULT_ERROR_MESSAGE_HYPERNYM = 'Array validation failed for the following elements';
+const DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR = ':';
+const DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR = ':';
 
 export type TValidationAccumulator<Validator extends TValidator> = {
   validResults: Array<TRetrieveValidationSuccessData<Validator>>;
   errors: Array<TRetrieveError<ReturnType<Validator>> | undefined>;
-  errorMessages: string[];
+  errorMessage: string;
   isError: boolean;
 };
 
-// Результат валидации массива с учётом переданного дефолтного error factory
-type TArrayValidationRuleResult<
-  Validator extends TValidator,
-  ErrorFactory extends TArrayValidatorErrorFactory<Validator> | undefined,
-  DefaultErrorFactory extends TArrayValidatorErrorFactory<Validator> | undefined,
-> =
-  ISuccess<Array<TRetrieveValidationSuccessData<Validator>['data']>>
-  | (
-    // Если валидатор элементов безошибочен (возвращает только ISuccess), error-branch схлопывается в never
-    [TRetrieveError<ReturnType<Validator>>] extends [never]
-      ? never
-      : (
-        undefined extends ErrorFactory
-          ? (
-            undefined extends DefaultErrorFactory
-              ? IError<string, Array<TRetrieveError<ReturnType<Validator>>>>
-              : ReturnType<Extract<DefaultErrorFactory, (...args: any[]) => any>>
-          )
-          : ReturnType<Extract<ErrorFactory, (...args: any[]) => any>>
-      )
-  )
-  | TIsArrayValidationError;
-
-export type TArrayValidationRule<
-  Validator extends TValidator,
-  DefaultErrorFactory extends TArrayValidatorErrorFactory<Validator> | undefined = undefined,
-> = {
-  // Вызов без errorFactory
-  (value: Array<TRetrieveValidationInputData<Validator>>):
-  TArrayValidationRuleResult<Validator, undefined, DefaultErrorFactory>;
-
-  // Вызов с errorFactory
-  <const ErrorFactory extends TArrayValidatorErrorFactory<Validator>>(
-    value: Array<TRetrieveValidationInputData<Validator>>,
-    errorFactory: ErrorFactory,
-  ): TArrayValidationRuleResult<Validator, ErrorFactory, DefaultErrorFactory>;
-
-  // Catch-all
-  <
-    const ErrorFactory extends TArrayValidatorErrorFactory<Validator> | undefined = undefined,
-  >(
-    value: Array<TRetrieveValidationInputData<Validator>>,
-    errorFactory?: ErrorFactory,
-  ): TArrayValidationRuleResult<Validator, ErrorFactory, DefaultErrorFactory>;
+export type TCreateArrayRuleParams<Validator extends TValidator> = {
+  proxyPerElement?: (
+    result: ISuccess<TRetrieveValidationSuccessData<Validator>['data']> 
+    | TRetrieveError<ReturnType<Validator>> | undefined,
+    index: number,
+  ) => void,
+  errorMessageHypernym?: string,
+  errorMessageHypernymSeparator?: string,
+  errorMessageIndexSeparator?: string,
 };
 
-// Без default error factory
-export default function createArrayValidationRule<const Validator extends TValidator>(
-  validator: Validator,
-): TArrayValidationRule<Validator>;
-
-// С default error factory
 export default function createArrayValidationRule<
   const Validator extends TValidator,
-  const ErrorFactory extends TArrayValidatorErrorFactory<Validator>,
 >(
   validator: Validator,
-  defaultErrorFactory: ErrorFactory,
-): TArrayValidationRule<Validator, ErrorFactory>;
-
-// С или без defaultErrorFactory
-export default function createArrayValidationRule<
-  const Validator extends TValidator,
-  const ErrorFactory extends TArrayValidatorErrorFactory<Validator> | undefined = undefined,
->(
-  validator: Validator,
-  defaultErrorFactory?: ErrorFactory,
-): ErrorFactory extends TArrayValidatorErrorFactory<Validator>
-  ? TArrayValidationRule<Validator, ErrorFactory>
-  : TArrayValidationRule<Validator>;
-
-export default function createArrayValidationRule<
-  const Validator extends TValidator,
-  const DefaultErrorFactory extends TArrayValidatorErrorFactory<Validator>,
->(
-  validator: Validator,
-  defaultErrorFactory?: DefaultErrorFactory,
+  params?: TCreateArrayRuleParams<Validator>,
 ) {
   return (
     value: Array<TRetrieveValidationInputData<Validator>>,
-    errorFactory?: (data: Array<TRetrieveError<ReturnType<Validator>> | undefined>) => IError<string, any>,
   ): ISuccess<Array<TRetrieveValidationSuccessData<Validator>['data']>>
     | (
     IError<string, Array<TRetrieveError<ReturnType<Validator>> | undefined>>
@@ -116,7 +54,7 @@ export default function createArrayValidationRule<
       const initialAcc: TValidationAccumulator<Validator> = {
         validResults: [],
         errors: [],
-        errorMessages: [],
+        errorMessage: '',
         isError: false,
       };
 
@@ -125,23 +63,19 @@ export default function createArrayValidationRule<
         if (validationResult.status === 'success') {
           acc.validResults.push(validationResult.data);
           acc.errors.push(undefined);
+          params?.proxyPerElement?.(validationResult, index);
         } else {
           acc.isError = true;
           acc.errors.push(validationResult as TRetrieveError<ReturnType<Validator>>);
-          acc.errorMessages.push(`${index}: ${validationResult.message}`);
+          params?.proxyPerElement?.(validationResult as TRetrieveError<ReturnType<Validator>>, index);
+          acc.errorMessage += `${index}${params?.errorMessageIndexSeparator || DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}${validationResult.message}\n`;
         }
         return acc;
       }, initialAcc);
 
       if (result.isError) {
-        if (errorFactory) {
-          return errorFactory(result.errors);
-        }
-        if (defaultErrorFactory) {
-          return defaultErrorFactory(result.errors);
-        }
         return new ErrorResult(
-          `Array validation failed for the following elements:\n${result.errorMessages.join('\n')}`,
+          `${params?.errorMessageHypernym || DEFAULT_ERROR_MESSAGE_HYPERNYM}${params?.errorMessageHypernymSeparator || DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}\n${result.errorMessage}`,
           result.errors,
         );
       }

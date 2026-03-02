@@ -9,55 +9,23 @@ export type TIsArrayMaxLengthNominal<Number extends number> = { readonly [MaxLen
 export type TIsArrayMaxLengthValidationError<MaxLength extends number> = IError<`Array should contain less than ${MaxLength} elements`, undefined>;
 export type TIsArrayMaxLengthValidationSuccess<MaxLength extends number> = ISuccess<TIsArrayMaxLengthNominal<MaxLength>>;
 
-type TIsArrayMaxLengthValidationRule<
-  MaxLength extends number,
-  DefaultError extends IError<string, any> = TIsArrayMaxLengthValidationError<MaxLength>,
-> = {
-  <const Error extends IError<string, undefined>>(value: Array<any>, error: Error): TIsArrayMaxLengthValidationSuccess<MaxLength> | Error;
-  (value: Array<any>): TIsArrayMaxLengthValidationSuccess<MaxLength> | DefaultError;
-  <
-    const Error extends IError<string, undefined> | undefined = undefined,
-  >(value: Array<any>, error?: Error): undefined extends Error
-    ? (TIsArrayMaxLengthValidationSuccess<MaxLength> | DefaultError)
-    : (TIsArrayMaxLengthValidationSuccess<MaxLength> | Error);
-};
-
-export default function generateArrayMaxLengthValidationRule<MaxLength extends number, const Error extends IError<string, undefined>>(
-  maxLength: MaxLength,
-  error: Error
-): TIsArrayMaxLengthValidationRule<MaxLength, Error>;
-
-export default function generateArrayMaxLengthValidationRule<MaxLength extends number>(
-  maxLength: MaxLength
-): TIsArrayMaxLengthValidationRule<MaxLength>;
+type TIsArrayMaxLengthValidationRule<MaxLength extends number> = (
+  value: Array<any>,
+) => TIsArrayMaxLengthValidationSuccess<MaxLength> | TIsArrayMaxLengthValidationError<MaxLength>;
 
 export default function generateArrayMaxLengthValidationRule<MaxLength extends number>(
   maxLength: MaxLength,
-  defaultError?: IError<string, undefined>,
-) {
+): TIsArrayMaxLengthValidationRule<MaxLength> {
   return function isArrayMaxLength(
     value: Array<any>,
-    error?: IError<string, undefined>,
   ) {
     try {
       if (Array.isArray(value) && value.length <= maxLength) {
         return new SuccessResult(value as unknown as TIsArrayMaxLengthNominal<MaxLength>);
       }
-      if (error) {
-        return error;
-      }
-      if (defaultError) {
-        return defaultError;
-      }
       return new ErrorResult(`Array should contain less than ${maxLength} elements`, undefined);
     } catch (e) {
       console.error(e);
-      if (error) {
-        return error;
-      }
-      if (defaultError) {
-        return defaultError;
-      }
       return new ErrorResult(`Array should contain less than ${maxLength} elements`, undefined);
     }
   };

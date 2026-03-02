@@ -2,7 +2,6 @@ import { describe, test, expect } from "vitest";
 import isWeakMap, { IS_WEAK_MAP_ERROR_MESSAGE } from '../isWeakMap';
 import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
 import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
-import customErrorDecorator from '../../utils/customErrorDecorator';
 
 describe('isWeakMap validation rule test', () => {
   describe('Primitive values', () => {
@@ -86,36 +85,6 @@ describe('isWeakMap validation rule test', () => {
         // Assert
         expect(actualResult).toEqual(expectedResult);
       });
-    });
-  });
-
-  describe('Custom error with ruleCustomErrorDecorator', () => {
-    test('Should return custom error when validation fails', () => {
-      // Arrange
-      const inputValue = 'not a weakmap';
-      const customError = new ErrorResult('Custom weakmap error', undefined);
-      const validator = customErrorDecorator(isWeakMap, customError);
-      const expectedResult = customError;
-
-      // Act
-      const actualResult = validator(inputValue);
-
-      // Assert
-      expect(actualResult).toEqual(expectedResult);
-    });
-
-    test('Should return success when validation passes with custom error decorator', () => {
-      // Arrange
-      const inputValue = new WeakMap([[{}, 'value']]);
-      const customError = new ErrorResult('Custom weakmap error', undefined);
-      const validator = customErrorDecorator(isWeakMap, customError);
-      const expectedResult = new SuccessResult(inputValue);
-
-      // Act
-      const actualResult = validator(inputValue);
-
-      // Assert
-      expect(actualResult).toEqual(expectedResult);
     });
   });
 });

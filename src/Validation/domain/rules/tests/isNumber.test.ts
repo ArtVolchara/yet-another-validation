@@ -1,8 +1,7 @@
-import { describe, test, expect } from "vitest";
+import { describe, test, expect } from 'vitest';
 import isNumber, { IS_NUMBER_ERROR_MESSAGE } from '../isNumber';
 import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
 import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
-import customErrorDecorator from '../../utils/customErrorDecorator';
 
 describe('isNumber validation rule test', () => {
   describe('Primitive values', () => {
@@ -80,36 +79,6 @@ describe('isNumber validation rule test', () => {
         // Assert
         expect(actualResult).toEqual(expectedResult);
       });
-    });
-  });
-
-  describe('Custom error with ruleCustomErrorDecorator', () => {
-    test('Should return custom error when validation fails', () => {
-      // Arrange
-      const inputValue = 'not a number';
-      const customError = new ErrorResult('Custom number error', undefined);
-      const validator = customErrorDecorator(isNumber, customError);
-      const expectedResult = customError;
-
-      // Act
-      const actualResult = validator(inputValue);
-
-      // Assert
-      expect(actualResult).toEqual(expectedResult);
-    });
-
-    test('Should return success when validation passes with custom error decorator', () => {
-      // Arrange
-      const inputValue = 42;
-      const customError = new ErrorResult('Custom number error', undefined);
-      const validator = customErrorDecorator(isNumber, customError);
-      const expectedResult = new SuccessResult(42);
-
-      // Act
-      const actualResult = validator(inputValue);
-
-      // Assert
-      expect(actualResult).toEqual(expectedResult);
     });
   });
 });

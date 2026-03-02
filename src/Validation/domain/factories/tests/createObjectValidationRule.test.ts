@@ -225,6 +225,130 @@ describe('createObjectValidationRule', () => {
     });
   });
 
+  describe('Params', () => {
+    describe('proxyPerField', () => {
+      it('should call proxyPerField for each field with success results', () => {
+        // Arrange
+        const inputValue = { name: 'John', age: 25 };
+        const proxiedResults: Array<{ result: any; field: string }> = [];
+        const objectValidationRule = createObjectValidationRule(
+          {
+            name: composeValidator([[isString]]),
+            age: composeValidator([[isNumber]]),
+          },
+          {
+            proxyPerField: (result, field) => {
+              proxiedResults.push({ result, field });
+            },
+          },
+        );
+
+        // Act
+        objectValidationRule(inputValue);
+
+        // Assert
+        expect(proxiedResults).toHaveLength(2);
+        const fields = proxiedResults.map(({ field }) => field);
+        expect(fields).toContain('name');
+        expect(fields).toContain('age');
+        proxiedResults.forEach(({ result }) => {
+          expect(result.status).toBe('success');
+        });
+      });
+
+      it('should call proxyPerField for each field with mixed results', () => {
+        // Arrange
+        const inputValue = { name: 123, age: 25 };
+        const proxiedResults: Array<{ result: any; field: string }> = [];
+        const objectValidationRule = createObjectValidationRule(
+          {
+            name: composeValidator([[isString]]),
+            age: composeValidator([[isNumber]]),
+          },
+          {
+            proxyPerField: (result, field) => {
+              proxiedResults.push({ result, field });
+            },
+          },
+        );
+
+        // Act
+        objectValidationRule(inputValue);
+
+        // Assert
+        expect(proxiedResults).toHaveLength(2);
+        const nameResult = proxiedResults.find(({ field }) => field === 'name');
+        const ageResult = proxiedResults.find(({ field }) => field === 'age');
+        expect(nameResult?.result.status).toBe('error');
+        expect(ageResult?.result.status).toBe('success');
+      });
+    });
+
+    describe('errorMessageHypernym', () => {
+      it('should use custom error message hypernym', () => {
+        // Arrange
+        const inputValue = { name: 123 };
+        const customHypernym = 'Custom object error';
+        const objectValidationRule = createObjectValidationRule(
+          { name: composeValidator([[isString]]) },
+          { errorMessageHypernym: customHypernym },
+        );
+
+        // Act
+        const actualResult = objectValidationRule(inputValue);
+
+        // Assert
+        expect(actualResult.status).toBe('error');
+        if (actualResult.status === 'error') {
+          expect(actualResult.message).toContain(customHypernym);
+          expect(actualResult.message).not.toContain('Object validation failed for the following fields');
+        }
+      });
+    });
+
+    describe('errorMessageHypernymSeparator', () => {
+      it('should use custom hypernym separator', () => {
+        // Arrange
+        const inputValue = { name: 123 };
+        const customSeparator = ' ->';
+        const objectValidationRule = createObjectValidationRule(
+          { name: composeValidator([[isString]]) },
+          { errorMessageHypernymSeparator: customSeparator },
+        );
+
+        // Act
+        const actualResult = objectValidationRule(inputValue);
+
+        // Assert
+        expect(actualResult.status).toBe('error');
+        if (actualResult.status === 'error') {
+          expect(actualResult.message).toContain(`Object validation failed for the following fields${customSeparator}`);
+        }
+      });
+    });
+
+    describe('errorMessageFieldSeparator', () => {
+      it('should use custom field separator', () => {
+        // Arrange
+        const inputValue = { name: 123 };
+        const customSeparator = ' => ';
+        const objectValidationRule = createObjectValidationRule(
+          { name: composeValidator([[isString]]) },
+          { errorMessageFieldSeparator: customSeparator },
+        );
+
+        // Act
+        const actualResult = objectValidationRule(inputValue);
+
+        // Assert
+        expect(actualResult.status).toBe('error');
+        if (actualResult.status === 'error') {
+          expect(actualResult.message).toContain(`name${customSeparator}`);
+        }
+      });
+    });
+  });
+
   describe('Edge cases', () => {
     describe('Success case: empty object', () => {
       it('should successfully validate empty object', () => {

@@ -10,7 +10,6 @@ import createTupleValidationRule from '../createTupleValidationRule';
 import createObjectValidationRule from '../createObjectValidationRule';
 import composeValidator from '../composeValidator';
 import isObject from '../../rules/isObject';
-import { TRetrieveErrorData } from '../../types/TValidator';
 
 describe('createTupleValidationRule', () => {
   describe('Simple tuple', () => {
@@ -241,6 +240,126 @@ describe('createTupleValidationRule', () => {
     });
   });
 
+  describe('Params', () => {
+    const stringValidator = composeValidator([[isString]]);
+    const numberValidator = composeValidator([[isNumber]]);
+    const validators = [stringValidator, numberValidator] as const;
+
+    describe('proxyPerElement', () => {
+      it('should call proxyPerElement for each element with success results', () => {
+        // Arrange
+        const inputValue = ['Hello', 42] as const;
+        const proxiedResults: Array<{ result: any; index: number }> = [];
+        const tupleValidationRule = createTupleValidationRule(
+          [...validators],
+          {
+            proxyPerElement: (result: any, index: number) => {
+              proxiedResults.push({ result, index });
+            },
+          },
+        );
+
+        // Act
+        tupleValidationRule(inputValue);
+
+        // Assert
+        expect(proxiedResults).toHaveLength(2);
+        expect(proxiedResults[0].index).toBe(0);
+        expect(proxiedResults[1].index).toBe(1);
+        proxiedResults.forEach(({ result }) => {
+          expect(result.status).toBe('success');
+        });
+      });
+
+      it('should call proxyPerElement for each element with mixed results', () => {
+        // Arrange
+        const inputValue = [123, 'not a number'] as const;
+        const proxiedResults: Array<{ result: any; index: number }> = [];
+        const tupleValidationRule = createTupleValidationRule(
+          [...validators],
+          {
+            proxyPerElement: (result: any, index: number) => {
+              proxiedResults.push({ result, index });
+            },
+          },
+        );
+
+        // Act
+        tupleValidationRule(inputValue);
+
+        // Assert
+        expect(proxiedResults).toHaveLength(2);
+        expect(proxiedResults[0].result.status).toBe('error');
+        expect(proxiedResults[1].result.status).toBe('error');
+      });
+    });
+
+    describe('errorMessageHypernym', () => {
+      it('should use custom error message hypernym', () => {
+        // Arrange
+        const inputValue = [123, 'not a number'] as const;
+        const customHypernym = 'Custom tuple error';
+        const tupleValidationRule = createTupleValidationRule(
+          [...validators],
+          { errorMessageHypernym: customHypernym },
+        );
+
+        // Act
+        const actualResult = tupleValidationRule(inputValue);
+
+        // Assert
+        expect(actualResult.status).toBe('error');
+        if (actualResult.status === 'error') {
+          expect(actualResult.message).toContain(customHypernym);
+          expect(actualResult.message).not.toContain('Tuple validation failed for the following elements');
+        }
+      });
+    });
+
+    describe('errorMessageHypernymSeparator', () => {
+      it('should use custom hypernym separator', () => {
+        // Arrange
+        const inputValue = [123, 'not a number'] as const;
+        const customSeparator = ' ->';
+        const tupleValidationRule = createTupleValidationRule(
+          [...validators],
+          { errorMessageHypernymSeparator: customSeparator },
+        );
+
+        // Act
+        const actualResult = tupleValidationRule(inputValue);
+
+        // Assert
+        expect(actualResult.status).toBe('error');
+        if (actualResult.status === 'error') {
+          expect(actualResult.message).toContain(`Tuple validation failed for the following elements${customSeparator}`);
+        }
+      });
+    });
+
+    describe('errorMessageIndexSeparator', () => {
+      it('should use custom index separator', () => {
+        // Arrange
+        const inputValue = [123, 'not a number'] as const;
+        const customSeparator = ' => ';
+        const tupleValidationRule = createTupleValidationRule(
+          [...validators],
+          { errorMessageIndexSeparator: customSeparator },
+        );
+
+        // Act
+        const actualResult = tupleValidationRule(inputValue);
+
+        // Assert
+        expect(actualResult.status).toBe('error');
+        if (actualResult.status === 'error') {
+          expect(actualResult.message).toContain(`0${customSeparator}`);
+          expect(actualResult.message).toContain(`1${customSeparator}`);
+        }
+      });
+    });
+  });
+
   describe('Edge cases', () => {
     describe('Error case: error message formatting', () => {
       it('should format error messages with element indices', () => {
@@ -274,7 +393,6 @@ describe('createTupleValidationRule', () => {
         const workplaceValidationRule = createObjectValidationRule(workplaceSchema);
         const workplaceValidator = composeValidator([[isObject, workplaceValidationRule]]);
         const tupleValidationRule = createTupleValidationRule([workplaceValidator]);
-        const tupleValidator = composeValidator([[isArray, tupleValidationRule], [isUndefined]]);
         const inputValue = [[{ position: '1', company: 'w' }]] as const;
         // Act
         const actualResult = tupleValidationRule(inputValue);

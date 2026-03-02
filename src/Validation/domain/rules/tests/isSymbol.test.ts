@@ -2,7 +2,6 @@ import { describe, test, expect } from "vitest";
 import isSymbol, { IS_SYMBOL_ERROR_MESSAGE } from '../isSymbol';
 import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
 import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
-import customErrorDecorator from '../../utils/customErrorDecorator';
 
 describe('isSymbol validation rule test', () => {
   describe('Primitive values', () => {
@@ -73,36 +72,6 @@ describe('isSymbol validation rule test', () => {
         // Assert
         expect(actualResult).toEqual(expectedResult);
       });
-    });
-  });
-
-  describe('Custom error with ruleCustomErrorDecorator', () => {
-    test('Should return custom error when validation fails', () => {
-      // Arrange
-      const inputValue = 'not a symbol';
-      const customError = new ErrorResult('Custom symbol error', undefined);
-      const validator = customErrorDecorator(isSymbol, customError);
-      const expectedResult = customError;
-
-      // Act
-      const actualResult = validator(inputValue);
-
-      // Assert
-      expect(actualResult).toEqual(expectedResult);
-    });
-
-    test('Should return success when validation passes with custom error decorator', () => {
-      // Arrange
-      const inputValue = Symbol('test');
-      const customError = new ErrorResult('Custom symbol error', undefined);
-      const validator = customErrorDecorator(isSymbol, customError);
-      const expectedResult = new SuccessResult(inputValue);
-
-      // Act
-      const actualResult = validator(inputValue);
-
-      // Assert
-      expect(actualResult).toEqual(expectedResult);
     });
   });
 }); 
