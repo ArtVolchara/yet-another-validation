@@ -10,11 +10,11 @@ import { ISuccess } from '../../../_Root/domain/types/Result/ISuccess';
 import { IError } from '../../../_Root/domain/types/Result/IError';
 import ErrorResult from '../../../_Root/domain/factories/ErrorResult';
 import SuccessResult from '../../../_Root/domain/factories/SuccessResult';
-import isArray, { TIsArrayValidationError } from '../rules/isArray';
+import isArray from '../rules/isArray';
 
-const DEFAULT_ERROR_MESSAGE_HYPERNYM = 'Tuple validation failed for the following elements';
-const DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR = ':';
-const DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR = ':';
+export const DEFAULT_ERROR_MESSAGE_HYPERNYM = 'Tuple validation failed for the following elements';
+export const DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR = ':';
+export const DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR = ':';
 
 export type TInputValue<Validators extends Partial<TValidators>> = Validators extends [infer First extends TValidator]
   ? [TRetrieveValidationInputData<First>]
@@ -68,49 +68,47 @@ export default function createTupleValidationRule<
   params?: TCreateTupleRuleParams<Validators>,
 ) {
   return (
-    value: TInputValue<Validators> | Readonly<TInputValue<Validators>>,
-  ): ISuccess<TSuccessTupleValidationData<Validators>>
-    | (IError<string, TErrorTupleValidationData<Validators>>| TIsArrayValidationError) => {
-    const arrayValidation = isArray(value);
-    if (arrayValidation.status === 'error') {
-      return arrayValidation;
-    }
+    value: Array<(TInputValue<Validators>)[number]> | Readonly<Array<(TInputValue<Validators>)[number]>>,
+  ): ISuccess<TSuccessTupleValidationData<Validators>> | IError<string, TErrorTupleValidationData<Validators>> => {
+    try {
+      const initialAcc: TValidationAccumulator<Validators> = {
+        validResults: [] as unknown as TSuccessTupleValidationData<Validators>,
+        errors: [] as unknown as TErrorTupleValidationData<Validators>,
+        errorMessage: '',
+        isError: false,
+      };
 
-    const initialAcc: TValidationAccumulator<Validators> = {
-      validResults: [] as unknown as TSuccessTupleValidationData<Validators>,
-      errors: [] as unknown as TErrorTupleValidationData<Validators>,
-      errorMessage: '',
-      isError: false,
-    };
+      const result = initialAcc;
 
-    const result = initialAcc;
-
-    // eslint-disable-next-line no-restricted-syntax
-    for (const [index, validator] of validators.entries()) {
+      // eslint-disable-next-line no-restricted-syntax
+      for (const [index, validator] of validators.entries()) {
       // eslint-disable-next-line no-continue
-      if (!validator) continue;
+        if (!validator) continue;
+        const val = isArray(value).status === 'error' ? undefined : value?.[index];
+        const validationResult = validator(val);
 
-      const validationResult = validator(value[index]);
-
-      if (validationResult.status === 'success') {
-        result.validResults[index] = validationResult.data;
-        result.errors[index] = undefined;
-        params?.proxyPerElement?.(validationResult, index);
-      } else {
-        result.isError = true;
-        result.errors[index] = validationResult;
-        params?.proxyPerElement?.(validationResult, index);
-        result.errorMessage += `${index}${params?.errorMessageIndexSeparator || DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}${validationResult.message}\n`;
+        if (validationResult.status === 'success') {
+          result.validResults[index] = validationResult.data;
+          result.errors[index] = undefined;
+          params?.proxyPerElement?.(validationResult, index);
+        } else {
+          result.isError = true;
+          result.errors[index] = validationResult;
+          params?.proxyPerElement?.(validationResult, index);
+          result.errorMessage += `${index}${params?.errorMessageIndexSeparator || DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}${validationResult.message}\n`;
+        }
       }
-    }
 
-    if (result.isError) {
-      return new ErrorResult(
-        `${params?.errorMessageHypernym || DEFAULT_ERROR_MESSAGE_HYPERNYM}${params?.errorMessageHypernymSeparator || DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}\n${result.errorMessage}`,
-        result.errors,
-      );
+      if (result.isError) {
+        return new ErrorResult(
+          `${params?.errorMessageHypernym || DEFAULT_ERROR_MESSAGE_HYPERNYM}${params?.errorMessageHypernymSeparator || DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}\n${result.errorMessage}`,
+          result.errors,
+        );
+      }
+      return new SuccessResult(result.validResults);
+    } catch (e) {
+      console.error(e);
+      throw e;
     }
-
-    return new SuccessResult(result.validResults);
   };
 }

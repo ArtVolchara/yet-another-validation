@@ -1,4 +1,4 @@
-import { describe, test, expect } from "vitest";
+import { describe, test, expect } from 'vitest';
 import isDataView, { IS_DATA_VIEW_ERROR_MESSAGE } from '../isDataView';
 import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
 import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
@@ -87,4 +87,4 @@ describe('isDataView validation rule test', () => {
       });
     });
   });
-}); 
+});

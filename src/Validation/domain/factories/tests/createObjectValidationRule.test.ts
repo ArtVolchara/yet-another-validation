@@ -3,8 +3,7 @@ import isString, { IS_STRING_ERROR_MESSAGE } from '../../rules/isString';
 import isNumber, { IS_NUMBER_ERROR_MESSAGE } from '../../rules/isNumber';
 import isPositiveNumber, { IS_ONLY_POSITIVE_NUMBER_ERROR_MESSAGE } from '../../rules/isPositiveNumber';
 import isBoolean from '../../rules/isBoolean';
-import { IS_OBJECT_ERROR_MESSAGE } from '../../rules/isObject';
-import createObjectValidationRule from '../createObjectValidationRule';
+import createObjectValidationRule, { DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR, DEFAULT_ERROR_MESSAGE_HYPERNYM, DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR } from '../createObjectValidationRule';
 import composeValidator from '../composeValidator';
 import isUndefined from '../../rules/isUndefined';
 
@@ -56,9 +55,9 @@ describe('createObjectValidationRule', () => {
         // Assert
         expect(actualResult.status).toBe('error');
         if (actualResult.status === 'error') {
-          expect(actualResult.message).toContain('Object validation failed for the following fields:');
-          expect(actualResult.message).toContain('name:');
-          expect(actualResult.message).toContain('age:');
+          expect(actualResult.message).toContain(`${DEFAULT_ERROR_MESSAGE_HYPERNYM}${DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
+          expect(actualResult.message).toContain(`name${DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
+          expect(actualResult.message).toContain(`age${DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
           expect(actualResult.message).toContain(IS_STRING_ERROR_MESSAGE);
           expect(actualResult.message).toContain(IS_NUMBER_ERROR_MESSAGE);
           expect(actualResult?.data?.name).toBeDefined();
@@ -79,8 +78,8 @@ describe('createObjectValidationRule', () => {
         // Assert
         expect(actualResult.status).toBe('error');
         if (actualResult.status === 'error') {
-          expect(actualResult.message).toContain('Object validation failed for the following fields:');
-          expect(actualResult.message).toContain('name:');
+          expect(actualResult.message).toContain(`${DEFAULT_ERROR_MESSAGE_HYPERNYM}${DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
+          expect(actualResult.message).toContain(`name${DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
           expect(actualResult.message).toContain(IS_STRING_ERROR_MESSAGE);
           expect(actualResult?.data?.name).toBeDefined();
         }
@@ -134,9 +133,9 @@ describe('createObjectValidationRule', () => {
         // Assert
         expect(actualResult.status).toBe('error');
         if (actualResult.status === 'error') {
-          expect(actualResult.message).toContain('Object validation failed for the following fields:');
-          expect(actualResult.message).toContain('age:');
-          expect(actualResult.message).toContain('isActive:');
+          expect(actualResult.message).toContain(`${DEFAULT_ERROR_MESSAGE_HYPERNYM}${DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
+          expect(actualResult.message).toContain(`age${DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
+          expect(actualResult.message).toContain(`isActive${DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
           expect(actualResult.message).toContain(IS_ONLY_POSITIVE_NUMBER_ERROR_MESSAGE);
           expect(actualResult?.data?.name).toBeUndefined();
           expect(actualResult?.data?.age).toBeDefined();
@@ -161,10 +160,10 @@ describe('createObjectValidationRule', () => {
         // Assert
         expect(actualResult.status).toBe('error');
         if (actualResult.status === 'error') {
-          expect(actualResult.message).toContain('Object validation failed for the following fields:');
-          expect(actualResult.message).toContain('name:');
-          expect(actualResult.message).toContain('age:');
-          expect(actualResult.message).toContain('isActive:');
+          expect(actualResult.message).toContain(`${DEFAULT_ERROR_MESSAGE_HYPERNYM}${DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
+          expect(actualResult.message).toContain(`name${DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
+          expect(actualResult.message).toContain(`age${DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
+          expect(actualResult.message).toContain(`isActive${DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
           expect(actualResult?.data?.name).toBeDefined();
           expect(actualResult?.data?.age).toBeDefined();
           expect(actualResult?.data?.isActive).toBeDefined();
@@ -218,7 +217,7 @@ describe('createObjectValidationRule', () => {
         // Assert
         expect(actualResult.status).toBe('error');
         if (actualResult.status === 'error') {
-          expect(actualResult.message).toContain('optionalField:');
+          expect(actualResult.message).toContain(`optionalField${DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
           expect(actualResult?.data?.optionalField).toBeDefined();
         }
       });
@@ -301,7 +300,7 @@ describe('createObjectValidationRule', () => {
         expect(actualResult.status).toBe('error');
         if (actualResult.status === 'error') {
           expect(actualResult.message).toContain(customHypernym);
-          expect(actualResult.message).not.toContain('Object validation failed for the following fields');
+          expect(actualResult.message).not.toContain(`${DEFAULT_ERROR_MESSAGE_HYPERNYM}`);
         }
       });
     });
@@ -322,7 +321,7 @@ describe('createObjectValidationRule', () => {
         // Assert
         expect(actualResult.status).toBe('error');
         if (actualResult.status === 'error') {
-          expect(actualResult.message).toContain(`Object validation failed for the following fields${customSeparator}`);
+          expect(actualResult.message).toContain(`${DEFAULT_ERROR_MESSAGE_HYPERNYM}${customSeparator}`);
         }
       });
     });
@@ -378,7 +377,16 @@ describe('createObjectValidationRule', () => {
         // Assert
         expect(actualResult.status).toBe('error');
         if (actualResult.status === 'error') {
-          expect(actualResult.message).toBe(IS_OBJECT_ERROR_MESSAGE);
+          expect(actualResult.message).toContain(`${DEFAULT_ERROR_MESSAGE_HYPERNYM}${DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
+          expect(actualResult.message).toContain(`name${DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
+          expect(actualResult.message).toContain(`age${DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
+          expect(actualResult.message).toContain(IS_STRING_ERROR_MESSAGE);
+          expect(actualResult.message).toContain(IS_NUMBER_ERROR_MESSAGE);
+          expect(actualResult?.data?.name).toBeDefined();
+          expect(actualResult?.data?.age).toBeDefined();
+          expect(typeof actualResult.data).toBe('object');
+          expect(actualResult.data).toHaveProperty('name');
+          expect(actualResult.data).toHaveProperty('age');
         }
       });
     });
@@ -430,7 +438,7 @@ describe('createObjectValidationRule', () => {
         // Assert
         expect(actualResult.status).toBe('error');
         if (actualResult.status === 'error') {
-          expect(actualResult.message).toContain('Object validation failed for the following fields:');
+          expect(actualResult.message).toContain(`${DEFAULT_ERROR_MESSAGE_HYPERNYM}${DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
           expect(actualResult.message).toContain('name:');
           expect(actualResult.message).toContain('age:');
           expect(actualResult.message).toContain('isActive:');
@@ -479,9 +487,9 @@ describe('createObjectValidationRule', () => {
         if (result.status === 'error') {
           const { message } = result;
           expect(typeof message).toBe('string');
-          expect(message).toContain('Object validation failed for the following fields:');
-          expect(message).toContain('name:');
-          expect(message).toContain('age:');
+          expect(message).toContain(`${DEFAULT_ERROR_MESSAGE_HYPERNYM}${DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
+          expect(message).toContain(`name${DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
+          expect(message).toContain(`age${DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
         }
       });
       it('should maintain type safety for complex object schemas', () => {

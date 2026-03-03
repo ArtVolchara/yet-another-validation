@@ -2,11 +2,11 @@ import { describe, it, expect } from 'vitest';
 import isString, { IS_STRING_ERROR_MESSAGE } from '../../rules/isString';
 import isNumber, { } from '../../rules/isNumber';
 import isPositiveNumber, { IS_ONLY_POSITIVE_NUMBER_ERROR_MESSAGE } from '../../rules/isPositiveNumber';
-import isArray, { IS_ARRAY_ERROR_MESSAGE } from '../../rules/isArray';
+import isArray from '../../rules/isArray';
 import isBoolean from '../../rules/isBoolean';
 import isOnlyDigitsString from '../../rules/isOnlyDigitsString';
 import isUndefined from '../../rules/isUndefined';
-import createArrayValidationRule from '../createArrayValidationRule';
+import createArrayValidationRule, { DEFAULT_ERROR_MESSAGE_EMPTY_HYPERNYM, DEFAULT_ERROR_MESSAGE_HYPERNYM, DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR, DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR } from '../createArrayValidationRule';
 import composeValidator from '../composeValidator';
 
 describe('createArrayValidationRule', () => {
@@ -40,8 +40,8 @@ describe('createArrayValidationRule', () => {
         // Assert
         expect(actualResult.status).toBe('error');
         if (actualResult.status === 'error') {
-          expect(actualResult.message).toContain('Array validation failed for the following elements:');
-          expect(actualResult.message).toContain('1:');
+          expect(actualResult.message).toContain(`${DEFAULT_ERROR_MESSAGE_HYPERNYM}${DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
+          expect(actualResult.message).toContain(`1${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
           expect(actualResult.message).toContain(IS_STRING_ERROR_MESSAGE);
           expect(actualResult.data).toHaveLength(3);
           expect(actualResult?.data?.[0]).toBeUndefined();
@@ -60,7 +60,8 @@ describe('createArrayValidationRule', () => {
         // Assert
         expect(actualResult.status).toBe('error');
         if (actualResult.status === 'error') {
-          expect(actualResult.message).toBe(IS_ARRAY_ERROR_MESSAGE);
+          expect(actualResult.message).toContain(`${DEFAULT_ERROR_MESSAGE_EMPTY_HYPERNYM}${DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
+          expect(actualResult.message).toContain(IS_STRING_ERROR_MESSAGE);
         }
       });
     });

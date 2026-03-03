@@ -5,13 +5,16 @@ import SuccessResult from '../../../_Root/domain/factories/SuccessResult';
 import { ISuccess } from '../../../_Root/domain/types/Result/ISuccess';
 import { TValidator } from '../types/TValidator';
 import { TRetrieveError, TRetrieveSuccess } from '../../../_Root/domain/types/Result/TResult';
-import isObject, { TIsObjectValidationError } from '../rules/isObject';
 
 export type TObjectValidatorsSchema = Record<string, TValidator>;
 
-const DEFAULT_ERROR_MESSAGE_HYPERNYM = 'Object validation failed for the following fields';
-const DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR = ':';
-const DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR = ':';
+export const DEFAULT_ERROR_MESSAGE_HYPERNYM = 'Object validation failed for the following fields';
+export const DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR = ':';
+export const DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR = ':';
+
+export type TObjectValidationErrorResult<ValidatorsSchema extends TObjectValidatorsSchema> = ([{ [Key in keyof ValidatorsSchema]: TRetrieveError<ReturnType<ValidatorsSchema[Key]>> }] extends [never]
+  ? never
+  : IError<string, { [Key in keyof ValidatorsSchema]: TRetrieveError<ReturnType<ValidatorsSchema[Key]>> }>) & {};
 
 export type TCreateObjectRuleParams<ValidatorsSchema extends TObjectValidatorsSchema> = {
   proxyPerField?: (
@@ -31,14 +34,8 @@ export default function createObjectValidationRule<
   return (
     value: Record<string | symbol, any> & { length?: never },
   ): ISuccess<{ [Key in keyof ValidatorsSchema]: TRetrieveSuccess<ReturnType<ValidatorsSchema[Key]>>['data'] }>
-  | IError<string, { [Key in keyof ValidatorsSchema]: TRetrieveError<ReturnType<ValidatorsSchema[Key]>> }> | TIsObjectValidationError => {
+    | TObjectValidationErrorResult<ValidatorsSchema> => {
     try {
-      const objectValidation = isObject(value);
-      if (objectValidation.status === 'error') {
-        return objectValidation;
-      }
-
-      const objectValue = objectValidation.data;
       const initialAcc = {
         validResults: {} as { [Key in keyof ValidatorsSchema]: TRetrieveSuccess<ReturnType<ValidatorsSchema[Key]>>['data'] },
         errors: {} as { [Key in keyof ValidatorsSchema]: TRetrieveError<ReturnType<ValidatorsSchema[Key]>> },
@@ -47,7 +44,7 @@ export default function createObjectValidationRule<
       };
 
       const result = schemaEntries.reduce((acc, [field, fieldValidator]) => {
-        const validationResult = fieldValidator(objectValue[String(field)]);
+        const validationResult = fieldValidator(value?.[String(field)]);
         if (validationResult.status === 'success') {
           acc.validResults[field] = validationResult.data;
           params?.proxyPerField?.(validationResult, String(field));
@@ -55,24 +52,21 @@ export default function createObjectValidationRule<
           acc.isError = true;
           acc.errors[field] = validationResult as TRetrieveError<ReturnType<ValidatorsSchema[typeof field]>>;
           params?.proxyPerField?.(validationResult as TRetrieveError<ReturnType<ValidatorsSchema[keyof ValidatorsSchema]>>, String(field));
-          acc.errorMessage += `${String(field)}${params?.errorMessageFieldSeparator || DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR} ${validationResult.message}`;
+          acc.errorMessage += `\n${String(field)}${params?.errorMessageFieldSeparator || DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR} ${validationResult.message}`;
         }
         return acc;
       }, initialAcc);
 
       if (result.isError) {
         return new ErrorResult(
-          `${params?.errorMessageHypernym || DEFAULT_ERROR_MESSAGE_HYPERNYM}${params?.errorMessageHypernymSeparator || DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}\n${result.errorMessage}`,
+          `${params?.errorMessageHypernym || DEFAULT_ERROR_MESSAGE_HYPERNYM}${params?.errorMessageHypernymSeparator || DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}${result.errorMessage}`,
           result.errors,
-        );
+        ) as unknown as TObjectValidationErrorResult<ValidatorsSchema>;
       }
       return new SuccessResult(result.validResults);
     } catch (e) {
       console.error(e);
-      return new ErrorResult(
-        'Unexpected validation error',
-        {} as { [Key in keyof ValidatorsSchema]: TRetrieveError<ReturnType<ValidatorsSchema[Key]>> },
-      );
+      throw e;
     }
   };
 }

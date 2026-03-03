@@ -1,4 +1,4 @@
-import { describe, test, expect } from "vitest";
+import { describe, test, expect } from 'vitest';
 import isFloat32Array, { IS_FLOAT32_ARRAY_ERROR_MESSAGE } from '../isFloat32Array';
 import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
 import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
