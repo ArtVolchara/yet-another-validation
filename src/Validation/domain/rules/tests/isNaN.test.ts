@@ -2,7 +2,6 @@ import { describe, test, expect } from "vitest";
 import isNaN, { IS_NAN_ERROR_MESSAGE } from '../isNaN';
 import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
 import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
-import customErrorDecorator from '../../utils/customErrorDecorator';
 
 describe('isNaN validation rule test', () => {
   describe('Primitive values', () => {
@@ -73,36 +72,6 @@ describe('isNaN validation rule test', () => {
         // Assert
         expect(actualResult).toEqual(expectedResult);
       });
-    });
-  });
-
-  describe('Custom error with ruleCustomErrorDecorator', () => {
-    test('Should return custom error when validation fails', () => {
-      // Arrange
-      const inputValue = 123;
-      const customError = new ErrorResult('Custom NaN error', undefined);
-      const validator = customErrorDecorator(isNaN, customError);
-      const expectedResult = customError;
-
-      // Act
-      const actualResult = validator(inputValue);
-
-      // Assert
-      expect(actualResult).toEqual(expectedResult);
-    });
-
-    test('Should return success when validation passes with custom error decorator', () => {
-      // Arrange
-      const inputValue = NaN;
-      const customError = new ErrorResult('Custom NaN error', undefined);
-      const validator = customErrorDecorator(isNaN, customError);
-      const expectedResult = new SuccessResult(inputValue);
-
-      // Act
-      const actualResult = validator(inputValue);
-
-      // Assert
-      expect(actualResult).toEqual(expectedResult);
     });
   });
 }); 

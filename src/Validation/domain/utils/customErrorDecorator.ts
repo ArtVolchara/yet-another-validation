@@ -1,44 +1,47 @@
 import { ISuccess } from 'src/_Root/domain/types/Result/ISuccess';
 import { IError } from 'src/_Root/domain/types/Result/IError';
 import { TResult } from 'src/_Root/domain/types/Result/TResult';
-import { TValidationRuleError } from '../types/TValidator';
-
-type TResolveDecoratorParam<
-  Fn extends (...args: any[]) => any,
-  Param,
-> = Parameters<Fn> extends [any]
-  ? never
-  : NonNullable<Parameters<Fn>[1]> extends (IError<string, any> | ((...args: any[]) => IError<string, any>))
-    ? Param
-    : never;
 
 function customErrorDecorator<
-  const CustomError extends TValidationRuleError,
-  const RuleOrValidator extends (value: any, error: CustomError) => ISuccess<any> | IError<string, any>,
+  const RuleOrValidator extends (value: any) => ISuccess<any> | IError<string, any>,
+  const CustomError extends IError<string, any>,
 >(
   validationRule: RuleOrValidator,
-  error: TResolveDecoratorParam<RuleOrValidator, CustomError>,
+  error: CustomError,
 ): (value: Parameters<RuleOrValidator>[0]) => TResult<
-  Extract<ReturnType<RuleOrValidator>, ISuccess>,
-  CustomError
+Extract<ReturnType<RuleOrValidator>, ISuccess>,
+CustomError
 >;
 
 function customErrorDecorator<
-  const RuleOrValidator extends (value: any, errorFactory: (data: any) => FactoryReturn) => ISuccess<any> | IError<string, any>,
-  const FactoryReturn extends IError<string, any>,
+  const RuleOrValidator extends (value: any) => ISuccess<any> | IError<string, any>,
+  const ErrorFactory extends (data: Extract<ReturnType<RuleOrValidator>, IError<string, any>>) => IError<string, any>,
 >(
   validationRule: RuleOrValidator,
-  factory: TResolveDecoratorParam<RuleOrValidator, (...args: Parameters<Parameters<RuleOrValidator>[1]>) => FactoryReturn>,
+  factory: ErrorFactory,
 ): (value: Parameters<RuleOrValidator>[0]) => TResult<
-  Extract<ReturnType<RuleOrValidator>, ISuccess>,
-  FactoryReturn
+Extract<ReturnType<RuleOrValidator>, ISuccess>,
+ReturnType<ErrorFactory>
 >;
 
-function customErrorDecorator(
+function customErrorDecorator<
+  const RuleOrValidator extends (value: any) => ISuccess<any> | IError<string, any>,
+  const ErrorOrFactory extends IError<string, any>
+  | ((data: Extract<ReturnType<RuleOrValidator>, IError<string, any>>) => IError<string, any>),
+>(
   ruleOrValidator: (...args: any[]) => any,
-  errorOrFactory: any,
+  errorOrFactory: ErrorOrFactory,
 ) {
-  return (value: any) => ruleOrValidator(value, errorOrFactory);
+  return (...args: Parameters<RuleOrValidator>) => {
+    const res = ruleOrValidator(...args)
+    if (res.status === 'error') {
+      const error = typeof errorOrFactory === 'function'
+        ? errorOrFactory(res)
+        : errorOrFactory;
+      return error;
+    }
+    return res;
+  };
 }
 
 export default customErrorDecorator;

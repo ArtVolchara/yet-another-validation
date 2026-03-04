@@ -34,7 +34,7 @@ ValidationRules extends Partial<TValidationRules>,
 PrevRulesSuccessDataIntersection = unknown,
 > = ValidationRules extends [TValidationRule<infer InputData>]
   ? IsAnyOrUnknown<InputData> extends false
-    ? InputData extends PrevRulesSuccessDataIntersection
+    ? PrevRulesSuccessDataIntersection extends InputData
       ? ValidationRules
       : [TValidationRule<PrevRulesSuccessDataIntersection>]
       // если оставить следующую строку вместо never, то желанной ошибки не будет
@@ -45,7 +45,7 @@ PrevRulesSuccessDataIntersection = unknown,
   : ValidationRules extends [infer First extends TValidationRule, ...infer Tail extends Partial<TValidationRules>]
     ? First extends TValidationRule<infer InputData, ISuccess<infer RuleSuccessData>>
       ? IsAnyOrUnknown<InputData> extends false
-        ? InputData extends PrevRulesSuccessDataIntersection
+        ? PrevRulesSuccessDataIntersection extends InputData
           ? [First, ...TConsistentValidationRulesWithoutAnyAndUnknown<Tail, PrevRulesSuccessDataIntersection & RuleSuccessData>]
           : [TValidationRule<PrevRulesSuccessDataIntersection>, ...Tail]
         : [TValidationRule<PrevRulesSuccessDataIntersection>, ...Tail]

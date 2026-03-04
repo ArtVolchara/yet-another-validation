@@ -2,7 +2,6 @@ import { describe, test, expect } from "vitest";
 import isObject, { IS_OBJECT_ERROR_MESSAGE } from '../isObject';
 import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
 import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
-import customErrorDecorator from '../../utils/customErrorDecorator';
 
 describe('isObject validation rule test', () => {
   describe('Primitive values', () => {
@@ -91,36 +90,6 @@ describe('isObject validation rule test', () => {
         // Assert
         expect(actualResult).toEqual(expectedResult);
       });
-    });
-  });
-
-  describe('Custom error with ruleCustomErrorDecorator', () => {
-    test('Should return custom error when validation fails', () => {
-      // Arrange
-      const inputValue = 'not an object';
-      const customError = new ErrorResult('Custom object error', undefined);
-      const validator = customErrorDecorator(isObject, customError);
-      const expectedResult = customError;
-
-      // Act
-      const actualResult = validator(inputValue);
-
-      // Assert
-      expect(actualResult).toEqual(expectedResult);
-    });
-
-    test('Should return success when validation passes with custom error decorator', () => {
-      // Arrange
-      const inputValue = { key: 'value' };
-      const customError = new ErrorResult('Custom object error', undefined);
-      const validator = customErrorDecorator(isObject, customError);
-      const expectedResult = new SuccessResult(inputValue);
-
-      // Act
-      const actualResult = validator(inputValue);
-
-      // Assert
-      expect(actualResult).toEqual(expectedResult);
     });
   });
 });

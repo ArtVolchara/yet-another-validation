@@ -8,41 +8,16 @@ export const IS_FLOAT64_ARRAY_ERROR_MESSAGE = 'Value should be Float64Array' as 
 export type TIsFloat64ArrayValidationError = IError<typeof IS_FLOAT64_ARRAY_ERROR_MESSAGE, undefined>;
 export type TIsFloat64ArrayValidationSuccess = ISuccess<Float64Array>;
 
-export default function isFloat64Array<const Error extends IError<string, undefined>>(
-  value: any,
-  error: Error
-): TIsFloat64ArrayValidationSuccess | Error;
-
-export default function isFloat64Array(
-  value: any
-): TIsFloat64ArrayValidationSuccess | TIsFloat64ArrayValidationError;
-
-export default function isFloat64Array<
-const Error extends IError<string, undefined> | undefined = undefined,
->(
-  value: any,
-  error?: Error
-): undefined extends Error
-  ? (TIsFloat64ArrayValidationSuccess | TIsFloat64ArrayValidationError)
-  : (TIsFloat64ArrayValidationSuccess | Error);
-
 export default function isFloat64Array(
   value: any,
-  error?: IError<string, undefined>,
-) {
+): TIsFloat64ArrayValidationSuccess | TIsFloat64ArrayValidationError {
   try {
     if (value instanceof Float64Array) {
       return new SuccessResult(value);
     }
-    if (error) {
-      return error;
-    }
     return new ErrorResult(IS_FLOAT64_ARRAY_ERROR_MESSAGE, undefined);
   } catch (e) {
     console.error(e);
-    if (error) {
-      return error;
-    }
     return new ErrorResult(IS_FLOAT64_ARRAY_ERROR_MESSAGE, undefined);
   }
-} 
+}

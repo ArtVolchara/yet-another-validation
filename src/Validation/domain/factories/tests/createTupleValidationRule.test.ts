@@ -6,11 +6,10 @@ import isBoolean from '../../rules/isBoolean';
 import isArray, { IS_ARRAY_ERROR_MESSAGE } from '../../rules/isArray';
 import isOnlyEnglishLettersString from '../../rules/isOnlyEnglishLettersString';
 import isUndefined from '../../rules/isUndefined';
-import createTupleValidationRule from '../createTupleValidationRule';
+import createTupleValidationRule, { DEFAULT_ERROR_MESSAGE_HYPERNYM, DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR, DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR } from '../createTupleValidationRule';
 import createObjectValidationRule from '../createObjectValidationRule';
 import composeValidator from '../composeValidator';
 import isObject from '../../rules/isObject';
-import { TRetrieveErrorData } from '../../types/TValidator';
 
 describe('createTupleValidationRule', () => {
   describe('Simple tuple', () => {
@@ -45,9 +44,9 @@ describe('createTupleValidationRule', () => {
         // Assert
         expect(actualResult.status).toBe('error');
         if (actualResult.status === 'error') {
-          expect(actualResult.message).toContain('Tuple validation failed for the following elements:');
-          expect(actualResult.message).toContain('0:');
-          expect(actualResult.message).toContain('1:');
+          expect(actualResult.message).toContain(`${DEFAULT_ERROR_MESSAGE_HYPERNYM}${DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
+          expect(actualResult.message).toContain(`0${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
+          expect(actualResult.message).toContain(`1${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
           expect(actualResult.message).toContain(IS_STRING_ERROR_MESSAGE);
           expect(actualResult.message).toContain(IS_NUMBER_ERROR_MESSAGE);
           expect(actualResult?.data?.[0]).toBeDefined();
@@ -66,7 +65,13 @@ describe('createTupleValidationRule', () => {
         // Assert
         expect(actualResult.status).toBe('error');
         if (actualResult.status === 'error') {
-          expect(actualResult.message).toBe(IS_ARRAY_ERROR_MESSAGE);
+          expect(actualResult.message).toContain(`${DEFAULT_ERROR_MESSAGE_HYPERNYM}${DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
+          expect(actualResult.message).toContain(`0${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
+          expect(actualResult.message).toContain(`1${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
+          expect(actualResult.message).toContain(IS_STRING_ERROR_MESSAGE);
+          expect(actualResult.message).toContain(IS_NUMBER_ERROR_MESSAGE);
+          expect(actualResult?.data?.[0]).toBeDefined();
+          expect(actualResult?.data?.[1]).toBeDefined();
         }
       });
     });
@@ -108,7 +113,7 @@ describe('createTupleValidationRule', () => {
         // Assert
         expect(actualResult.status).toBe('error');
         if (actualResult.status === 'error') {
-          expect(actualResult.message).toContain('Tuple validation failed for the following elements:');
+          expect(actualResult.message).toContain(`${DEFAULT_ERROR_MESSAGE_HYPERNYM}${DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
           expect(actualResult.message).toContain('1:');
           expect(actualResult.message).toContain('2:');
           expect(actualResult.message).toContain(IS_ONLY_POSITIVE_NUMBER_ERROR_MESSAGE);
@@ -153,7 +158,7 @@ describe('createTupleValidationRule', () => {
         // Assert
         expect(actualResult.status).toBe('error');
         if (actualResult.status === 'error') {
-          expect(actualResult.message).toContain('Tuple validation failed for the following elements:');
+          expect(actualResult.message).toContain(`${DEFAULT_ERROR_MESSAGE_HYPERNYM}${DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
           expect(actualResult.message).toContain('1:');
           expect(actualResult?.data?.[1]).toBeDefined();
         }
@@ -191,7 +196,7 @@ describe('createTupleValidationRule', () => {
         // Assert
         expect(actualResult.status).toBe('error');
         if (actualResult.status === 'error') {
-          expect(actualResult.message).toContain('Tuple validation failed for the following elements:');
+          expect(actualResult.message).toContain(`${DEFAULT_ERROR_MESSAGE_HYPERNYM}${DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
           expect(actualResult.message).toContain('0:');
           expect(actualResult.message).toContain(IS_STRING_ERROR_MESSAGE);
           expect(actualResult?.data?.[0]).toBeDefined();
@@ -214,7 +219,7 @@ describe('createTupleValidationRule', () => {
         // Assert
         expect(actualResult.status).toBe('error');
         if (actualResult.status === 'error') {
-          expect(actualResult.message).toContain('Tuple validation failed for the following elements:');
+          expect(actualResult.message).toContain(`${DEFAULT_ERROR_MESSAGE_HYPERNYM}${DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
           expect(actualResult.message).toContain('0:');
           expect(actualResult.message).toContain('1:');
           expect(actualResult?.data?.[0]).toBeDefined();
@@ -237,6 +242,126 @@ describe('createTupleValidationRule', () => {
         // Assert
         expect(validResult.status).toBe('success');
         expect(invalidResult.status).toBe('error');
+      });
+    });
+  });
+
+  describe('Params', () => {
+    const stringValidator = composeValidator([[isString]]);
+    const numberValidator = composeValidator([[isNumber]]);
+    const validators = [stringValidator, numberValidator] as const;
+
+    describe('proxyPerElement', () => {
+      it('should call proxyPerElement for each element with success results', () => {
+        // Arrange
+        const inputValue = ['Hello', 42] as const;
+        const proxiedResults: Array<{ result: any; index: number }> = [];
+        const tupleValidationRule = createTupleValidationRule(
+          [...validators],
+          {
+            proxyPerElement: (result: any, index: number) => {
+              proxiedResults.push({ result, index });
+            },
+          },
+        );
+
+        // Act
+        tupleValidationRule(inputValue);
+
+        // Assert
+        expect(proxiedResults).toHaveLength(2);
+        expect(proxiedResults[0].index).toBe(0);
+        expect(proxiedResults[1].index).toBe(1);
+        proxiedResults.forEach(({ result }) => {
+          expect(result.status).toBe('success');
+        });
+      });
+
+      it('should call proxyPerElement for each element with mixed results', () => {
+        // Arrange
+        const inputValue = [123, 'not a number'] as const;
+        const proxiedResults: Array<{ result: any; index: number }> = [];
+        const tupleValidationRule = createTupleValidationRule(
+          [...validators],
+          {
+            proxyPerElement: (result: any, index: number) => {
+              proxiedResults.push({ result, index });
+            },
+          },
+        );
+
+        // Act
+        tupleValidationRule(inputValue);
+
+        // Assert
+        expect(proxiedResults).toHaveLength(2);
+        expect(proxiedResults[0].result.status).toBe('error');
+        expect(proxiedResults[1].result.status).toBe('error');
+      });
+    });
+
+    describe('errorMessageHypernym', () => {
+      it('should use custom error message hypernym', () => {
+        // Arrange
+        const inputValue = [123, 'not a number'] as const;
+        const customHypernym = 'Custom tuple error';
+        const tupleValidationRule = createTupleValidationRule(
+          [...validators],
+          { errorMessageHypernym: customHypernym },
+        );
+
+        // Act
+        const actualResult = tupleValidationRule(inputValue);
+
+        // Assert
+        expect(actualResult.status).toBe('error');
+        if (actualResult.status === 'error') {
+          expect(actualResult.message).toContain(customHypernym);
+          expect(actualResult.message).not.toContain('Tuple validation failed for the following elements');
+        }
+      });
+    });
+
+    describe('errorMessageHypernymSeparator', () => {
+      it('should use custom hypernym separator', () => {
+        // Arrange
+        const inputValue = [123, 'not a number'] as const;
+        const customSeparator = ' ->';
+        const tupleValidationRule = createTupleValidationRule(
+          [...validators],
+          { errorMessageHypernymSeparator: customSeparator },
+        );
+
+        // Act
+        const actualResult = tupleValidationRule(inputValue);
+
+        // Assert
+        expect(actualResult.status).toBe('error');
+        if (actualResult.status === 'error') {
+          expect(actualResult.message).toContain(`Tuple validation failed for the following elements${customSeparator}`);
+        }
+      });
+    });
+
+    describe('errorMessageIndexSeparator', () => {
+      it('should use custom index separator', () => {
+        // Arrange
+        const inputValue = [123, 'not a number'] as const;
+        const customSeparator = ' => ';
+        const tupleValidationRule = createTupleValidationRule(
+          [...validators],
+          { errorMessageIndexSeparator: customSeparator },
+        );
+
+        // Act
+        const actualResult = tupleValidationRule(inputValue);
+
+        // Assert
+        expect(actualResult.status).toBe('error');
+        if (actualResult.status === 'error') {
+          expect(actualResult.message).toContain(`0${customSeparator}`);
+          expect(actualResult.message).toContain(`1${customSeparator}`);
+        }
       });
     });
   });
@@ -274,8 +399,7 @@ describe('createTupleValidationRule', () => {
         const workplaceValidationRule = createObjectValidationRule(workplaceSchema);
         const workplaceValidator = composeValidator([[isObject, workplaceValidationRule]]);
         const tupleValidationRule = createTupleValidationRule([workplaceValidator]);
-        const tupleValidator = composeValidator([[isArray, tupleValidationRule], [isUndefined]]);
-        const inputValue = [[{ position: '1', company: 'w' }]] as const;
+        const inputValue = [[{ position: '1', company: 'w' }]];
         // Act
         const actualResult = tupleValidationRule(inputValue);
         // Assert

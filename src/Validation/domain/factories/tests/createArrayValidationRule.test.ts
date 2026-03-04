@@ -2,11 +2,11 @@ import { describe, it, expect } from 'vitest';
 import isString, { IS_STRING_ERROR_MESSAGE } from '../../rules/isString';
 import isNumber, { } from '../../rules/isNumber';
 import isPositiveNumber, { IS_ONLY_POSITIVE_NUMBER_ERROR_MESSAGE } from '../../rules/isPositiveNumber';
-import isArray, { IS_ARRAY_ERROR_MESSAGE } from '../../rules/isArray';
+import isArray from '../../rules/isArray';
 import isBoolean from '../../rules/isBoolean';
 import isOnlyDigitsString from '../../rules/isOnlyDigitsString';
 import isUndefined from '../../rules/isUndefined';
-import createArrayValidationRule from '../createArrayValidationRule';
+import createArrayValidationRule, { DEFAULT_ERROR_MESSAGE_EMPTY_HYPERNYM, DEFAULT_ERROR_MESSAGE_HYPERNYM, DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR, DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR } from '../createArrayValidationRule';
 import composeValidator from '../composeValidator';
 
 describe('createArrayValidationRule', () => {
@@ -40,8 +40,8 @@ describe('createArrayValidationRule', () => {
         // Assert
         expect(actualResult.status).toBe('error');
         if (actualResult.status === 'error') {
-          expect(actualResult.message).toContain('Array validation failed for the following elements:');
-          expect(actualResult.message).toContain('1:');
+          expect(actualResult.message).toContain(`${DEFAULT_ERROR_MESSAGE_HYPERNYM}${DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
+          expect(actualResult.message).toContain(`1${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
           expect(actualResult.message).toContain(IS_STRING_ERROR_MESSAGE);
           expect(actualResult.data).toHaveLength(3);
           expect(actualResult?.data?.[0]).toBeUndefined();
@@ -60,7 +60,8 @@ describe('createArrayValidationRule', () => {
         // Assert
         expect(actualResult.status).toBe('error');
         if (actualResult.status === 'error') {
-          expect(actualResult.message).toBe(IS_ARRAY_ERROR_MESSAGE);
+          expect(actualResult.message).toContain(`${DEFAULT_ERROR_MESSAGE_EMPTY_HYPERNYM}${DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
+          expect(actualResult.message).toContain(IS_STRING_ERROR_MESSAGE);
         }
       });
     });
@@ -249,6 +250,123 @@ describe('createArrayValidationRule', () => {
         expect(actualResult.status).toBe('success');
         if (actualResult.status === 'success') {
           expect(actualResult.data).toEqual(expectedData);
+        }
+      });
+    });
+  });
+
+  describe('Params', () => {
+    describe('proxyPerElement', () => {
+      it('should call proxyPerElement for each element with success result', () => {
+        // Arrange
+        const inputValue = ['a', 'b', 'c'];
+        const proxiedResults: Array<{ result: any; index: number }> = [];
+        const arrayValidationRule = createArrayValidationRule(
+          composeValidator([[isString]]),
+          {
+            proxyPerElement: (result, index) => {
+              proxiedResults.push({ result, index });
+            },
+          },
+        );
+
+        // Act
+        arrayValidationRule(inputValue);
+
+        // Assert
+        expect(proxiedResults).toHaveLength(3);
+        expect(proxiedResults[0].index).toBe(0);
+        expect(proxiedResults[1].index).toBe(1);
+        expect(proxiedResults[2].index).toBe(2);
+        proxiedResults.forEach(({ result }) => {
+          expect(result.status).toBe('success');
+        });
+      });
+
+      it('should call proxyPerElement for each element with mixed results', () => {
+        // Arrange
+        const inputValue = ['a', 123, 'c'];
+        const proxiedResults: Array<{ result: any; index: number }> = [];
+        const arrayValidationRule = createArrayValidationRule(
+          composeValidator([[isString]]),
+          {
+            proxyPerElement: (result, index) => {
+              proxiedResults.push({ result, index });
+            },
+          },
+        );
+
+        // Act
+        arrayValidationRule(inputValue);
+
+        // Assert
+        expect(proxiedResults).toHaveLength(3);
+        expect(proxiedResults[0].result.status).toBe('success');
+        expect(proxiedResults[1].result.status).toBe('error');
+        expect(proxiedResults[2].result.status).toBe('success');
+      });
+    });
+
+    describe('errorMessageHypernym', () => {
+      it('should use custom error message hypernym', () => {
+        // Arrange
+        const inputValue = ['a', 123];
+        const customHypernym = 'Custom hypernym';
+        const arrayValidationRule = createArrayValidationRule(
+          composeValidator([[isString]]),
+          { errorMessageHypernym: customHypernym },
+        );
+
+        // Act
+        const actualResult = arrayValidationRule(inputValue);
+
+        // Assert
+        expect(actualResult.status).toBe('error');
+        if (actualResult.status === 'error') {
+          expect(actualResult.message).toContain(customHypernym);
+          expect(actualResult.message).not.toContain('Array validation failed for the following elements');
+        }
+      });
+    });
+
+    describe('errorMessageHypernymSeparator', () => {
+      it('should use custom hypernym separator', () => {
+        // Arrange
+        const inputValue = ['a', 123];
+        const customSeparator = ' ->';
+        const arrayValidationRule = createArrayValidationRule(
+          composeValidator([[isString]]),
+          { errorMessageHypernymSeparator: customSeparator },
+        );
+
+        // Act
+        const actualResult = arrayValidationRule(inputValue);
+
+        // Assert
+        expect(actualResult.status).toBe('error');
+        if (actualResult.status === 'error') {
+          expect(actualResult.message).toContain(`Array validation failed for the following elements${customSeparator}`);
+        }
+      });
+    });
+
+    describe('errorMessageIndexSeparator', () => {
+      it('should use custom index separator', () => {
+        // Arrange
+        const inputValue = ['a', 123];
+        const customSeparator = ' => ';
+        const arrayValidationRule = createArrayValidationRule(
+          composeValidator([[isString]]),
+          { errorMessageIndexSeparator: customSeparator },
+        );
+
+        // Act
+        const actualResult = arrayValidationRule(inputValue);
+
+        // Assert
+        expect(actualResult.status).toBe('error');
+        if (actualResult.status === 'error') {
+          expect(actualResult.message).toContain(`1${customSeparator}`);
         }
       });
     });

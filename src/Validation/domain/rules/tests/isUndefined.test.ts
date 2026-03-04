@@ -2,7 +2,6 @@ import { describe, test, expect } from "vitest";
 import isUndefined, { IS_UNDEFINED_ERROR_MESSAGE } from '../isUndefined';
 import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
 import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
-import customErrorDecorator from '../../utils/customErrorDecorator';
 
 describe('isUndefined validation rule test', () => {
   describe('Primitive values', () => {
@@ -78,36 +77,6 @@ describe('isUndefined validation rule test', () => {
         // Assert
         expect(actualResult).toEqual(expectedResult);
       });
-    });
-  });
-
-  describe('Custom error with ruleCustomErrorDecorator', () => {
-    test('Should return custom error when validation fails', () => {
-      // Arrange
-      const inputValue = 'not undefined';
-      const customError = new ErrorResult('Custom undefined error', undefined);
-      const validator = customErrorDecorator(isUndefined, customError);
-      const expectedResult = customError;
-
-      // Act
-      const actualResult = validator(inputValue);
-
-      // Assert
-      expect(actualResult).toEqual(expectedResult);
-    });
-
-    test('Should return success when validation passes with custom error decorator', () => {
-      // Arrange
-      const inputValue = undefined;
-      const customError = new ErrorResult('Custom undefined error', undefined);
-      const validator = customErrorDecorator(isUndefined, customError);
-      const expectedResult = new SuccessResult(undefined);
-
-      // Act
-      const actualResult = validator(inputValue);
-
-      // Assert
-      expect(actualResult).toEqual(expectedResult);
     });
   });
 });

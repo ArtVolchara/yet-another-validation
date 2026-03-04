@@ -2,7 +2,6 @@ import { describe, test, expect } from "vitest";
 import isNull, { IS_NULL_ERROR_MESSAGE } from '../isNull';
 import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
 import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
-import customErrorDecorator from '../../utils/customErrorDecorator';
 
 describe('isNull validation rule test', () => {
   describe('Primitive values', () => {
@@ -70,36 +69,6 @@ describe('isNull validation rule test', () => {
         // Assert
         expect(actualResult).toEqual(expectedResult);
       });
-    });
-  });
-
-  describe('Custom error with ruleCustomErrorDecorator', () => {
-    test('Should return custom error when validation fails', () => {
-      // Arrange
-      const inputValue = 'not null';
-      const customError = new ErrorResult('Custom null error', undefined);
-      const validator = customErrorDecorator(isNull, customError);
-      const expectedResult = customError;
-
-      // Act
-      const actualResult = validator(inputValue);
-
-      // Assert
-      expect(actualResult).toEqual(expectedResult);
-    });
-
-    test('Should return success when validation passes with custom error decorator', () => {
-      // Arrange
-      const inputValue = null;
-      const customError = new ErrorResult('Custom null error', undefined);
-      const validator = customErrorDecorator(isNull, customError);
-      const expectedResult = new SuccessResult(null);
-
-      // Act
-      const actualResult = validator(inputValue);
-
-      // Assert
-      expect(actualResult).toEqual(expectedResult);
     });
   });
 });

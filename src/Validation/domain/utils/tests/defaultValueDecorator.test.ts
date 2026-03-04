@@ -1,8 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import defaultValueDecorator from '../defaultValueDecorator';
 import isString, { IS_STRING_ERROR_MESSAGE } from '../../rules/isString';
-import isNumber, { IS_NUMBER_ERROR_MESSAGE } from '../../rules/isNumber';
+import isNumber from '../../rules/isNumber';
 import isUndefined from '../../rules/isUndefined';
+import isObject from '../../rules/isObject';
+import isArray from '../../rules/isArray';
 import composeValidator from '../../factories/composeValidator';
 import createObjectValidationRule from '../../factories/createObjectValidationRule';
 import createArrayValidationRule from '../../factories/createArrayValidationRule';
@@ -15,7 +17,7 @@ describe('defaultValueDecorator', () => {
       // Arrange
       const inputValue = 123;
       const defaultValue = 'fallback';
-      const safeIsString = defaultValueDecorator(isString, defaultValue);
+      const safeIsString = defaultValueDecorator(isString, defaultValue, true);
 
       // Act
       const actualResult = safeIsString(inputValue);
@@ -29,7 +31,7 @@ describe('defaultValueDecorator', () => {
       // Arrange
       const inputValue = 'hello';
       const defaultValue = 'fallback';
-      const safeIsString = defaultValueDecorator(isString, defaultValue);
+      const safeIsString = defaultValueDecorator(isString, defaultValue, true);
 
       // Act
       const actualResult = safeIsString(inputValue);
@@ -43,7 +45,7 @@ describe('defaultValueDecorator', () => {
       // Arrange
       const inputValue = 'not a number';
       const defaultValue = 0;
-      const safeIsNumber = defaultValueDecorator(isNumber, defaultValue);
+      const safeIsNumber = defaultValueDecorator(isNumber, defaultValue, true);
 
       // Act
       const actualResult = safeIsNumber(inputValue);
@@ -53,17 +55,17 @@ describe('defaultValueDecorator', () => {
       expect(actualResult.data).toBe(0);
     });
 
-    it('should work with undefined as default value', () => {
+    it('should work with empty string as default value', () => {
       // Arrange
       const inputValue = 123;
-      const safeIsString = defaultValueDecorator(isString, undefined);
+      const safeIsString = defaultValueDecorator(isString, '', true);
 
       // Act
       const actualResult = safeIsString(inputValue);
 
       // Assert
       expect(actualResult.status).toBe('success');
-      expect(actualResult.data).toBeUndefined();
+      expect(actualResult.data).toBe('');
     });
   });
 
@@ -74,6 +76,7 @@ describe('defaultValueDecorator', () => {
       const safeIsString = defaultValueDecorator(
         isString,
         (error) => `fallback: ${error.message}`,
+        true,
       );
 
       // Act
@@ -94,6 +97,7 @@ describe('defaultValueDecorator', () => {
           isFactoryCalled = true;
           return 'fallback';
         },
+        true,
       );
 
       // Act
@@ -107,10 +111,11 @@ describe('defaultValueDecorator', () => {
 
     it('should pass error data to factory', () => {
       // Arrange
-      const inputValue = 'not a number';
+      const inputValue = ['not a number'];
       const safeIsNumber = defaultValueDecorator(
-        isNumber,
-        (error) => ({ originalMessage: error.message, originalData: error.data }),
+        createArrayValidationRule(composeValidator([[isNumber]])),
+        () => [1],
+        true,
       );
 
       // Act
@@ -118,10 +123,7 @@ describe('defaultValueDecorator', () => {
 
       // Assert
       expect(actualResult.status).toBe('success');
-      expect(actualResult.data).toEqual({
-        originalMessage: IS_NUMBER_ERROR_MESSAGE,
-        originalData: undefined,
-      });
+      expect(actualResult.data).toEqual([1]);
     });
   });
 
@@ -130,7 +132,7 @@ describe('defaultValueDecorator', () => {
       // Arrange
       const inputValue = 123;
       const validator = composeValidator([[isString], [isUndefined]]);
-      const safeValidator = defaultValueDecorator(validator, 'default');
+      const safeValidator = defaultValueDecorator(validator, 'default', true);
 
       // Act
       const actualResult = safeValidator(inputValue);
@@ -144,7 +146,7 @@ describe('defaultValueDecorator', () => {
       // Arrange
       const inputValue = 'hello';
       const validator = composeValidator([[isString], [isUndefined]]);
-      const safeValidator = defaultValueDecorator(validator, 'default');
+      const safeValidator = defaultValueDecorator(validator, 'default', true);
 
       // Act
       const actualResult = safeValidator(inputValue);
@@ -160,7 +162,7 @@ describe('defaultValueDecorator', () => {
       // Arrange
       const inputValue = { a: 123, b: 42 };
       const objectRule = createObjectValidationRule({
-        a: defaultValueDecorator(composeValidator([[isString]]), 'default-a'),
+        a: defaultValueDecorator(composeValidator([[isString]]), 'default-a', true),
         b: composeValidator([[isNumber]]),
       });
 
@@ -179,7 +181,7 @@ describe('defaultValueDecorator', () => {
       // Arrange
       const inputValue = { a: 'hello', b: 42 };
       const objectRule = createObjectValidationRule({
-        a: defaultValueDecorator(composeValidator([[isString]]), 'default-a'),
+        a: defaultValueDecorator(composeValidator([[isString]]), 'default-a', true),
         b: composeValidator([[isNumber]]),
       });
 
@@ -199,7 +201,7 @@ describe('defaultValueDecorator', () => {
     it('should work as array element validator', () => {
       // Arrange
       const inputValue = [1, 'not a number', 3];
-      const safeNumberValidator = defaultValueDecorator(composeValidator([[isNumber]]), 0);
+      const safeNumberValidator = defaultValueDecorator(composeValidator([[isNumber]]), 0, true);
       const arrayRule = createArrayValidationRule(safeNumberValidator);
 
       // Act
@@ -217,7 +219,7 @@ describe('defaultValueDecorator', () => {
     it('should return SuccessResult with correct structure', () => {
       // Arrange
       const inputValue = 123;
-      const safeIsString = defaultValueDecorator(isString, 'fallback');
+      const safeIsString = defaultValueDecorator(isString, 'fallback', true);
 
       // Act
       const actualResult = safeIsString(inputValue);
@@ -229,12 +231,12 @@ describe('defaultValueDecorator', () => {
 
     it('should work with object as default value', () => {
       // Arrange
-      const inputValue = 'not a number';
+      const inputValue = 'not an object';
       const defaultObj = { value: 0, reason: 'invalid' } as const;
-      const safeIsNumber = defaultValueDecorator(isNumber, defaultObj);
+      const safeIsObject = defaultValueDecorator(isObject, defaultObj, true);
 
       // Act
-      const actualResult = safeIsNumber(inputValue);
+      const actualResult = safeIsObject(inputValue);
 
       // Assert
       expect(actualResult.status).toBe('success');
@@ -243,12 +245,12 @@ describe('defaultValueDecorator', () => {
 
     it('should work with array as default value', () => {
       // Arrange
-      const inputValue = 'not a number';
-      const defaultArr = [1, 2, 3] as const;
-      const safeIsNumber = defaultValueDecorator(isNumber, defaultArr);
+      const inputValue = 'not an array';
+      const defaultVal = [1, 2, 3];
+      const safeIsArray = defaultValueDecorator(isArray, defaultVal, true);
 
       // Act
-      const actualResult = safeIsNumber(inputValue);
+      const actualResult = safeIsArray(inputValue);
 
       // Assert
       expect(actualResult.status).toBe('success');

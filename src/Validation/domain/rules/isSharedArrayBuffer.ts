@@ -8,41 +8,16 @@ export const IS_SHARED_ARRAY_BUFFER_ERROR_MESSAGE = 'Value should be a SharedArr
 export type TIsSharedArrayBufferValidationError = IError<typeof IS_SHARED_ARRAY_BUFFER_ERROR_MESSAGE, undefined>;
 export type TIsSharedArrayBufferValidationSuccess = ISuccess<SharedArrayBuffer>;
 
-export default function isSharedArrayBuffer<const Error extends IError<string, undefined>>(
-  value: any,
-  error: Error
-): TIsSharedArrayBufferValidationSuccess | Error;
-
-export default function isSharedArrayBuffer(
-  value: any
-): TIsSharedArrayBufferValidationSuccess | TIsSharedArrayBufferValidationError;
-
-export default function isSharedArrayBuffer<
-const Error extends IError<string, undefined> | undefined = undefined,
->(
-  value: any,
-  error?: Error
-): undefined extends Error
-  ? (TIsSharedArrayBufferValidationSuccess | TIsSharedArrayBufferValidationError)
-  : (TIsSharedArrayBufferValidationSuccess | Error);
-
 export default function isSharedArrayBuffer(
   value: any,
-  error?: IError<string, undefined>,
-) {
+): TIsSharedArrayBufferValidationSuccess | TIsSharedArrayBufferValidationError {
   try {
     if (value instanceof SharedArrayBuffer) {
-      return new SuccessResult(value as SharedArrayBuffer);
-    }
-    if (error) {
-      return error;
+      return new SuccessResult(value);
     }
     return new ErrorResult(IS_SHARED_ARRAY_BUFFER_ERROR_MESSAGE, undefined);
   } catch (e) {
     console.error(e);
-    if (error) {
-      return error;
-    }
     return new ErrorResult(IS_SHARED_ARRAY_BUFFER_ERROR_MESSAGE, undefined);
   }
-} 
+}
