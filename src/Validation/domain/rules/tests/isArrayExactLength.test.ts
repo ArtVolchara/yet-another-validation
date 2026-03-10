@@ -8,16 +8,26 @@ import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
 // after the rule that checks if the value is an array.
 describe('isArrayExactLength validation rule test', () => {
   const exactLength = 2;
-  describe('Primitive values', () => {
-    const primitiveTestCases = [
+  describe('isArrayExactLength error cases', () => {
+    const errorTestCases = [
       { input: null, description: 'null value' },
       { input: undefined, description: 'undefined value' },
       { input: 0, description: 'number value' },
       { input: false, description: 'boolean value' },
       { input: Symbol('foo'), description: 'Symbol value' },
+      { input: {}, description: 'empty object' },
+      { input: new Date(), description: 'Date object' },
+      { input: new Map(), description: 'Map' },
+      { input: new Set(), description: 'Set' },
+      { input: new WeakMap(), description: 'WeakMap' },
+      { input: new WeakSet(), description: 'WeakSet' },
+      { input: new DataView(new ArrayBuffer(8)), description: 'DataView' },
+      { input: [1, 2, 3], description: `Array with length larger than ${exactLength}` },
+      { input: [1], description: `Array with length less than ${exactLength}` },
+      { input: [], description: 'Empty array' },
     ];
 
-    primitiveTestCases.forEach(({ input, description }) => {
+    errorTestCases.forEach(({ input, description }) => {
       test(`Should return error result for ${description}`, () => {
         // Arrange
         const inputValue = input as unknown as unknown[];
@@ -32,34 +42,7 @@ describe('isArrayExactLength validation rule test', () => {
     });
   });
 
-  describe('Non-primitive values', () => {
-    const nonPrimitiveTestCases = [
-      { input: {}, description: 'empty object' },
-      { input: new Date(), description: 'Date object' },
-      { input: new Map(), description: 'Map' },
-      { input: new Set(), description: 'Set' },
-      { input: new WeakMap(), description: 'WeakMap' },
-      { input: new WeakSet(), description: 'WeakSet' },
-      { input: new DataView(new ArrayBuffer(8)), description: 'DataView' },
-      { input: [1, 2, 3], description: `Array with length larger than ${exactLength}` },
-      { input: [1], description: `Array with length less than ${exactLength}` },
-      { input: [], description: 'Empty array' },
-    ];
-
-    nonPrimitiveTestCases.forEach(({ input, description }) => {
-      test(`Should return error result for ${description}`, () => {
-        // Arrange
-        const inputValue = input as unknown as unknown[];
-        const expectedResult = new ErrorResult(`Array should contain exactly ${exactLength} elements`, undefined);
-
-        // Act
-        const actualResult = isArrayExactLength(exactLength)(inputValue);
-
-        // Assert
-        expect(actualResult).toEqual(expectedResult);
-      });
-    });
-
+  describe('isArrayExactLength success cases', () => {
     const successTestCases = [
       { input: [1, 2], description: 'array with length equal to exact length' },
       { input: ['a', 'b'], description: 'array with strings' },

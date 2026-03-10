@@ -4,51 +4,13 @@ import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
 import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
 
 describe('isBoolean validation rule test', () => {
-  describe('Primitive values', () => {
-    const primitiveTestCases = [
+  describe('isBoolean error cases', () => {
+    const errorTestCases = [
       { input: null, description: 'null value' },
       { input: undefined, description: 'undefined value' },
       { input: 'hello', description: 'string value' },
       { input: 0, description: 'number value' },
       { input: Symbol('foo'), description: 'Symbol value' },
-    ];
-
-    primitiveTestCases.forEach(({ input, description }) => {
-      test(`Should return error result for ${description}`, () => {
-        // Arrange
-        const inputValue = input;
-        const expectedResult = new ErrorResult(IS_BOOLEAN_ERROR_MESSAGE, undefined);
-
-        // Act
-        const actualResult = isBoolean(inputValue);
-
-        // Assert
-        expect(actualResult).toEqual(expectedResult);
-      });
-    });
-
-    const successTestCases = [
-      { input: true, description: 'true value' },
-      { input: false, description: 'false value' },
-    ];
-
-    successTestCases.forEach(({ input, description }) => {
-      test(`Should return success result for ${description}`, () => {
-        // Arrange
-        const inputValue = input;
-        const expectedResult = new SuccessResult(input);
-
-        // Act
-        const actualResult = isBoolean(inputValue);
-
-        // Assert
-        expect(actualResult).toEqual(expectedResult);
-      });
-    });
-  });
-
-  describe('Non-primitive values', () => {
-    const nonPrimitiveTestCases = [
       { input: () => {}, description: 'function' },
       { input: new Date(), description: 'Date object' },
       { input: [], description: 'empty array' },
@@ -68,11 +30,32 @@ describe('isBoolean validation rule test', () => {
       { input: new BigUint64Array(), description: 'BigUint64Array' },
     ];
 
-    nonPrimitiveTestCases.forEach(({ input, description }) => {
+    errorTestCases.forEach(({ input, description }) => {
       test(`Should return error result for ${description}`, () => {
         // Arrange
         const inputValue = input;
         const expectedResult = new ErrorResult(IS_BOOLEAN_ERROR_MESSAGE, undefined);
+
+        // Act
+        const actualResult = isBoolean(inputValue);
+
+        // Assert
+        expect(actualResult).toEqual(expectedResult);
+      });
+    });
+  });
+
+  describe('isBoolean success cases', () => {
+    const successTestCases = [
+      { input: true, description: 'true value' },
+      { input: false, description: 'false value' },
+    ];
+
+    successTestCases.forEach(({ input, description }) => {
+      test(`Should return success result for ${description}`, () => {
+        // Arrange
+        const inputValue = input;
+        const expectedResult = new SuccessResult(input);
 
         // Act
         const actualResult = isBoolean(inputValue);

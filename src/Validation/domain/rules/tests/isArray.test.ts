@@ -4,33 +4,14 @@ import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
 import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
 
 describe('isArray validation rule test', () => {
-  describe('Primitive values', () => {
-    const primitiveTestCases = [
+  describe('isArray error cases', () => {
+    const errorTestCases = [
       { input: null, description: 'null value' },
       { input: undefined, description: 'undefined value' },
       { input: 'hello', description: 'string value' },
       { input: 0, description: 'number value' },
       { input: false, description: 'boolean value' },
       { input: Symbol('foo'), description: 'Symbol value' },
-    ];
-
-    primitiveTestCases.forEach(({ input, description }) => {
-      test(`Should return error result for ${description}`, () => {
-        // Arrange
-        const inputValue = input as unknown as unknown[];
-        const expectedResult = new ErrorResult(IS_ARRAY_ERROR_MESSAGE, undefined);
-
-        // Act
-        const actualResult = isArray(inputValue);
-
-        // Assert
-        expect(actualResult).toEqual(expectedResult);
-      });
-    });
-  });
-
-  describe('Non-primitive values', () => {
-    const nonPrimitiveTestCases = [
       { input: {}, description: 'empty object' },
       { input: { length: 0 }, description: 'array-like object' },
       { input: () => {}, description: 'function' },
@@ -48,7 +29,7 @@ describe('isArray validation rule test', () => {
       { input: new DataView(new ArrayBuffer(8)), description: 'DataView' },
     ];
 
-    nonPrimitiveTestCases.forEach(({ input, description }) => {
+    errorTestCases.forEach(({ input, description }) => {
       test(`Should return error result for ${description}`, () => {
         // Arrange
         const inputValue = input as unknown as unknown[];
@@ -61,7 +42,9 @@ describe('isArray validation rule test', () => {
         expect(actualResult).toEqual(expectedResult);
       });
     });
+  });
 
+  describe('isArray success cases', () => {
     const successTestCases = [
       { input: [], description: 'empty array' },
       { input: [1, 2, 3], description: 'array with numbers' },

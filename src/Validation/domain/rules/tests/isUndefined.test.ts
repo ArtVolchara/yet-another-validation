@@ -4,32 +4,13 @@ import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
 import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
 
 describe('isUndefined validation rule test', () => {
-  describe('Primitive values', () => {
-    const primitiveTestCases = [
+  describe('isUndefined error cases', () => {
+    const errorTestCases = [
       { input: null, description: 'null value' },
       { input: 'hello', description: 'string value' },
       { input: 0, description: 'number value' },
       { input: false, description: 'boolean value' },
       { input: Symbol('foo'), description: 'Symbol value' },
-    ];
-
-    primitiveTestCases.forEach(({ input, description }) => {
-      test(`Should return error result for ${description}`, () => {
-        // Arrange
-        const inputValue = input as unknown as undefined;
-        const expectedResult = new ErrorResult(IS_UNDEFINED_ERROR_MESSAGE, undefined);
-
-        // Act
-        const actualResult = isUndefined(inputValue);
-
-        // Assert
-        expect(actualResult).toEqual(expectedResult);
-      });
-    });
-  });
-
-  describe('Non-primitive values', () => {
-    const nonPrimitiveTestCases = [
       { input: {}, description: 'empty object' },
       { input: [], description: 'empty array' },
       { input: () => {}, description: 'function' },
@@ -47,7 +28,7 @@ describe('isUndefined validation rule test', () => {
       { input: new DataView(new ArrayBuffer(8)), description: 'DataView' },
     ];
 
-    nonPrimitiveTestCases.forEach(({ input, description }) => {
+    errorTestCases.forEach(({ input, description }) => {
       test(`Should return error result for ${description}`, () => {
         // Arrange
         const inputValue = input as unknown as undefined;
@@ -60,7 +41,9 @@ describe('isUndefined validation rule test', () => {
         expect(actualResult).toEqual(expectedResult);
       });
     });
+  });
 
+  describe('isUndefined success cases', () => {
     const successTestCases = [
       { input: undefined, description: 'undefined value' },
     ];

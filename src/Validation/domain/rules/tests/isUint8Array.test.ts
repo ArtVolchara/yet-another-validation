@@ -4,33 +4,14 @@ import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
 import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
 
 describe('isUint8Array validation rule test', () => {
-  describe('Primitive values', () => {
-    const primitiveTestCases = [
+  describe('isUint8Array error cases', () => {
+    const errorTestCases = [
       { input: null, description: 'null value' },
       { input: undefined, description: 'undefined value' },
       { input: 'hello', description: 'string value' },
       { input: 0, description: 'number value' },
       { input: false, description: 'boolean value' },
       { input: Symbol('foo'), description: 'Symbol value' },
-    ];
-
-    primitiveTestCases.forEach(({ input, description }) => {
-      test(`Should return error result for ${description}`, () => {
-        // Arrange
-        const inputValue = input as unknown as Uint8Array;
-        const expectedResult = new ErrorResult(IS_UINT8_ARRAY_ERROR_MESSAGE, undefined);
-
-        // Act
-        const actualResult = isUint8Array(inputValue);
-
-        // Assert
-        expect(actualResult).toEqual(expectedResult);
-      });
-    });
-  });
-
-  describe('Non-primitive values', () => {
-    const nonPrimitiveTestCases = [
       { input: {}, description: 'empty object' },
       { input: [], description: 'empty array' },
       { input: () => {}, description: 'function' },
@@ -47,7 +28,7 @@ describe('isUint8Array validation rule test', () => {
       { input: new DataView(new ArrayBuffer(8)), description: 'DataView' },
     ];
 
-    nonPrimitiveTestCases.forEach(({ input, description }) => {
+    errorTestCases.forEach(({ input, description }) => {
       test(`Should return error result for ${description}`, () => {
         // Arrange
         const inputValue = input as unknown as Uint8Array;
@@ -60,7 +41,9 @@ describe('isUint8Array validation rule test', () => {
         expect(actualResult).toEqual(expectedResult);
       });
     });
+  });
 
+  describe('isUint8Array success cases', () => {
     const successTestCases = [
       { input: new Uint8Array(), description: 'empty Uint8Array' },
       { input: new Uint8Array([1, 2, 3]), description: 'Uint8Array with values' },

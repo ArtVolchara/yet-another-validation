@@ -4,33 +4,14 @@ import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
 import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
 
 describe('isObject validation rule test', () => {
-  describe('Primitive values', () => {
-    const primitiveTestCases = [
+  describe('isObject error cases', () => {
+    const errorTestCases = [
       { input: null, description: 'null value' },
       { input: undefined, description: 'undefined value' },
       { input: 'hello', description: 'string value' },
       { input: 0, description: 'number value' },
       { input: false, description: 'boolean value' },
       { input: Symbol('foo'), description: 'Symbol value' },
-    ];
-
-    primitiveTestCases.forEach(({ input, description }) => {
-      test(`Should return error result for ${description}`, () => {
-        // Arrange
-        const inputValue = input as unknown as Record<string, unknown>;
-        const expectedResult = new ErrorResult(IS_OBJECT_ERROR_MESSAGE, undefined);
-
-        // Act
-        const actualResult = isObject(inputValue);
-
-        // Assert
-        expect(actualResult).toEqual(expectedResult);
-      });
-    });
-  });
-
-  describe('Non-primitive values', () => {
-    const nonPrimitiveTestCases = [
       { input: [], description: 'array' },
       { input: () => {}, description: 'function' },
       { input: new Date(), description: 'Date object' },
@@ -53,7 +34,7 @@ describe('isObject validation rule test', () => {
       { input: new SharedArrayBuffer(8), description: 'SharedArrayBuffer' },
     ];
 
-    nonPrimitiveTestCases.forEach(({ input, description }) => {
+    errorTestCases.forEach(({ input, description }) => {
       test(`Should return error result for ${description}`, () => {
         // Arrange
         const inputValue = input as unknown as Record<string, unknown>;
@@ -66,7 +47,9 @@ describe('isObject validation rule test', () => {
         expect(actualResult).toEqual(expectedResult);
       });
     });
+  });
 
+  describe('isObject success cases', () => {
     const successTestCases = [
       { input: {}, description: 'empty object' },
       { input: { a: 1, b: '2' }, description: 'object with properties' },

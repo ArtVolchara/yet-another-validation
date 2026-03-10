@@ -4,8 +4,8 @@ import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
 import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
 
 describe('isOnlyDigitsString validation rule test', () => {
-  describe('Primitive values', () => {
-    const primitiveTestCases = [
+  describe('isOnlyDigitsString error cases', () => {
+    const errorTestCases = [
       { input: '', description: 'empty string' },
       { input: 'abc', description: 'string with letters' },
       { input: 'abc123', description: 'string with letters and digits' },
@@ -19,9 +19,17 @@ describe('isOnlyDigitsString validation rule test', () => {
       { input: 123, description: 'number value' },
       { input: false, description: 'boolean value' },
       { input: Symbol('foo'), description: 'Symbol value' },
+      { input: {}, description: 'empty object' },
+      { input: [], description: 'empty array' },
+      { input: () => {}, description: 'function' },
+      { input: new Date(), description: 'Date object' },
+      { input: new Map(), description: 'Map' },
+      { input: new Set(), description: 'Set' },
+      { input: new WeakMap(), description: 'WeakMap' },
+      { input: new WeakSet(), description: 'WeakSet' },
     ];
 
-    primitiveTestCases.forEach(({ input, description }) => {
+    errorTestCases.forEach(({ input, description }) => {
       test(`Should return error result for ${description}`, () => {
         // Arrange
         const inputValue = input as unknown as string;
@@ -34,7 +42,9 @@ describe('isOnlyDigitsString validation rule test', () => {
         expect(actualResult).toEqual(expectedResult);
       });
     });
+  });
 
+  describe('isOnlyDigitsString success cases', () => {
     const successTestCases = [
       { input: '0', description: 'single digit' },
       { input: '123', description: 'multiple digits' },
@@ -49,33 +59,6 @@ describe('isOnlyDigitsString validation rule test', () => {
 
         // Act
         const actualResult = isOnlyDigitsString(input);
-
-        // Assert
-        expect(actualResult).toEqual(expectedResult);
-      });
-    });
-  });
-
-  describe('Non-primitive values', () => {
-    const nonPrimitiveTestCases = [
-      { input: {}, description: 'empty object' },
-      { input: [], description: 'empty array' },
-      { input: () => {}, description: 'function' },
-      { input: new Date(), description: 'Date object' },
-      { input: new Map(), description: 'Map' },
-      { input: new Set(), description: 'Set' },
-      { input: new WeakMap(), description: 'WeakMap' },
-      { input: new WeakSet(), description: 'WeakSet' },
-    ];
-
-    nonPrimitiveTestCases.forEach(({ input, description }) => {
-      test(`Should return error result for ${description}`, () => {
-        // Arrange
-        const inputValue = input as unknown as string;
-        const expectedResult = new ErrorResult(IS_ONLY_DIGITS_STRING_DEFAULT_ERROR_MESSAGE, undefined);
-
-        // Act
-        const actualResult = isOnlyDigitsString(inputValue);
 
         // Assert
         expect(actualResult).toEqual(expectedResult);

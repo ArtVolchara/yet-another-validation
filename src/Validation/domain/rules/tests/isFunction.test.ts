@@ -4,33 +4,14 @@ import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
 import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
 
 describe('isFunction validation rule test', () => {
-  describe('Primitive values', () => {
-    const primitiveTestCases = [
+  describe('isFunction error cases', () => {
+    const errorTestCases = [
       { input: null, description: 'null value' },
       { input: undefined, description: 'undefined value' },
       { input: 'hello', description: 'string value' },
       { input: 0, description: 'number value' },
       { input: false, description: 'boolean value' },
       { input: Symbol('foo'), description: 'Symbol value' },
-    ];
-
-    primitiveTestCases.forEach(({ input, description }) => {
-      test(`Should return error result for ${description}`, () => {
-        // Arrange
-        const inputValue = input as unknown as Function;
-        const expectedResult = new ErrorResult(IS_FUNCTION_ERROR_MESSAGE, undefined);
-
-        // Act
-        const actualResult = isFunction(inputValue);
-
-        // Assert
-        expect(actualResult).toEqual(expectedResult);
-      });
-    });
-  });
-
-  describe('Non-primitive values', () => {
-    const nonPrimitiveTestCases = [
       { input: {}, description: 'empty object' },
       { input: [], description: 'empty array' },
       { input: new Date(), description: 'Date object' },
@@ -53,7 +34,7 @@ describe('isFunction validation rule test', () => {
       { input: new SharedArrayBuffer(8), description: 'SharedArrayBuffer' },
     ];
 
-    nonPrimitiveTestCases.forEach(({ input, description }) => {
+    errorTestCases.forEach(({ input, description }) => {
       test(`Should return error result for ${description}`, () => {
         // Arrange
         const inputValue = input as unknown as Function;
@@ -66,13 +47,15 @@ describe('isFunction validation rule test', () => {
         expect(actualResult).toEqual(expectedResult);
       });
     });
+  });
 
+  describe('isFunction success cases', () => {
     const successTestCases = [
       { input: () => {}, description: 'arrow function' },
       { input() {}, description: 'function declaration' },
-      { * input() {}, description: 'generator function' },
-      { async input() {}, description: 'async function' },
-      { async* input() {}, description: 'async generator function' },
+      { input: function* () {}, description: 'generator function' },
+      { input: async function () {}, description: 'async function' },
+      { input: async function* () {}, description: 'async generator function' },
       { input: class {}, description: 'class' },
     ];
 

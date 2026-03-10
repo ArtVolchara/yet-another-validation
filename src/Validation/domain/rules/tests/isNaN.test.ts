@@ -1,11 +1,11 @@
-import { describe, test, expect } from "vitest";
+import { describe, test, expect } from 'vitest';
 import isNaN, { IS_NAN_ERROR_MESSAGE } from '../isNaN';
 import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
 import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
 
 describe('isNaN validation rule test', () => {
-  describe('Primitive values', () => {
-    const primitiveTestCases = [
+  describe('isNaN error cases', () => {
+    const errorTestCases = [
       { input: null, description: 'null value' },
       { input: undefined, description: 'undefined value' },
       { input: 0, description: 'zero' },
@@ -16,9 +16,17 @@ describe('isNaN validation rule test', () => {
       { input: true, description: 'boolean true' },
       { input: false, description: 'boolean false' },
       { input: Symbol('foo'), description: 'Symbol value' },
+      { input: {}, description: 'empty object' },
+      { input: [], description: 'empty array' },
+      { input: () => {}, description: 'function' },
+      { input: new Date(), description: 'Date object' },
+      { input: new Map(), description: 'Map' },
+      { input: new Set(), description: 'Set' },
+      { input: new WeakMap(), description: 'WeakMap' },
+      { input: new WeakSet(), description: 'WeakSet' },
     ];
 
-    primitiveTestCases.forEach(({ input, description }) => {
+    errorTestCases.forEach(({ input, description }) => {
       test(`Should return error result for ${description}`, () => {
         // Arrange
         const expectedResult = new ErrorResult(IS_NAN_ERROR_MESSAGE, undefined);
@@ -30,7 +38,9 @@ describe('isNaN validation rule test', () => {
         expect(actualResult).toEqual(expectedResult);
       });
     });
+  });
 
+  describe('isNaN success cases', () => {
     const successTestCases = [
       { input: NaN, description: 'NaN value' },
     ];
@@ -48,30 +58,4 @@ describe('isNaN validation rule test', () => {
       });
     });
   });
-
-  describe('Non-primitive values', () => {
-    const nonPrimitiveTestCases = [
-      { input: {}, description: 'empty object' },
-      { input: [], description: 'empty array' },
-      { input: () => {}, description: 'function' },
-      { input: new Date(), description: 'Date object' },
-      { input: new Map(), description: 'Map' },
-      { input: new Set(), description: 'Set' },
-      { input: new WeakMap(), description: 'WeakMap' },
-      { input: new WeakSet(), description: 'WeakSet' },
-    ];
-
-    nonPrimitiveTestCases.forEach(({ input, description }) => {
-      test(`Should return error result for ${description}`, () => {
-        // Arrange
-        const expectedResult = new ErrorResult(IS_NAN_ERROR_MESSAGE, undefined);
-
-        // Act
-        const actualResult = isNaN(input);
-
-        // Assert
-        expect(actualResult).toEqual(expectedResult);
-      });
-    });
-  });
-}); 
+});

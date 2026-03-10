@@ -4,8 +4,8 @@ import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
 import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
 
 describe('isOnlyEnglishLettersString validation rule test', () => {
-  describe('Primitive values', () => {
-    const primitiveTestCases = [
+  describe('isOnlyEnglishLettersString error cases', () => {
+    const errorTestCases = [
       { input: '', description: 'empty string' },
       { input: '123', description: 'string with digits' },
       { input: 'abc123', description: 'string with letters and digits' },
@@ -20,9 +20,17 @@ describe('isOnlyEnglishLettersString validation rule test', () => {
       { input: 123, description: 'number value' },
       { input: false, description: 'boolean value' },
       { input: Symbol('foo'), description: 'Symbol value' },
+      { input: {}, description: 'empty object' },
+      { input: [], description: 'empty array' },
+      { input: () => {}, description: 'function' },
+      { input: new Date(), description: 'Date object' },
+      { input: new Map(), description: 'Map' },
+      { input: new Set(), description: 'Set' },
+      { input: new WeakMap(), description: 'WeakMap' },
+      { input: new WeakSet(), description: 'WeakSet' },
     ];
 
-    primitiveTestCases.forEach(({ input, description }) => {
+    errorTestCases.forEach(({ input, description }) => {
       test(`Should return error result for ${description}`, () => {
         // Arrange
         const inputValue = input as unknown as string;
@@ -37,32 +45,7 @@ describe('isOnlyEnglishLettersString validation rule test', () => {
     });
   });
 
-  describe('Non-primitive values', () => {
-    const nonPrimitiveTestCases = [
-      { input: {}, description: 'empty object' },
-      { input: [], description: 'empty array' },
-      { input: () => {}, description: 'function' },
-      { input: new Date(), description: 'Date object' },
-      { input: new Map(), description: 'Map' },
-      { input: new Set(), description: 'Set' },
-      { input: new WeakMap(), description: 'WeakMap' },
-      { input: new WeakSet(), description: 'WeakSet' },
-    ];
-
-    nonPrimitiveTestCases.forEach(({ input, description }) => {
-      test(`Should return error result for ${description}`, () => {
-        // Arrange
-        const inputValue = input as unknown as string;
-        const expectedResult = new ErrorResult(IS_ONLY_ENGLISH_LETTERS_STRING_ERROR_MESSAGE, undefined);
-
-        // Act
-        const actualResult = isOnlyEnglishLettersString(inputValue);
-
-        // Assert
-        expect(actualResult).toEqual(expectedResult);
-      });
-    });
-
+  describe('isOnlyEnglishLettersString success cases', () => {
     const successTestCases = [
       { input: 'a', description: 'single lowercase letter' },
       { input: 'A', description: 'single uppercase letter' },

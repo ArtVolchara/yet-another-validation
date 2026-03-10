@@ -4,33 +4,14 @@ import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
 import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
 
 describe('isInt32Array validation rule test', () => {
-  describe('Primitive values', () => {
-    const primitiveTestCases = [
+  describe('isInt32Array error cases', () => {
+    const errorTestCases = [
       { input: null, description: 'null value' },
       { input: undefined, description: 'undefined value' },
       { input: 'hello', description: 'string value' },
       { input: 0, description: 'number value' },
       { input: false, description: 'boolean value' },
       { input: Symbol('foo'), description: 'Symbol value' },
-    ];
-
-    primitiveTestCases.forEach(({ input, description }) => {
-      test(`Should return error result for ${description}`, () => {
-        // Arrange
-        const inputValue = input as unknown as Int32Array;
-        const expectedResult = new ErrorResult(IS_INT32_ARRAY_ERROR_MESSAGE, undefined);
-
-        // Act
-        const actualResult = isInt32Array(inputValue);
-
-        // Assert
-        expect(actualResult).toEqual(expectedResult);
-      });
-    });
-  });
-
-  describe('Non-primitive values', () => {
-    const nonPrimitiveTestCases = [
       { input: {}, description: 'empty object' },
       { input: [], description: 'empty array' },
       { input: () => {}, description: 'function' },
@@ -47,7 +28,7 @@ describe('isInt32Array validation rule test', () => {
       { input: new DataView(new ArrayBuffer(8)), description: 'DataView' },
     ];
 
-    nonPrimitiveTestCases.forEach(({ input, description }) => {
+    errorTestCases.forEach(({ input, description }) => {
       test(`Should return error result for ${description}`, () => {
         // Arrange
         const inputValue = input as unknown as Int32Array;
@@ -60,7 +41,9 @@ describe('isInt32Array validation rule test', () => {
         expect(actualResult).toEqual(expectedResult);
       });
     });
+  });
 
+  describe('isInt32Array success cases', () => {
     const successTestCases = [
       { input: new Int32Array(), description: 'empty Int32Array' },
       { input: new Int32Array([1, 2, 3]), description: 'Int32Array with values' },

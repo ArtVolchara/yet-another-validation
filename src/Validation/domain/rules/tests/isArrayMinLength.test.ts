@@ -8,16 +8,20 @@ import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
 // after the rule that checks if the value is an array.
 describe('isArrayMinLength validation rule test', () => {
   const minLength = 2;
-  describe('Primitive values', () => {
-    const primitiveTestCases = [
+  describe('isArrayMinLength error cases', () => {
+    const errorTestCases = [
       { input: null, description: 'null value' },
       { input: undefined, description: 'undefined value' },
       { input: 0, description: 'number value' },
       { input: false, description: 'boolean value' },
       { input: Symbol('foo'), description: 'Symbol value' },
+      { input: {}, description: 'empty object' },
+      { input: new Date(), description: 'Date object' },
+      { input: new DataView(new ArrayBuffer(8)), description: 'DataView' },
+      { input: [1], description: `Array with length greater than ${minLength}` },
     ];
 
-    primitiveTestCases.forEach(({ input, description }) => {
+    errorTestCases.forEach(({ input, description }) => {
       test(`Should return error result for ${description}`, () => {
         // Arrange
         const inputValue = input as unknown as unknown[];
@@ -32,28 +36,7 @@ describe('isArrayMinLength validation rule test', () => {
     });
   });
 
-  describe('Non-primitive values', () => {
-    const nonPrimitiveTestCases = [
-      { input: {}, description: 'empty object' },
-      { input: new Date(), description: 'Date object' },
-      { input: new DataView(new ArrayBuffer(8)), description: 'DataView' },
-      { input: [1], description: `Array with length greater than ${minLength}` },
-    ];
-
-    nonPrimitiveTestCases.forEach(({ input, description }) => {
-      test(`Should return error result for ${description}`, () => {
-        // Arrange
-        const inputValue = input as unknown as unknown[];
-        const expectedResult = new ErrorResult(`Array should contain more than ${minLength} elements`, undefined);
-
-        // Act
-        const actualResult = isArrayMinLength(minLength)(inputValue);
-
-        // Assert
-        expect(actualResult).toEqual(expectedResult);
-      });
-    });
-
+  describe('isArrayMinLength success cases', () => {
     const successTestCases = [
       { input: [1, 2, 3], description: 'array with length greater than minLength' },
       { input: [1, 2], description: 'array with length equal to minLength' },

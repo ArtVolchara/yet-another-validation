@@ -4,33 +4,14 @@ import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
 import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
 
 describe('isUint8ClampedArray validation rule test', () => {
-  describe('Primitive values', () => {
-    const primitiveTestCases = [
+  describe('isUint8ClampedArray error cases', () => {
+    const errorTestCases = [
       { input: null, description: 'null value' },
       { input: undefined, description: 'undefined value' },
       { input: 'hello', description: 'string value' },
       { input: 0, description: 'number value' },
       { input: false, description: 'boolean value' },
       { input: Symbol('foo'), description: 'Symbol value' },
-    ];
-
-    primitiveTestCases.forEach(({ input, description }) => {
-      test(`Should return error result for ${description}`, () => {
-        // Arrange
-        const inputValue = input as unknown as Uint8ClampedArray;
-        const expectedResult = new ErrorResult(IS_UINT8_CLAMPED_ARRAY_ERROR_MESSAGE, undefined);
-
-        // Act
-        const actualResult = isUint8ClampedArray(inputValue);
-
-        // Assert
-        expect(actualResult).toEqual(expectedResult);
-      });
-    });
-  });
-
-  describe('Non-primitive values', () => {
-    const nonPrimitiveTestCases = [
       { input: {}, description: 'empty object' },
       { input: [], description: 'empty array' },
       { input: () => {}, description: 'function' },
@@ -48,7 +29,7 @@ describe('isUint8ClampedArray validation rule test', () => {
       { input: new DataView(new ArrayBuffer(8)), description: 'DataView' },
     ];
 
-    nonPrimitiveTestCases.forEach(({ input, description }) => {
+    errorTestCases.forEach(({ input, description }) => {
       test(`Should return error result for ${description}`, () => {
         // Arrange
         const inputValue = input as unknown as Uint8ClampedArray;
@@ -61,7 +42,9 @@ describe('isUint8ClampedArray validation rule test', () => {
         expect(actualResult).toEqual(expectedResult);
       });
     });
+  });
 
+  describe('isUint8ClampedArray success cases', () => {
     const successTestCases = [
       { input: new Uint8ClampedArray(), description: 'empty Uint8ClampedArray' },
       { input: new Uint8ClampedArray(1), description: 'Uint8ClampedArray with one value' },
@@ -82,4 +65,4 @@ describe('isUint8ClampedArray validation rule test', () => {
       });
     });
   });
-}); 
+});

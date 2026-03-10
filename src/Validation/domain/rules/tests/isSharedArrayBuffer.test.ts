@@ -4,33 +4,14 @@ import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
 import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
 
 describe('isSharedArrayBuffer validation rule test', () => {
-  describe('Primitive values', () => {
-    const primitiveTestCases = [
+  describe('isSharedArrayBuffer error cases', () => {
+    const errorTestCases = [
       { input: null, description: 'null value' },
       { input: undefined, description: 'undefined value' },
       { input: 'hello', description: 'string value' },
       { input: 0, description: 'number value' },
       { input: false, description: 'boolean value' },
       { input: Symbol('foo'), description: 'Symbol value' },
-    ];
-
-    primitiveTestCases.forEach(({ input, description }) => {
-      test(`Should return error result for ${description}`, () => {
-        // Arrange
-        const inputValue = input as unknown as SharedArrayBuffer;
-        const expectedResult = new ErrorResult(IS_SHARED_ARRAY_BUFFER_ERROR_MESSAGE, undefined);
-
-        // Act
-        const actualResult = isSharedArrayBuffer(inputValue);
-
-        // Assert
-        expect(actualResult).toEqual(expectedResult);
-      });
-    });
-  });
-
-  describe('Non-primitive values', () => {
-    const nonPrimitiveTestCases = [
       { input: {}, description: 'empty object' },
       { input: [], description: 'empty array' },
       { input: () => {}, description: 'function' },
@@ -53,7 +34,7 @@ describe('isSharedArrayBuffer validation rule test', () => {
       { input: new ArrayBuffer(8), description: 'ArrayBuffer' },
     ];
 
-    nonPrimitiveTestCases.forEach(({ input, description }) => {
+    errorTestCases.forEach(({ input, description }) => {
       test(`Should return error result for ${description}`, () => {
         // Arrange
         const inputValue = input as unknown as SharedArrayBuffer;
@@ -66,7 +47,9 @@ describe('isSharedArrayBuffer validation rule test', () => {
         expect(actualResult).toEqual(expectedResult);
       });
     });
+  });
 
+  describe('isSharedArrayBuffer success cases', () => {
     const successTestCases = [
       { input: new SharedArrayBuffer(8), description: 'SharedArrayBuffer with 8 bytes' },
       { input: new SharedArrayBuffer(16), description: 'SharedArrayBuffer with 16 bytes' },
@@ -87,4 +70,4 @@ describe('isSharedArrayBuffer validation rule test', () => {
       });
     });
   });
-}); 
+});

@@ -4,17 +4,25 @@ import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
 import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
 
 describe('isNumber validation rule test', () => {
-  describe('Primitive values', () => {
-    const primitiveTestCases = [
+  describe('isNumber error cases', () => {
+    const errorTestCases = [
       { input: null, description: 'null value' },
       { input: undefined, description: 'undefined value' },
       { input: 'hello', description: 'string value' },
       { input: false, description: 'boolean value' },
       { input: Symbol('foo'), description: 'Symbol value' },
       { input: Number.NaN, description: 'NaN' },
+      { input: {}, description: 'empty object' },
+      { input: [], description: 'empty array' },
+      { input: () => {}, description: 'function' },
+      { input: new Date(), description: 'Date object' },
+      { input: new Map(), description: 'Map' },
+      { input: new Set(), description: 'Set' },
+      { input: new WeakMap(), description: 'WeakMap' },
+      { input: new WeakSet(), description: 'WeakSet' },
     ];
 
-    primitiveTestCases.forEach(({ input, description }) => {
+    errorTestCases.forEach(({ input, description }) => {
       test(`Should return error result for ${description}`, () => {
         // Arrange
         const inputValue = input as unknown as number;
@@ -27,7 +35,9 @@ describe('isNumber validation rule test', () => {
         expect(actualResult).toEqual(expectedResult);
       });
     });
+  });
 
+  describe('isNumber success cases', () => {
     const successTestCases = [
       { input: 0, description: 'zero' },
       { input: 1, description: 'positive integer' },
@@ -45,33 +55,6 @@ describe('isNumber validation rule test', () => {
         // Arrange
         const inputValue = input;
         const expectedResult = new SuccessResult(input);
-
-        // Act
-        const actualResult = isNumber(inputValue);
-
-        // Assert
-        expect(actualResult).toEqual(expectedResult);
-      });
-    });
-  });
-
-  describe('Non-primitive values', () => {
-    const nonPrimitiveTestCases = [
-      { input: {}, description: 'empty object' },
-      { input: [], description: 'empty array' },
-      { input: () => {}, description: 'function' },
-      { input: new Date(), description: 'Date object' },
-      { input: new Map(), description: 'Map' },
-      { input: new Set(), description: 'Set' },
-      { input: new WeakMap(), description: 'WeakMap' },
-      { input: new WeakSet(), description: 'WeakSet' },
-    ];
-
-    nonPrimitiveTestCases.forEach(({ input, description }) => {
-      test(`Should return error result for ${description}`, () => {
-        // Arrange
-        const inputValue = input as unknown as number;
-        const expectedResult = new ErrorResult(IS_NUMBER_ERROR_MESSAGE, undefined);
 
         // Act
         const actualResult = isNumber(inputValue);

@@ -1,54 +1,16 @@
-import { describe, test, expect } from "vitest";
+import { describe, test, expect } from 'vitest';
 import isString, { IS_STRING_ERROR_MESSAGE } from '../isString';
 import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
 import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
 
 describe('isString validation rule test', () => {
-  describe('Primitive values', () => {
-    const primitiveTestCases = [
+  describe('isString error cases', () => {
+    const errorTestCases = [
       { input: null, description: 'null value' },
       { input: undefined, description: 'undefined value' },
       { input: 0, description: 'number value' },
       { input: false, description: 'boolean value' },
       { input: Symbol('foo'), description: 'Symbol value' },
-    ];
-
-    primitiveTestCases.forEach(({ input, description }) => {
-      test(`Should return error result for ${description}`, () => {
-        // Arrange
-        const inputValue = input;
-        const expectedResult = new ErrorResult(IS_STRING_ERROR_MESSAGE, undefined);
-
-        // Act
-        const actualResult = isString(inputValue);
-
-        // Assert
-        expect(actualResult).toEqual(expectedResult);
-      });
-    });
-
-    const successTestCases = [
-      { input: '', description: 'empty string' },
-      { input: 'hello', description: 'non-empty string' },
-    ];
-
-    successTestCases.forEach(({ input, description }) => {
-      test(`Should return success result for ${description}`, () => {
-        // Arrange
-        const inputValue = input;
-        const expectedResult = new SuccessResult(input);
-
-        // Act
-        const actualResult = isString(inputValue);
-
-        // Assert
-        expect(actualResult).toEqual(expectedResult);
-      });
-    });
-  });
-
-  describe('Non-primitive values', () => {
-    const nonPrimitiveTestCases = [
       { input: {}, description: 'empty object' },
       { input: [], description: 'empty array' },
       { input: () => {}, description: 'function' },
@@ -68,11 +30,32 @@ describe('isString validation rule test', () => {
       { input: new BigUint64Array(), description: 'BigUint64Array' },
     ];
 
-    nonPrimitiveTestCases.forEach(({ input, description }) => {
+    errorTestCases.forEach(({ input, description }) => {
       test(`Should return error result for ${description}`, () => {
         // Arrange
         const inputValue = input;
         const expectedResult = new ErrorResult(IS_STRING_ERROR_MESSAGE, undefined);
+
+        // Act
+        const actualResult = isString(inputValue);
+
+        // Assert
+        expect(actualResult).toEqual(expectedResult);
+      });
+    });
+  });
+
+  describe('isString success cases', () => {
+    const successTestCases = [
+      { input: '', description: 'empty string' },
+      { input: 'hello', description: 'non-empty string' },
+    ];
+
+    successTestCases.forEach(({ input, description }) => {
+      test(`Should return success result for ${description}`, () => {
+        // Arrange
+        const inputValue = input;
+        const expectedResult = new SuccessResult(input);
 
         // Act
         const actualResult = isString(inputValue);
