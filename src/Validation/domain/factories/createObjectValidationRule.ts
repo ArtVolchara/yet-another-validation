@@ -12,7 +12,7 @@ export const DEFAULT_ERROR_MESSAGE_HYPERNYM = 'Object validation failed for the 
 export const DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR = ':';
 export const DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR = ':';
 
-export type TObjectValidationErrorResult<ValidatorsSchema extends TObjectValidatorsSchema> = ([{ [Key in keyof ValidatorsSchema]: TRetrieveError<ReturnType<ValidatorsSchema[Key]>> }] extends [never]
+export type TObjectValidationErrorResult<ValidatorsSchema extends TObjectValidatorsSchema> = ([{ [Key in keyof ValidatorsSchema]: TRetrieveError<ReturnType<ValidatorsSchema[Key]>> }[keyof ValidatorsSchema]] extends [never]
   ? never
   : IError<string, { [Key in keyof ValidatorsSchema]: TRetrieveError<ReturnType<ValidatorsSchema[Key]>> }>) & {};
 
