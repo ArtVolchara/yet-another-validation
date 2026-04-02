@@ -47,6 +47,13 @@ describe('isWeakSet validation rule test', () => {
         expect(actualResult).toEqual(expectedResult);
       });
     });
+
+    test('Should return error when params.shouldReturnError is true even for valid value', () => {
+      const value = new WeakSet();
+      const expectedResult = new ErrorResult(IS_WEAK_SET_ERROR_MESSAGE, undefined);
+      const actualResult = isWeakSet(value, { shouldReturnError: true });
+      expect(actualResult).toEqual(expectedResult);
+    });
   });
 
   describe('isWeakSet success cases', () => {

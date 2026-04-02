@@ -47,6 +47,13 @@ describe('isSet validation rule test', () => {
         expect(actualResult).toEqual(expectedResult);
       });
     });
+
+    test('Should return error when params.shouldReturnError is true even for valid value', () => {
+      const value = new Set();
+      const expectedResult = new ErrorResult(IS_SET_ERROR_MESSAGE, undefined);
+      const actualResult = isSet(value, { shouldReturnError: true });
+      expect(actualResult).toEqual(expectedResult);
+    });
   });
 
   describe('isSet success cases', () => {

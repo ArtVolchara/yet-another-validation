@@ -41,6 +41,13 @@ describe('isFloat64Array validation rule test', () => {
         expect(actualResult).toEqual(expectedResult);
       });
     });
+
+    test('Should return error when params.shouldReturnError is true even for valid value', () => {
+      const value = new Float64Array();
+      const expectedResult = new ErrorResult(IS_FLOAT64_ARRAY_ERROR_MESSAGE, undefined);
+      const actualResult = isFloat64Array(value, { shouldReturnError: true });
+      expect(actualResult).toEqual(expectedResult);
+    });
   });
 
   describe('isFloat64Array success cases', () => {

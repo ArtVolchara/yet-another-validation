@@ -41,6 +41,13 @@ describe('isInt16Array validation rule test', () => {
         expect(actualResult).toEqual(expectedResult);
       });
     });
+
+    test('Should return error when params.shouldReturnError is true even for valid value', () => {
+      const value = new Int16Array();
+      const expectedResult = new ErrorResult(IS_INT16_ARRAY_ERROR_MESSAGE, undefined);
+      const actualResult = isInt16Array(value, { shouldReturnError: true });
+      expect(actualResult).toEqual(expectedResult);
+    });
   });
 
   describe('isInt16Array success cases', () => {

@@ -43,6 +43,12 @@ describe('isBoolean validation rule test', () => {
         expect(actualResult).toEqual(expectedResult);
       });
     });
+
+    test('Should return error when params.shouldReturnError is true even for valid value', () => {
+      const expectedResult = new ErrorResult(IS_BOOLEAN_ERROR_MESSAGE, undefined);
+      const actualResult = isBoolean(true, { shouldReturnError: true });
+      expect(actualResult).toEqual(expectedResult);
+    });
   });
 
   describe('isBoolean success cases', () => {

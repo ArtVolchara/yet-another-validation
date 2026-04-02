@@ -40,6 +40,14 @@ describe('isArrayMaxLength validation rule test', () => {
         expect(actualResult).toEqual(expectedResult);
       });
     });
+
+    test('Should return error when params.shouldReturnError is true even for valid value', () => {
+      const exactMaxLength = 2;
+      const value = [1];
+      const expectedResult = new ErrorResult(`Array should contain less than ${exactMaxLength} elements`, undefined);
+      const actualResult = isArrayMaxLength(exactMaxLength)(value, { shouldReturnError: true });
+      expect(actualResult).toEqual(expectedResult);
+    });
   });
 
   describe('isArrayMaxLength success cases', () => {

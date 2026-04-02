@@ -2,6 +2,7 @@ import {
   TRetrieveErrorData,
   TRetrieveValidationInputData,
   TRetrieveValidationSuccessData,
+  TValidationParams,
   TValidationRules,
   TValidator,
 } from '../types/TValidator';
@@ -22,7 +23,7 @@ import validateValueFromRules, {
 
 export const DEFAULT_OR_SEPARATOR = ' or ' as const;
 
-export type TConsistentORValidators<ORValidators extends Partial<TORValidators>> = {
+export type TConsistentORValidators<ORValidators extends TORValidators> = {
   [Key in keyof ORValidators]: ORValidators[Key] extends TValidationRules
     ? TConsistentValidationRules<ORValidators[Key]>
     : ORValidators[Key]
@@ -37,8 +38,7 @@ export type TSuccessORValidationData<
       : ORValidators extends TValidationRules | Readonly<TValidationRules>
         ? TRetrieveValidationInputData<ORValidators[0]>
         : never,
-> =
-TRemoveReadonly<ORValidators> extends Array<infer Validators extends TValidator | TValidationRules>
+> = TRemoveReadonly<ORValidators> extends Array<infer Validators extends TValidator | TValidationRules>
   ? Validators extends TValidationRules
     ? TSuccessValidationRulesData<Validators, InputData>
     : Validators extends TValidator
@@ -61,8 +61,8 @@ export type TORValidationErrorsMessages<
   > = ORValidators extends [infer First extends TValidator | TValidationRules, ...infer Tail]
     ? First extends TValidator
       ? [
-        TRetrieveErrorData<First>['message'], ...TORValidationErrorsMessages<Tail extends TORValidators ? Tail : []
-        >,
+        TRetrieveErrorData<First>['message'],
+        ...TORValidationErrorsMessages<Tail extends TORValidators ? Tail : []>,
       ]
       : First extends TValidationRules
         ? [
@@ -77,10 +77,22 @@ ORValidators extends TORValidators,
 SeparatorOR extends string | undefined = undefined,
 SeparatorAND extends string | undefined = undefined,
 > = TConcatWithSeparator<
-TORValidationErrorsMessages<ORValidators, SeparatorAND>,
-SeparatorOR extends string ? SeparatorOR : ''
+TORValidationErrorsMessages<
+ORValidators,
+[SeparatorAND] extends [never | undefined]
+  ? typeof DEFAULT_AND_SEPARATOR
+  : string extends SeparatorAND
+    ? typeof DEFAULT_AND_SEPARATOR
+    : SeparatorAND
+>,
+[SeparatorOR] extends [never | undefined]
+  ? typeof DEFAULT_OR_SEPARATOR
+  : string extends SeparatorOR
+    ? typeof DEFAULT_OR_SEPARATOR
+    : SeparatorOR extends string
+      ? SeparatorOR
+      : typeof DEFAULT_OR_SEPARATOR
 >;
-
 export type TErrorORValidationErrorData<ORValidators extends TORValidators> =
 TRemoveReadonly<ORValidators> extends [
   infer First extends TValidator | TValidationRules,
@@ -93,13 +105,32 @@ TRemoveReadonly<ORValidators> extends [
       : []
   : [];
 
-export type TValidationParams<
-  SeparatorOR extends string | undefined,
-  SeparatorAND extends string | undefined,
-> = {
-  separatorOR?: SeparatorOR,
-  separatorAND?: SeparatorAND,
-};
+  type TValidateValueResult<
+  ORValidators extends TORValidators,
+  SeparatorOR extends string | undefined = undefined,
+  SeparatorAND extends string | undefined = undefined,
+  ShouldReturnError extends boolean | undefined = undefined,
+> = [ShouldReturnError] extends [never]
+  ? ISuccess<TSuccessORValidationData<ORValidators>>
+  | IError<
+  TErrorORValidationErrorMessage<ORValidators, SeparatorOR, SeparatorAND>,
+  TErrorORValidationErrorData<ORValidators>
+  >
+  : [ShouldReturnError] extends [true]
+    ? IError<
+    TErrorORValidationErrorMessage<ORValidators, SeparatorOR, SeparatorAND>,
+    TErrorORValidationErrorData<ORValidators>
+    >
+    : ISuccess<TSuccessORValidationData<ORValidators>>
+    | IError<
+    TErrorORValidationErrorMessage<ORValidators, SeparatorOR, SeparatorAND>,
+    TErrorORValidationErrorData<ORValidators>
+    >;
+
+export type TParams = {
+  separatorOR?: string;
+  separatorAND?: string;
+} & TValidationParams;
 
 // Валидационные правила, передаваемые в pipe-функцию должны быть готовы вне зависимости от типа аргумента(но тип нужен)
 // обработать любое значение из рантайма и для этого иметь catch внутри себя, в котором возвращается (не выбрасывается)
@@ -107,37 +138,47 @@ export type TValidationParams<
 export default function validateValue<
     const Value extends TORValidationFirstParameter<ORValidators>,
     ORValidators extends TORValidators,
-    const Params extends { separatorOR?: string, separatorAND?: string } | undefined = undefined,
-    const SeparatorOR extends Params extends { separatorOR?: infer Separator }
-      ? undefined extends Separator ? typeof DEFAULT_OR_SEPARATOR : Separator
-      : typeof DEFAULT_OR_SEPARATOR
-    = Params extends { separatorOR?: infer Separator }
-      ? undefined extends Separator ? typeof DEFAULT_OR_SEPARATOR : Separator
-      : typeof DEFAULT_OR_SEPARATOR,
-    const SeparatorAND extends Params extends { separatorAND?: infer Separator }
-      ? undefined extends Separator ? typeof DEFAULT_AND_SEPARATOR : Separator
-      : typeof DEFAULT_AND_SEPARATOR
-    = Params extends { separatorAND?: infer Separator }
-      ? undefined extends Separator ? typeof DEFAULT_AND_SEPARATOR : Separator
-      : typeof DEFAULT_AND_SEPARATOR,
+    const Params extends TParams | undefined | null = undefined,
+    const SeparatorOR extends [Params] extends [never]
+      ? typeof DEFAULT_OR_SEPARATOR
+      : Params extends TParams ? Params['separatorOR'] : typeof DEFAULT_OR_SEPARATOR
+    = [Params] extends [never]
+      ? typeof DEFAULT_OR_SEPARATOR
+      : Params extends TParams ? Params['separatorOR'] : typeof DEFAULT_OR_SEPARATOR,
+    const SeparatorAND extends [Params] extends [never]
+      ? typeof DEFAULT_AND_SEPARATOR
+      : Params extends TParams ? Params['separatorAND'] : typeof DEFAULT_AND_SEPARATOR
+    = [Params] extends [never]
+      ? typeof DEFAULT_AND_SEPARATOR
+      : Params extends TParams ? Params['separatorAND'] : typeof DEFAULT_AND_SEPARATOR,
+    const ShouldReturnError extends [Params] extends [never]
+      ? undefined
+      : Params extends TParams ? Params['shouldReturnError'] : undefined
+    = [Params] extends [never]
+      ? undefined
+      : Params extends TParams ? Params['shouldReturnError'] : undefined,
 >(
   value: Value,
   validatorsOrRules: TConsistentORValidators<ORValidators>,
   params?: Params,
-) {
+): TValidateValueResult<ORValidators, SeparatorOR, SeparatorAND, ShouldReturnError> {
   const errors = [] as Array<Array<IError<string, any>>>;
   // eslint-disable-next-line no-restricted-syntax
   for (const validator of validatorsOrRules) {
     if (Array.isArray(validator)) {
-      const result = validateValueFromRules.apply(null, [value, validator, { separator: params?.separatorAND }]);
+      const result = validateValueFromRules.apply(null, [
+        value,
+        validator,
+        { separator: params?.separatorAND, shouldReturnError: params?.shouldReturnError },
+      ]);
       if (result.status === 'error') {
         const errorsAND = result.data;
         errors.push(errorsAND);
       } else {
-        return result as ISuccess<TSuccessORValidationData<ORValidators>>;
+        return result as TValidateValueResult<ORValidators, SeparatorOR, SeparatorAND, ShouldReturnError>;
       }
     } else if (validator instanceof Function) {
-      const result = validator(value);
+      const result = validator(value, { shouldReturnError: params?.shouldReturnError });
       if (result.status === 'error') {
         const errorsOR = result.data;
         if (errorsOR) {
@@ -148,7 +189,7 @@ export default function validateValue<
           });
         }
       } else {
-        return result as ISuccess<TSuccessORValidationData<ORValidators>>;
+        return result as TValidateValueResult<ORValidators, SeparatorOR, SeparatorAND, ShouldReturnError>;
       }
     }
   }
@@ -157,9 +198,6 @@ export default function validateValue<
       (el) => el.message,
     )?.join(params?.separatorAND || DEFAULT_AND_SEPARATOR))?.join(params?.separatorOR || DEFAULT_OR_SEPARATOR),
     errors as TErrorORValidationErrorData<ORValidators>,
-  ) as IError<
-  TErrorORValidationErrorMessage<ORValidators, SeparatorOR, SeparatorAND>,
-  TErrorORValidationErrorData<ORValidators>
-  >;
+  ) as TValidateValueResult<ORValidators, SeparatorOR, SeparatorAND, ShouldReturnError>;
   return error;
 }

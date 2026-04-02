@@ -34,6 +34,12 @@ describe('isNull validation rule test', () => {
         expect(actualResult).toEqual(expectedResult);
       });
     });
+
+    test('Should return error when params.shouldReturnError is true even for valid value', () => {
+      const expectedResult = new ErrorResult(IS_NULL_ERROR_MESSAGE, undefined);
+      const actualResult = isNull(null, { shouldReturnError: true });
+      expect(actualResult).toEqual(expectedResult);
+    });
   });
 
   describe('isNull success cases', () => {

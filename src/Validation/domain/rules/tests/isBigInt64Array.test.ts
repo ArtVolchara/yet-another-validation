@@ -41,6 +41,13 @@ describe('isBigInt64Array validation rule test', () => {
         expect(actualResult).toEqual(expectedResult);
       });
     });
+
+    test('Should return error when params.shouldReturnError is true even for valid value', () => {
+      const value = new BigInt64Array();
+      const expectedResult = new ErrorResult(IS_BIGINT64_ARRAY_ERROR_MESSAGE, undefined);
+      const actualResult = isBigInt64Array(value, { shouldReturnError: true });
+      expect(actualResult).toEqual(expectedResult);
+    });
   });
 
   describe('isBigInt64Array success cases', () => {

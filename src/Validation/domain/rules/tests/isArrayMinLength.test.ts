@@ -34,6 +34,14 @@ describe('isArrayMinLength validation rule test', () => {
         expect(actualResult).toEqual(expectedResult);
       });
     });
+
+    test('Should return error when params.shouldReturnError is true even for valid value', () => {
+      const exactMinLength = 2;
+      const value = [1, 2];
+      const expectedResult = new ErrorResult(`Array should contain more than ${exactMinLength} elements`, undefined);
+      const actualResult = isArrayMinLength(exactMinLength)(value, { shouldReturnError: true });
+      expect(actualResult).toEqual(expectedResult);
+    });
   });
 
   describe('isArrayMinLength success cases', () => {

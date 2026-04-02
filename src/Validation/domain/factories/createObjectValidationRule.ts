@@ -3,8 +3,9 @@ import { IError } from '../../../_Root/domain/types/Result/IError';
 import ErrorResult from '../../../_Root/domain/factories/ErrorResult';
 import SuccessResult from '../../../_Root/domain/factories/SuccessResult';
 import { ISuccess } from '../../../_Root/domain/types/Result/ISuccess';
-import { TValidator } from '../types/TValidator';
+import { TValidationParams, TValidator } from '../types/TValidator';
 import { TRetrieveError, TRetrieveSuccess } from '../../../_Root/domain/types/Result/TResult';
+import isObject from '../rules/isObject';
 
 export type TObjectValidatorsSchema = Record<string, TValidator>;
 
@@ -12,29 +13,37 @@ export const DEFAULT_ERROR_MESSAGE_HYPERNYM = 'Object validation failed for the 
 export const DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR = ':';
 export const DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR = ':';
 
-export type TObjectValidationErrorResult<ValidatorsSchema extends TObjectValidatorsSchema> = ([{ [Key in keyof ValidatorsSchema]: TRetrieveError<ReturnType<ValidatorsSchema[Key]>> }[keyof ValidatorsSchema]] extends [never]
-  ? never
-  : IError<string, { [Key in keyof ValidatorsSchema]: TRetrieveError<ReturnType<ValidatorsSchema[Key]>> }>) & {};
+export type TObjectValidationErrorResult<ValidatorsSchema extends TObjectValidatorsSchema> = (
+  [{ [Key in keyof ValidatorsSchema]: TRetrieveError<ReturnType<ValidatorsSchema[Key]>> }[keyof ValidatorsSchema]] extends [never]
+    ? never
+    : IError<string, { [Key in keyof ValidatorsSchema]: TRetrieveError<ReturnType<ValidatorsSchema[Key]>> }>) & {};
 
-export type TCreateObjectRuleParams<ValidatorsSchema extends TObjectValidatorsSchema> = {
-  proxyPerField?: (
-    result: ISuccess<{ [Key in keyof ValidatorsSchema]: TRetrieveSuccess<ReturnType<ValidatorsSchema[Key]>>['data'] }>
-    | TRetrieveError<ReturnType<ValidatorsSchema[keyof ValidatorsSchema]>>,
-    field: string,
-  ) => void,
+export type TCreateObjectRuleParams = {
   errorMessageHypernym?: string,
   errorMessageHypernymSeparator?: string,
   errorMessageFieldSeparator?: string,
 };
 
+type TObjectValidationRuleResult<
+  ValidatorsSchema extends TObjectValidatorsSchema,
+  Params extends TValidationParams | undefined = undefined,
+> =
+  [NonNullable<Params>['shouldReturnError']] extends [never]
+    ? ISuccess<{ [Key in keyof ValidatorsSchema]: TRetrieveSuccess<ReturnType<ValidatorsSchema[Key]>>['data'] }>
+    | TObjectValidationErrorResult<ValidatorsSchema>
+    : [NonNullable<Params>['shouldReturnError']] extends [true]
+      ? TObjectValidationErrorResult<ValidatorsSchema>
+      : ISuccess<{ [Key in keyof ValidatorsSchema]: TRetrieveSuccess<ReturnType<ValidatorsSchema[Key]>>['data'] }>
+      | TObjectValidationErrorResult<ValidatorsSchema>;
+
 export default function createObjectValidationRule<
   const ValidatorsSchema extends TObjectValidatorsSchema,
->(validatorsSchema: ValidatorsSchema, params?: TCreateObjectRuleParams<ValidatorsSchema>) {
+>(validatorsSchema: ValidatorsSchema, params?: TCreateObjectRuleParams) {
   const schemaEntries = Object.entries(validatorsSchema) as TObjectEntries<typeof validatorsSchema>;
-  return (
+  return <Params extends TValidationParams | undefined = undefined>(
     value: Record<string | symbol, any> & { length?: never },
-  ): ISuccess<{ [Key in keyof ValidatorsSchema]: TRetrieveSuccess<ReturnType<ValidatorsSchema[Key]>>['data'] }>
-    | TObjectValidationErrorResult<ValidatorsSchema> => {
+    validationParams?: Params,
+  ): TObjectValidationRuleResult<ValidatorsSchema, Params> => {
     try {
       const initialAcc = {
         validResults: {} as { [Key in keyof ValidatorsSchema]: TRetrieveSuccess<ReturnType<ValidatorsSchema[Key]>>['data'] },
@@ -44,14 +53,15 @@ export default function createObjectValidationRule<
       };
 
       const result = schemaEntries.reduce((acc, [field, fieldValidator]) => {
-        const validationResult = fieldValidator(value?.[String(field)]);
+        const validationResult = fieldValidator(value?.[field as keyof typeof value], {
+          key: field,
+          shouldReturnError: isObject(value).status === 'error' || validationParams?.shouldReturnError,
+        });
         if (validationResult.status === 'success') {
           acc.validResults[field] = validationResult.data;
-          params?.proxyPerField?.(validationResult, String(field));
         } else {
           acc.isError = true;
           acc.errors[field] = validationResult as TRetrieveError<ReturnType<ValidatorsSchema[typeof field]>>;
-          params?.proxyPerField?.(validationResult as TRetrieveError<ReturnType<ValidatorsSchema[keyof ValidatorsSchema]>>, String(field));
           acc.errorMessage += `\n${String(field)}${params?.errorMessageFieldSeparator || DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR} ${validationResult.message}`;
         }
         return acc;
@@ -61,9 +71,9 @@ export default function createObjectValidationRule<
         return new ErrorResult(
           `${params?.errorMessageHypernym || DEFAULT_ERROR_MESSAGE_HYPERNYM}${params?.errorMessageHypernymSeparator || DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}${result.errorMessage}`,
           result.errors,
-        ) as unknown as TObjectValidationErrorResult<ValidatorsSchema>;
+        ) as TObjectValidationErrorResult<ValidatorsSchema>;
       }
-      return new SuccessResult(result.validResults);
+      return new SuccessResult(result.validResults) as TObjectValidationRuleResult<ValidatorsSchema, Params>;
     } catch (e) {
       console.error(e);
       throw e;

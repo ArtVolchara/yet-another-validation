@@ -41,6 +41,13 @@ describe('isFloat32Array validation rule test', () => {
         expect(actualResult).toEqual(expectedResult);
       });
     });
+
+    test('Should return error when params.shouldReturnError is true even for valid value', () => {
+      const value = new Float32Array();
+      const expectedResult = new ErrorResult(IS_FLOAT32_ARRAY_ERROR_MESSAGE, undefined);
+      const actualResult = isFloat32Array(value, { shouldReturnError: true });
+      expect(actualResult).toEqual(expectedResult);
+    });
   });
 
   describe('isFloat32Array success cases', () => {

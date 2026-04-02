@@ -47,6 +47,13 @@ describe('isWeakMap validation rule test', () => {
         expect(actualResult).toEqual(expectedResult);
       });
     });
+
+    test('Should return error when params.shouldReturnError is true even for valid value', () => {
+      const value = new WeakMap();
+      const expectedResult = new ErrorResult(IS_WEAK_MAP_ERROR_MESSAGE, undefined);
+      const actualResult = isWeakMap(value, { shouldReturnError: true });
+      expect(actualResult).toEqual(expectedResult);
+    });
   });
 
   describe('isWeakMap success cases', () => {

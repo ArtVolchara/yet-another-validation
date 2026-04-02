@@ -43,6 +43,12 @@ describe('isString validation rule test', () => {
         expect(actualResult).toEqual(expectedResult);
       });
     });
+
+    test('Should return error when params.shouldReturnError is true even for valid value', () => {
+      const expectedResult = new ErrorResult(IS_STRING_ERROR_MESSAGE, undefined);
+      const actualResult = isString('hello', { shouldReturnError: true });
+      expect(actualResult).toEqual(expectedResult);
+    });
   });
 
   describe('isString success cases', () => {

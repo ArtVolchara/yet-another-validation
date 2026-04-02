@@ -347,145 +347,145 @@ describe('composeValidator', () => {
     });
 
     describe('Multiple OR validators', () => {
-    it('should return success when first validator passes', () => {
+      it('should return success when first validator passes', () => {
       // Arrange
-      const inputValue = 'Hello';
-      const expectedData = 'Hello';
-      const validator = composeValidator([
-        [isString, isOnlyEnglishLettersString],
-        [isNumber, isPositiveNumber],
-      ]);
-
-      // Act
-      const actualResult = validator(inputValue);
-
-      // Assert
-      expect(actualResult.status).toBe('success');
-      if (actualResult.status === 'success') {
-        expect(actualResult.data).toBe(expectedData);
-      }
-    });
-
-    it('should return success when second validator passes', () => {
-      // Arrange
-      const inputValue = 42;
-      const expectedData = 42;
-      const validator = composeValidator([
-        [isString, isOnlyEnglishLettersString],
-        [isNumber, isPositiveNumber],
-      ]);
-
-      // Act
-      const actualResult = validator(inputValue);
-
-      // Assert
-      expect(actualResult.status).toBe('success');
-      if (actualResult.status === 'success') {
-        expect(actualResult.data).toBe(expectedData);
-      }
-    });
-
-    it('should return success with validation rules and validator', () => {
-      // Arrange
-      const inputValue = 'Hello';
-      const expectedData = 'Hello';
-      const validator = composeValidator([
-        [isString, isOnlyEnglishLettersString],
-        composeValidator([[isNumber, isPositiveNumber]]),
-      ]);
-
-      // Act
-      const actualResult = validator(inputValue);
-
-      // Assert
-      expect(actualResult.status).toBe('success');
-      if (actualResult.status === 'success') {
-        expect(actualResult.data).toBe(expectedData);
-      }
-    });
-
-    it('should return success with deeply nested validators', () => {
-      // Arrange
-      const inputValue = ['a', 'b', 'c'];
-      const expectedData = ['a', 'b', 'c'];
-      const validator = composeValidator([
-        [isString, isOnlyEnglishLettersString],
-        composeValidator([
+        const inputValue = 'Hello';
+        const expectedData = 'Hello';
+        const validator = composeValidator([
           [isString, isOnlyEnglishLettersString],
-          composeValidator([[isArray, isArrayMinLength(2)]]),
-        ]),
-      ]);
+          [isNumber, isPositiveNumber],
+        ]);
 
-      // Act
-      const actualResult = validator(inputValue);
+        // Act
+        const actualResult = validator(inputValue);
 
-      // Assert
-      expect(actualResult.status).toBe('success');
-      if (actualResult.status === 'success') {
-        expect(actualResult.data).toEqual(expectedData);
-      }
-    });
+        // Assert
+        expect(actualResult.status).toBe('success');
+        if (actualResult.status === 'success') {
+          expect(actualResult.data).toBe(expectedData);
+        }
+      });
 
-    it('should return success with validation rules and custom validator', () => {
+      it('should return success when second validator passes', () => {
       // Arrange
-      const inputValue = 'Hello';
-      const expectedData = 'Hello';
-      const validator = composeValidator([
-        [isString, isOnlyEnglishLettersString],
-        (value: any) => {
-          if (typeof value === 'string') {
-            return { status: 'success' as const, data: value };
+        const inputValue = 42;
+        const expectedData = 42;
+        const validator = composeValidator([
+          [isString, isOnlyEnglishLettersString],
+          [isNumber, isPositiveNumber],
+        ]);
+
+        // Act
+        const actualResult = validator(inputValue);
+
+        // Assert
+        expect(actualResult.status).toBe('success');
+        if (actualResult.status === 'success') {
+          expect(actualResult.data).toBe(expectedData);
+        }
+      });
+
+      it('should return success with validation rules and validator', () => {
+      // Arrange
+        const inputValue = 'Hello';
+        const expectedData = 'Hello';
+        const validator = composeValidator([
+          [isString, isOnlyEnglishLettersString],
+          composeValidator([[isNumber, isPositiveNumber]]),
+        ]);
+
+        // Act
+        const actualResult = validator(inputValue);
+
+        // Assert
+        expect(actualResult.status).toBe('success');
+        if (actualResult.status === 'success') {
+          expect(actualResult.data).toBe(expectedData);
+        }
+      });
+
+      it('should return success with deeply nested validators', () => {
+      // Arrange
+        const inputValue = ['a', 'b', 'c'];
+        const expectedData = ['a', 'b', 'c'];
+        const validator = composeValidator([
+          [isString, isOnlyEnglishLettersString],
+          composeValidator([
+            [isString, isOnlyEnglishLettersString],
+            composeValidator([[isArray, isArrayMinLength(2)]]),
+          ]),
+        ]);
+
+        // Act
+        const actualResult = validator(inputValue);
+
+        // Assert
+        expect(actualResult.status).toBe('success');
+        if (actualResult.status === 'success') {
+          expect(actualResult.data).toEqual(expectedData);
+        }
+      });
+
+      it('should return success with validation rules and custom validator', () => {
+      // Arrange
+        const inputValue = 'Hello';
+        const expectedData = 'Hello';
+        const validator = composeValidator([
+          [isString, isOnlyEnglishLettersString],
+          (value: any) => {
+            if (typeof value === 'string') {
+              return { status: 'success' as const, data: value };
+            }
+            return { status: 'error' as const, message: 'Custom error', data: [[{ status: 'error' as const, message: 'Custom error', data: undefined }]] };
+          },
+        ]);
+
+        // Act
+        const actualResult = validator(inputValue);
+
+        // Assert
+        expect(actualResult.status).toBe('success');
+        if (actualResult.status === 'success') {
+          expect(actualResult.data).toBe(expectedData);
+        }
+      });
+
+      describe('With customErrorDecorator', () => {
+        it('should return success when validation passes with decorated rule', () => {
+          // Arrange
+          const inputValue = 'Hello';
+          const expectedData = 'Hello';
+          const customError = new ErrorResult('Custom string error', undefined);
+          const decoratedValidator = customErrorDecorator(isString, customError);
+          const validator = composeValidator([[decoratedValidator]]);
+
+          // Act
+          const actualResult = validator(inputValue);
+
+          // Assert
+          expect(actualResult.status).toBe('success');
+          if (actualResult.status === 'success') {
+            expect(actualResult.data).toBe(expectedData);
           }
-          return { status: 'error' as const, message: 'Custom error', data: [[{ status: 'error' as const, message: 'Custom error', data: undefined }]] };
-        },
-      ]);
+        });
 
-      // Act
-      const actualResult = validator(inputValue);
+        it('should work with OR logic using decorated validators', () => {
+          // Arrange
+          const inputValue = 'Hello';
+          const customNumberError = new ErrorResult('Custom number error', undefined);
+          const decoratedNumber = customErrorDecorator(isNumber, customNumberError);
+          const validator = composeValidator([[isString], [decoratedNumber]]);
 
-      // Assert
-      expect(actualResult.status).toBe('success');
-      if (actualResult.status === 'success') {
-        expect(actualResult.data).toBe(expectedData);
-      }
+          // Act
+          const actualResult = validator(inputValue);
+
+          // Assert
+          expect(actualResult.status).toBe('success');
+          if (actualResult.status === 'success') {
+            expect(actualResult.data).toBe('Hello');
+          }
+        });
+      });
     });
-
-    describe('With customErrorDecorator', () => {
-    it('should return success when validation passes with decorated rule', () => {
-      // Arrange
-      const inputValue = 'Hello';
-      const expectedData = 'Hello';
-      const customError = new ErrorResult('Custom string error', undefined);
-      const decoratedValidator = customErrorDecorator(isString, customError);
-      const validator = composeValidator([[decoratedValidator]]);
-
-      // Act
-      const actualResult = validator(inputValue);
-
-      // Assert
-      expect(actualResult.status).toBe('success');
-      if (actualResult.status === 'success') {
-        expect(actualResult.data).toBe(expectedData);
-      }
-    });
-
-    it('should work with OR logic using decorated validators', () => {
-      // Arrange
-      const inputValue = 'Hello';
-      const customNumberError = new ErrorResult('Custom number error', undefined);
-      const decoratedNumber = customErrorDecorator(isNumber, customNumberError);
-      const validator = composeValidator([[isString], [decoratedNumber]]);
-
-      // Act
-      const actualResult = validator(inputValue);
-
-      // Assert
-      expect(actualResult.status).toBe('success');
-      if (actualResult.status === 'success') {
-        expect(actualResult.data).toBe('Hello');
-      }
-    });
-    });
-  });
   });
 });

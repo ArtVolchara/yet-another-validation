@@ -41,6 +41,13 @@ describe('isInt32Array validation rule test', () => {
         expect(actualResult).toEqual(expectedResult);
       });
     });
+
+    test('Should return error when params.shouldReturnError is true even for valid value', () => {
+      const value = new Int32Array();
+      const expectedResult = new ErrorResult(IS_INT32_ARRAY_ERROR_MESSAGE, undefined);
+      const actualResult = isInt32Array(value, { shouldReturnError: true });
+      expect(actualResult).toEqual(expectedResult);
+    });
   });
 
   describe('isInt32Array success cases', () => {

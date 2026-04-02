@@ -1,6 +1,7 @@
 import {
   TRetrieveValidationInputData,
   TRetrieveValidationSuccessData,
+  TValidationParams,
   TValidator,
 } from '../types/TValidator';
 import { TRetrieveError } from '../../../_Root/domain/types/Result/TResult';
@@ -22,28 +23,35 @@ export type TValidationAccumulator<Validator extends TValidator> = {
   isError: boolean;
 };
 
-export type TCreateArrayRuleParams<Validator extends TValidator> = {
-  proxyPerElement?: (
-    result: ISuccess<TRetrieveValidationSuccessData<Validator>['data']>
-    | TRetrieveError<ReturnType<Validator>> | undefined,
-    index: number,
-  ) => void,
+export type TCreateArrayRuleParams = {
   errorMessageHypernym?: string,
   errorMessageEmptyHypernym?: string,
   errorMessageHypernymSeparator?: string,
   errorMessageIndexSeparator?: string,
 };
 
+type TArrayValidationRuleResult<
+  Validator extends TValidator,
+  Params extends TValidationParams | undefined = undefined,
+> =
+  [NonNullable<Params>['shouldReturnError']] extends [never]
+    ? ISuccess<Array<TRetrieveValidationSuccessData<Validator>['data']>>
+    | IError<string, Array<TRetrieveError<ReturnType<Validator>> | undefined>>
+    : [NonNullable<Params>['shouldReturnError']] extends [true]
+      ? IError<string, Array<TRetrieveError<ReturnType<Validator>> | undefined>>
+      : ISuccess<Array<TRetrieveValidationSuccessData<Validator>['data']>>
+        | IError<string, Array<TRetrieveError<ReturnType<Validator>> | undefined>>;
+
 export default function createArrayValidationRule<
   const Validator extends TValidator,
 >(
   validator: Validator,
-  params?: TCreateArrayRuleParams<Validator>,
+  params?: TCreateArrayRuleParams,
 ) {
-  return (
+  return <Params extends TValidationParams | undefined = undefined>(
     value: Array<TRetrieveValidationInputData<Validator>>,
-  ): ISuccess<Array<TRetrieveValidationSuccessData<Validator>['data']>>
-  | IError<string, Array<TRetrieveError<ReturnType<Validator>> | undefined>> => {
+    validationParams?: Params,
+  ): TArrayValidationRuleResult<Validator, Params> => {
     try {
       const initialAcc: TValidationAccumulator<Validator> = {
         validResults: [],
@@ -52,35 +60,33 @@ export default function createArrayValidationRule<
         isError: false,
       };
       if (isArray(value).status === 'error') {
-        const validationResult = validator(undefined);
+        const validationResult = validator(undefined, { shouldReturnError: true });
         if (validationResult.status === 'error') {
           return new ErrorResult(
             `${params?.errorMessageEmptyHypernym || DEFAULT_ERROR_MESSAGE_EMPTY_HYPERNYM}${params?.errorMessageHypernymSeparator || DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}\n${validationResult.message}`,
             [],
-          );
+          ) as TArrayValidationRuleResult<Validator, Params>;
         }
       }
       const result = value?.reduce((acc, item, index) => {
-        const validationResult = validator(item);
+        const validationResult = validator(item, { key: index, shouldReturnError: validationParams?.shouldReturnError });
         if (validationResult.status === 'success') {
           acc.validResults.push(validationResult.data);
           acc.errors.push(undefined);
-          params?.proxyPerElement?.(validationResult, index);
         } else {
           acc.isError = true;
           acc.errors.push(validationResult as TRetrieveError<ReturnType<Validator>>);
-          params?.proxyPerElement?.(validationResult as TRetrieveError<ReturnType<Validator>>, index);
           acc.errorMessage += `${index}${params?.errorMessageIndexSeparator || DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}${validationResult.message}\n`;
         }
         return acc;
       }, initialAcc);
       if (result.isError) {
-        return new ErrorResult(  
+        return new ErrorResult(
           `${params?.errorMessageHypernym || DEFAULT_ERROR_MESSAGE_HYPERNYM}${params?.errorMessageHypernymSeparator || DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}\n${result.errorMessage}`,
           result.errors,
-        );
+        ) as TArrayValidationRuleResult<Validator, Params>;
       }
-      return new SuccessResult(result.validResults);
+      return new SuccessResult(result.validResults) as TArrayValidationRuleResult<Validator, Params>;
     } catch (e) {
       console.error(e);
       throw e;

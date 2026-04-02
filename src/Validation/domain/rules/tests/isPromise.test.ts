@@ -46,6 +46,13 @@ describe('isPromise validation rule test', () => {
         expect(actualResult).toEqual(expectedResult);
       });
     });
+
+    test('Should return error when params.shouldReturnError is true even for valid value', () => {
+      const value = Promise.resolve();
+      const expectedResult = new ErrorResult(IS_PROMISE_ERROR_MESSAGE, undefined);
+      const actualResult = isPromise(value, { shouldReturnError: true });
+      expect(actualResult).toEqual(expectedResult);
+    });
   });
 
   describe('isPromise success cases', () => {

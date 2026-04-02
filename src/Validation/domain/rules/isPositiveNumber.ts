@@ -2,6 +2,7 @@ import SuccessResult from '../../../_Root/domain/factories/SuccessResult';
 import ErrorResult from '../../../_Root/domain/factories/ErrorResult';
 import { ISuccess } from '../../../_Root/domain/types/Result/ISuccess';
 import { IError } from '../../../_Root/domain/types/Result/IError';
+import type { TValidationParams } from '../types/TValidator';
 
 export const IS_ONLY_POSITIVE_NUMBER_ERROR_MESSAGE = 'Value should be positive number' as const;
 
@@ -10,16 +11,27 @@ export type TPositiveNumberNominal = { readonly [positive_number_brand]:'Positiv
 export type TIsPositiveNumberValidationError = IError<typeof IS_ONLY_POSITIVE_NUMBER_ERROR_MESSAGE, undefined>;
 export type TIsPositiveNumberValidationSuccess = ISuccess<TPositiveNumberNominal>;
 
-export default function isPositiveNumber(
+type TIsPositiveNumberValidationResult<Params extends TValidationParams | undefined = undefined> =
+  [NonNullable<Params>['shouldReturnError']] extends [never]
+    ? TIsPositiveNumberValidationSuccess | TIsPositiveNumberValidationError
+    : [NonNullable<Params>['shouldReturnError']] extends [true]
+      ? TIsPositiveNumberValidationError
+      : TIsPositiveNumberValidationSuccess | TIsPositiveNumberValidationError;
+
+export default function isPositiveNumber<const Params extends TValidationParams | undefined = undefined>(
   value: number,
-): TIsPositiveNumberValidationSuccess | TIsPositiveNumberValidationError {
+  params?: Params,
+): TIsPositiveNumberValidationResult<Params> {
+  if (params?.shouldReturnError === true) {
+    return new ErrorResult(IS_ONLY_POSITIVE_NUMBER_ERROR_MESSAGE, undefined) as TIsPositiveNumberValidationResult<Params>;
+  }
   try {
     if (value > 0) {
-      return new SuccessResult(value as unknown as TPositiveNumberNominal);
+      return new SuccessResult(value as unknown as TPositiveNumberNominal) as TIsPositiveNumberValidationResult<Params>;
     }
-    return new ErrorResult(IS_ONLY_POSITIVE_NUMBER_ERROR_MESSAGE, undefined);
+    return new ErrorResult(IS_ONLY_POSITIVE_NUMBER_ERROR_MESSAGE, undefined) as TIsPositiveNumberValidationResult<Params>;
   } catch (e) {
     console.error(e);
-    return new ErrorResult(IS_ONLY_POSITIVE_NUMBER_ERROR_MESSAGE, undefined);
+    return new ErrorResult(IS_ONLY_POSITIVE_NUMBER_ERROR_MESSAGE, undefined) as TIsPositiveNumberValidationResult<Params>;
   }
 }

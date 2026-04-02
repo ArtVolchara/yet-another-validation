@@ -40,6 +40,14 @@ describe('isArrayExactLength validation rule test', () => {
         expect(actualResult).toEqual(expectedResult);
       });
     });
+
+    test('Should return error when params.shouldReturnError is true even for valid value', () => {
+      const exactLength = 2;
+      const value = [1, 2];
+      const expectedResult = new ErrorResult(`Array should contain exactly ${exactLength} elements`, undefined);
+      const actualResult = isArrayExactLength(exactLength)(value, { shouldReturnError: true });
+      expect(actualResult).toEqual(expectedResult);
+    });
   });
 
   describe('isArrayExactLength success cases', () => {

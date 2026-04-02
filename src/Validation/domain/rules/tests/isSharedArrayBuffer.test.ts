@@ -47,6 +47,13 @@ describe('isSharedArrayBuffer validation rule test', () => {
         expect(actualResult).toEqual(expectedResult);
       });
     });
+
+    test('Should return error when params.shouldReturnError is true even for valid value', () => {
+      const value = new SharedArrayBuffer(8);
+      const expectedResult = new ErrorResult(IS_SHARED_ARRAY_BUFFER_ERROR_MESSAGE, undefined);
+      const actualResult = isSharedArrayBuffer(value, { shouldReturnError: true });
+      expect(actualResult).toEqual(expectedResult);
+    });
   });
 
   describe('isSharedArrayBuffer success cases', () => {

@@ -35,6 +35,12 @@ describe('isNumber validation rule test', () => {
         expect(actualResult).toEqual(expectedResult);
       });
     });
+
+    test('Should return error when params.shouldReturnError is true even for valid value', () => {
+      const expectedResult = new ErrorResult(IS_NUMBER_ERROR_MESSAGE, undefined);
+      const actualResult = isNumber(42, { shouldReturnError: true });
+      expect(actualResult).toEqual(expectedResult);
+    });
   });
 
   describe('isNumber success cases', () => {

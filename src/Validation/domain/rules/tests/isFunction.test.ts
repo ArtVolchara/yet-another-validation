@@ -47,6 +47,13 @@ describe('isFunction validation rule test', () => {
         expect(actualResult).toEqual(expectedResult);
       });
     });
+
+    test('Should return error when params.shouldReturnError is true even for valid value', () => {
+      const fn = (): void => {};
+      const expectedResult = new ErrorResult(IS_FUNCTION_ERROR_MESSAGE, undefined);
+      const actualResult = isFunction(fn, { shouldReturnError: true });
+      expect(actualResult).toEqual(expectedResult);
+    });
   });
 
   describe('isFunction success cases', () => {

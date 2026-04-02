@@ -47,6 +47,13 @@ describe('isObject validation rule test', () => {
         expect(actualResult).toEqual(expectedResult);
       });
     });
+
+    test('Should return error when params.shouldReturnError is true even for valid value', () => {
+      const value = { a: 1 };
+      const expectedResult = new ErrorResult(IS_OBJECT_ERROR_MESSAGE, undefined);
+      const actualResult = isObject(value, { shouldReturnError: true });
+      expect(actualResult).toEqual(expectedResult);
+    });
   });
 
   describe('isObject success cases', () => {

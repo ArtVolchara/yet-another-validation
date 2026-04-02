@@ -3,6 +3,7 @@ import {
   TRetrieveErrorData,
   TRetrieveValidationInputData,
   TRetrieveValidationSuccessData,
+  TValidationParams,
   TValidator,
   TValidators,
 } from '../types/TValidator';
@@ -13,6 +14,7 @@ import SuccessResult from '../../../_Root/domain/factories/SuccessResult';
 import isArray from '../rules/isArray';
 
 export const DEFAULT_ERROR_MESSAGE_HYPERNYM = 'Tuple validation failed for the following elements';
+export const DEFAULT_ERROR_MESSAGE_EMPTY_HYPERNYM = 'Tuple does not consist of elements following next validation rules';
 export const DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR = ':';
 export const DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR = ':';
 
@@ -50,26 +52,32 @@ type TValidationAccumulator<Validators extends TValidators> = {
   isError: boolean;
 };
 
-export type TCreateTupleRuleParams<Validators extends Partial<TValidators>> = {
-  proxyPerElement?: (
-    result: ISuccess<TSuccessTupleValidationData<Validators>>
-    | TErrorTupleValidationData<Validators>[number] | undefined,
-    index: number,
-  ) => void,
+export type TCreateTupleRuleParams = {
   errorMessageHypernym?: string,
   errorMessageHypernymSeparator?: string,
   errorMessageIndexSeparator?: string,
 };
 
-export default function createTupleValidationRule<
-  const Validators extends TValidators,
->(
+type TTupleValidationRuleResult<
+  Validators extends TValidators,
+  Params extends TValidationParams | undefined = undefined,
+> =
+  [NonNullable<Params>['shouldReturnError']] extends [never]
+    ? ISuccess<TSuccessTupleValidationData<Validators>> 
+    | IError<string, TErrorTupleValidationData<Validators>>
+    : [NonNullable<Params>['shouldReturnError']] extends [true]
+      ? IError<string, TErrorTupleValidationData<Validators>>
+      : ISuccess<TSuccessTupleValidationData<Validators>> 
+        | IError<string, TErrorTupleValidationData<Validators>>;
+
+export default function createTupleValidationRule<const Validators extends TValidators>(
   validators: Validators,
-  params?: TCreateTupleRuleParams<Validators>,
+  params?: TCreateTupleRuleParams,
 ) {
-  return (
+  return <Params extends TValidationParams | undefined = undefined>(
     value: Array<(TInputValue<Validators>)[number]> | Readonly<Array<(TInputValue<Validators>)[number]>>,
-  ): ISuccess<TSuccessTupleValidationData<Validators>> | IError<string, TErrorTupleValidationData<Validators>> => {
+    validationParams?: Params,
+  ): TTupleValidationRuleResult<Validators, Params> => {
     try {
       const initialAcc: TValidationAccumulator<Validators> = {
         validResults: [] as unknown as TSuccessTupleValidationData<Validators>,
@@ -79,22 +87,19 @@ export default function createTupleValidationRule<
       };
 
       const result = initialAcc;
-
       // eslint-disable-next-line no-restricted-syntax
       for (const [index, validator] of validators.entries()) {
       // eslint-disable-next-line no-continue
         if (!validator) continue;
-        const val = isArray(value).status === 'error' ? undefined : value?.[index];
-        const validationResult = validator(val);
+ 
+        const validationResult = validator(value?.[index], { key: index, shouldReturnError: isArray(value).status === 'error' || validationParams?.shouldReturnError });
 
         if (validationResult.status === 'success') {
           result.validResults[index] = validationResult.data;
           result.errors[index] = undefined;
-          params?.proxyPerElement?.(validationResult, index);
         } else {
           result.isError = true;
           result.errors[index] = validationResult;
-          params?.proxyPerElement?.(validationResult, index);
           result.errorMessage += `${index}${params?.errorMessageIndexSeparator || DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}${validationResult.message}\n`;
         }
       }
@@ -103,9 +108,9 @@ export default function createTupleValidationRule<
         return new ErrorResult(
           `${params?.errorMessageHypernym || DEFAULT_ERROR_MESSAGE_HYPERNYM}${params?.errorMessageHypernymSeparator || DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}\n${result.errorMessage}`,
           result.errors,
-        );
+        ) as TTupleValidationRuleResult<Validators, Params>;
       }
-      return new SuccessResult(result.validResults);
+      return new SuccessResult(result.validResults) as TTupleValidationRuleResult<Validators, Params>;
     } catch (e) {
       console.error(e);
       throw e;

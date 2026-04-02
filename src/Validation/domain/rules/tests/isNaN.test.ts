@@ -38,6 +38,12 @@ describe('isNaN validation rule test', () => {
         expect(actualResult).toEqual(expectedResult);
       });
     });
+
+    test('Should return error when params.shouldReturnError is true even for valid value', () => {
+      const expectedResult = new ErrorResult(IS_NAN_ERROR_MESSAGE, undefined);
+      const actualResult = isNaN(NaN, { shouldReturnError: true });
+      expect(actualResult).toEqual(expectedResult);
+    });
   });
 
   describe('isNaN success cases', () => {

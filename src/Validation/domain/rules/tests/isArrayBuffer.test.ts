@@ -47,6 +47,13 @@ describe('isArrayBuffer validation rule test', () => {
         expect(actualResult).toEqual(expectedResult);
       });
     });
+
+    test('Should return error when params.shouldReturnError is true even for valid value', () => {
+      const value = new ArrayBuffer(8);
+      const expectedResult = new ErrorResult(IS_ARRAY_BUFFER_ERROR_MESSAGE, undefined);
+      const actualResult = isArrayBuffer(value, { shouldReturnError: true });
+      expect(actualResult).toEqual(expectedResult);
+    });
   });
 
   describe('isArrayBuffer success cases', () => {

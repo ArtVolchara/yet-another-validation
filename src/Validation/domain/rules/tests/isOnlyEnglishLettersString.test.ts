@@ -43,6 +43,12 @@ describe('isOnlyEnglishLettersString validation rule test', () => {
         expect(actualResult).toEqual(expectedResult);
       });
     });
+
+    test('Should return error when params.shouldReturnError is true even for valid value', () => {
+      const expectedResult = new ErrorResult(IS_ONLY_ENGLISH_LETTERS_STRING_ERROR_MESSAGE, undefined);
+      const actualResult = isOnlyEnglishLettersString('abc', { shouldReturnError: true });
+      expect(actualResult).toEqual(expectedResult);
+    });
   });
 
   describe('isOnlyEnglishLettersString success cases', () => {

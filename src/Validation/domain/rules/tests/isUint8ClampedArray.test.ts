@@ -42,6 +42,13 @@ describe('isUint8ClampedArray validation rule test', () => {
         expect(actualResult).toEqual(expectedResult);
       });
     });
+
+    test('Should return error when params.shouldReturnError is true even for valid value', () => {
+      const value = new Uint8ClampedArray();
+      const expectedResult = new ErrorResult(IS_UINT8_CLAMPED_ARRAY_ERROR_MESSAGE, undefined);
+      const actualResult = isUint8ClampedArray(value, { shouldReturnError: true });
+      expect(actualResult).toEqual(expectedResult);
+    });
   });
 
   describe('isUint8ClampedArray success cases', () => {

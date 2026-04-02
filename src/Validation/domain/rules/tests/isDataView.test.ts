@@ -47,6 +47,13 @@ describe('isDataView validation rule test', () => {
         expect(actualResult).toEqual(expectedResult);
       });
     });
+
+    test('Should return error when params.shouldReturnError is true even for valid value', () => {
+      const value = new DataView(new ArrayBuffer(8));
+      const expectedResult = new ErrorResult(IS_DATA_VIEW_ERROR_MESSAGE, undefined);
+      const actualResult = isDataView(value, { shouldReturnError: true });
+      expect(actualResult).toEqual(expectedResult);
+    });
   });
 
   describe('isDataView success cases', () => {

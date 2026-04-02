@@ -34,13 +34,17 @@ describe('isArray validation rule test', () => {
         // Arrange
         const inputValue = input as unknown as unknown[];
         const expectedResult = new ErrorResult(IS_ARRAY_ERROR_MESSAGE, undefined);
-
         // Act
         const actualResult = isArray(inputValue);
-
         // Assert
         expect(actualResult).toEqual(expectedResult);
       });
+    });
+
+    test('Should return error when params.shouldReturnError is true even for valid value', () => {
+      const expectedResult = new ErrorResult(IS_ARRAY_ERROR_MESSAGE, undefined);
+      const actualResult = isArray([], { shouldReturnError: true });
+      expect(actualResult).toEqual(expectedResult);
     });
   });
 
@@ -59,10 +63,8 @@ describe('isArray validation rule test', () => {
         // Arrange
         const inputValue = input;
         const expectedResult = new SuccessResult(input);
-
         // Act
         const actualResult = isArray(inputValue);
-
         // Assert
         expect(actualResult).toEqual(expectedResult);
       });
