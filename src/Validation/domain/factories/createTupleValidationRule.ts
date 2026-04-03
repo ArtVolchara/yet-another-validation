@@ -63,12 +63,12 @@ type TTupleValidationRuleResult<
   Params extends TValidationParams | undefined = undefined,
 > =
   [NonNullable<Params>['shouldReturnError']] extends [never]
-    ? ISuccess<TSuccessTupleValidationData<Validators>> 
+    ? ISuccess<TSuccessTupleValidationData<Validators>>
     | IError<string, TErrorTupleValidationData<Validators>>
     : [NonNullable<Params>['shouldReturnError']] extends [true]
       ? IError<string, TErrorTupleValidationData<Validators>>
-      : ISuccess<TSuccessTupleValidationData<Validators>> 
-        | IError<string, TErrorTupleValidationData<Validators>>;
+      : ISuccess<TSuccessTupleValidationData<Validators>>
+      | IError<string, TErrorTupleValidationData<Validators>>;
 
 export default function createTupleValidationRule<const Validators extends TValidators>(
   validators: Validators,
@@ -91,8 +91,12 @@ export default function createTupleValidationRule<const Validators extends TVali
       for (const [index, validator] of validators.entries()) {
       // eslint-disable-next-line no-continue
         if (!validator) continue;
- 
-        const validationResult = validator(value?.[index], { key: index, shouldReturnError: isArray(value).status === 'error' || validationParams?.shouldReturnError });
+
+        const validationResult = validator(value?.[index], {
+          key: index,
+          shouldReturnError: isArray(value).status === 'error' || validationParams?.shouldReturnError,
+          path: validationParams?.path ? `${(validationParams?.path)}[${String(index)}]` : `[${String(index)}]`,
+        });
 
         if (validationResult.status === 'success') {
           result.validResults[index] = validationResult.data;

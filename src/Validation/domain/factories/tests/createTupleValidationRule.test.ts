@@ -14,6 +14,8 @@ import createTupleValidationRule, {
 } from '../createTupleValidationRule';
 import createObjectValidationRule from '../createObjectValidationRule';
 import composeValidator from '../composeValidator';
+import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
+import { TValidationParams, TValidator } from '../../types/TValidator';
 
 describe('createTupleValidationRule', () => {
   describe('createTupleValidationRule error cases', () => {
@@ -373,6 +375,52 @@ describe('createTupleValidationRule', () => {
         expect(actualResult.data).toHaveLength(1);
         expect(actualResult?.data?.[0]).toEqual({ position: 'Manager', company: 'TechCorp' });
       }
+    });
+
+    test('Should pass correct path to element validators without initial path', () => {
+      // Arrange
+      const capturedPaths: Array<string | undefined> = [];
+      const createCapturingValidator = (): TValidator =>
+        ((value: any, params?: TValidationParams) => {
+          capturedPaths.push(params?.path);
+          return new SuccessResult(value);
+        }) as TValidator;
+
+      const tupleRule = createTupleValidationRule([
+        createCapturingValidator(),
+        createCapturingValidator(),
+        createCapturingValidator(),
+      ]);
+
+      // Act
+      tupleRule(['Hello', 42, true] as const);
+
+      // Assert
+      expect(capturedPaths).toEqual(['[0]', '[1]', '[2]']);
+    });
+
+    test('Should prepend parent path to element paths for nested tuple', () => {
+      // Arrange
+      const capturedPaths: Array<string | undefined> = [];
+      const createCapturingValidator = (): TValidator =>
+        ((value: any, params?: TValidationParams) => {
+          capturedPaths.push(params?.path);
+          return new SuccessResult(value);
+        }) as TValidator;
+
+      const tupleRule = createTupleValidationRule([
+        createCapturingValidator(),
+        createCapturingValidator(),
+      ]);
+
+      // Act
+      tupleRule([40.7128, -74.006] as const, { path: 'location.coordinates' });
+
+      // Assert
+      expect(capturedPaths).toEqual([
+        'location.coordinates[0]',
+        'location.coordinates[1]',
+      ]);
     });
   });
 });

@@ -69,7 +69,11 @@ export default function createArrayValidationRule<
         }
       }
       const result = value?.reduce((acc, item, index) => {
-        const validationResult = validator(item, { key: index, shouldReturnError: validationParams?.shouldReturnError });
+        const validationResult = validator(item, {
+          key: index,
+          path: validationParams?.path ? `${(validationParams?.path)}[${String(index)}]` : `[${String(index)}]`,
+          shouldReturnError: validationParams?.shouldReturnError,
+        });
         if (validationResult.status === 'success') {
           acc.validResults.push(validationResult.data);
           acc.errors.push(undefined);

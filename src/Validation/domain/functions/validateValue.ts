@@ -169,7 +169,7 @@ export default function validateValue<
       const result = validateValueFromRules.apply(null, [
         value,
         validator,
-        { separator: params?.separatorAND, shouldReturnError: params?.shouldReturnError },
+        { separator: params?.separatorAND, shouldReturnError: params?.shouldReturnError, path: params?.path },
       ]);
       if (result.status === 'error') {
         const errorsAND = result.data;
@@ -178,7 +178,7 @@ export default function validateValue<
         return result as TValidateValueResult<ORValidators, SeparatorOR, SeparatorAND, ShouldReturnError>;
       }
     } else if (validator instanceof Function) {
-      const result = validator(value, { shouldReturnError: params?.shouldReturnError });
+      const result = validator(value, { shouldReturnError: params?.shouldReturnError, path: params?.path });
       if (result.status === 'error') {
         const errorsOR = result.data;
         if (errorsOR) {

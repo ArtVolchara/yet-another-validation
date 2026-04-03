@@ -13,6 +13,8 @@ import createArrayValidationRule, {
   DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR,
 } from '../createArrayValidationRule';
 import composeValidator from '../composeValidator';
+import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
+import { TValidationParams, TValidator } from '../../types/TValidator';
 
 describe('createArrayValidationRule', () => {
   describe('createArrayValidationRule error cases', () => {
@@ -348,6 +350,44 @@ describe('createArrayValidationRule', () => {
 
       expect(actualResult.status).toBe('success');
       expect((actualResult as { data: unknown }).data).toEqual([]);
+    });
+
+    test('Should pass correct path to element validators without initial path', () => {
+      // Arrange
+      const capturedPaths: Array<string | undefined> = [];
+      const capturingValidator: TValidator = ((value: any, params?: TValidationParams) => {
+        capturedPaths.push(params?.path);
+        return new SuccessResult(value);
+      }) as TValidator;
+
+      const arrayRule = createArrayValidationRule(capturingValidator);
+
+      // Act
+      arrayRule(['a', 'b', 'c']);
+
+      // Assert
+      expect(capturedPaths).toEqual(['[0]', '[1]', '[2]']);
+    });
+
+    test('Should prepend parent path to element paths for nested array', () => {
+      // Arrange
+      const capturedPaths: Array<string | undefined> = [];
+      const capturingValidator: TValidator = ((value: any, params?: TValidationParams) => {
+        capturedPaths.push(params?.path);
+        return new SuccessResult(value);
+      }) as TValidator;
+
+      const arrayRule = createArrayValidationRule(capturingValidator);
+
+      // Act
+      arrayRule(['js', 'ts', 'rust'], { path: 'project.tags' });
+
+      // Assert
+      expect(capturedPaths).toEqual([
+        'project.tags[0]',
+        'project.tags[1]',
+        'project.tags[2]',
+      ]);
     });
   });
 });

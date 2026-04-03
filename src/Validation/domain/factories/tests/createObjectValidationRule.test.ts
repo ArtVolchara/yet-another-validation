@@ -4,12 +4,16 @@ import isNumber, { IS_NUMBER_ERROR_MESSAGE } from '../../rules/isNumber';
 import isPositiveNumber, { IS_ONLY_POSITIVE_NUMBER_ERROR_MESSAGE } from '../../rules/isPositiveNumber';
 import isBoolean from '../../rules/isBoolean';
 import isUndefined from '../../rules/isUndefined';
+import isArray from '../../rules/isArray';
 import createObjectValidationRule, {
   DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR,
   DEFAULT_ERROR_MESSAGE_HYPERNYM,
   DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR,
 } from '../createObjectValidationRule';
+import createArrayValidationRule from '../createArrayValidationRule';
 import composeValidator from '../composeValidator';
+import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
+import { TValidationParams, TValidator } from '../../types/TValidator';
 
 describe('createObjectValidationRule', () => {
   describe('createObjectValidationRule error cases', () => {
@@ -361,6 +365,114 @@ describe('createObjectValidationRule', () => {
       if (actualResult.status === 'success') {
         expect(actualResult.data).toEqual({});
       }
+    });
+
+    test('Should pass correct path to field validators without initial path', () => {
+      // Arrange
+      const capturedPaths: Record<string, string | undefined> = {};
+      const createCapturingValidator = (fieldName: string): TValidator =>
+        ((value: any, params?: TValidationParams) => {
+          capturedPaths[fieldName] = params?.path;
+          return new SuccessResult(value);
+        }) as TValidator;
+
+      const objectRule = createObjectValidationRule({
+        name: createCapturingValidator('name'),
+        age: createCapturingValidator('age'),
+        isActive: createCapturingValidator('isActive'),
+      });
+
+      // Act
+      objectRule({ name: 'John', age: 25, isActive: true });
+
+      // Assert
+      expect(capturedPaths.name).toBe('name');
+      expect(capturedPaths.age).toBe('age');
+      expect(capturedPaths.isActive).toBe('isActive');
+    });
+
+    test('Should prepend parent path to field paths for nested object', () => {
+      // Arrange
+      const capturedPaths: Record<string, string | undefined> = {};
+      const createCapturingValidator = (fieldName: string): TValidator =>
+        ((value: any, params?: TValidationParams) => {
+          capturedPaths[fieldName] = params?.path;
+          return new SuccessResult(value);
+        }) as TValidator;
+
+      const addressRule = createObjectValidationRule({
+        city: createCapturingValidator('city'),
+        zip: createCapturingValidator('zip'),
+      });
+
+      // Act
+      addressRule({ city: 'NY', zip: '10001' }, { path: '.user.address' });
+
+      // Assert
+      expect(capturedPaths.city).toBe('.user.address.city');
+      expect(capturedPaths.zip).toBe('.user.address.zip');
+    });
+
+    test('Should build accumulated path for object with nested array field', () => {
+      // Arrange
+      const capturedPaths: Array<string | undefined> = [];
+      const capturingValidator: TValidator = ((value: any, params?: TValidationParams) => {
+        capturedPaths.push(params?.path);
+        return new SuccessResult(value);
+      }) as TValidator;
+
+      const arrayRule = createArrayValidationRule(capturingValidator);
+      const objectRule = createObjectValidationRule({
+        items: composeValidator([[isArray, arrayRule]]),
+      });
+
+      // Act
+      objectRule({ items: ['a', 'b', 'c'] });
+
+      // Assert
+      expect(capturedPaths).toEqual(['items[0]', 'items[1]', 'items[2]']);
+    });
+
+    test('Should build accumulated path for object with nested array of objects', () => {
+      // Arrange
+      const capturedPaths: Record<string, Array<string | undefined>> = {
+        name: [],
+        age: [],
+      };
+      const createCapturingValidator = (fieldName: string): TValidator =>
+        ((value: any, params?: TValidationParams) => {
+          capturedPaths[fieldName].push(params?.path);
+          return new SuccessResult(value);
+        }) as TValidator;
+
+      const userObjectRule = createObjectValidationRule({
+        name: createCapturingValidator('name'),
+        age: createCapturingValidator('age'),
+      });
+      const usersArrayRule = createArrayValidationRule(
+        composeValidator([[userObjectRule]]) as TValidator,
+      );
+      const formRule = createObjectValidationRule({
+        users: composeValidator([[isArray, usersArrayRule]]),
+      });
+
+      // Act
+      formRule({
+        users: [
+          { name: 'Alice', age: 25 },
+          { name: 'Bob', age: 30 },
+        ],
+      });
+
+      // Assert
+      expect(capturedPaths.name).toEqual([
+        'users[0].name',
+        'users[1].name',
+      ]);
+      expect(capturedPaths.age).toEqual([
+        'users[0].age',
+        'users[1].age',
+      ]);
     });
   });
 });

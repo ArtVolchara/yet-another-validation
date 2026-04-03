@@ -10,7 +10,6 @@ import { TRetrieveError } from '../../../_Root/domain/types/Result/TResult';
 import { IError, isInternalError } from '../../../_Root/domain/types/Result/IError';
 import SuccessResult from '../../../_Root/domain/factories/SuccessResult';
 import ErrorResult from '../../../_Root/domain/factories/ErrorResult';
-import { isOnlyDigitsString, isString } from 'index';
 
 export const DEFAULT_AND_SEPARATOR = '. ' as const;
 
@@ -109,7 +108,7 @@ type TValidateValueFromRulesResult<
 export default function validateValueFromRules<
   const Value,
   const Rules extends TValidationRules,
-  const Params extends { separator?: string, shouldReturnError?: boolean } | undefined = undefined,
+  const Params extends { separator?: string, shouldReturnError?: boolean, path?: string } | undefined = undefined,
   const Separator extends Params extends { separator?: infer Separator }
     ? undefined extends Separator ? typeof DEFAULT_AND_SEPARATOR : Separator
     : typeof DEFAULT_AND_SEPARATOR
@@ -124,7 +123,7 @@ export default function validateValueFromRules<
   const localErrors = [] as Array<IError<string, any>>;
   const result = rules.reduce((acc, rule) => {
     try {
-      const res = rule(acc, { shouldReturnError: params?.shouldReturnError });
+      const res = rule(acc, { shouldReturnError: params?.shouldReturnError, path: params?.path });
       if (res.status === 'error') {
         localErrors.push(res);
         return acc;

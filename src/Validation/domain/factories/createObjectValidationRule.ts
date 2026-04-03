@@ -27,18 +27,18 @@ export type TCreateObjectRuleParams = {
 type TObjectValidationRuleResult<
   ValidatorsSchema extends TObjectValidatorsSchema,
   Params extends TValidationParams | undefined = undefined,
-> =
-  [NonNullable<Params>['shouldReturnError']] extends [never]
-    ? ISuccess<{ [Key in keyof ValidatorsSchema]: TRetrieveSuccess<ReturnType<ValidatorsSchema[Key]>>['data'] }>
-    | TObjectValidationErrorResult<ValidatorsSchema>
-    : [NonNullable<Params>['shouldReturnError']] extends [true]
-      ? TObjectValidationErrorResult<ValidatorsSchema>
-      : ISuccess<{ [Key in keyof ValidatorsSchema]: TRetrieveSuccess<ReturnType<ValidatorsSchema[Key]>>['data'] }>
-      | TObjectValidationErrorResult<ValidatorsSchema>;
+> = [NonNullable<Params>['shouldReturnError']] extends [never]
+  ? ISuccess<{ [Key in keyof ValidatorsSchema]: TRetrieveSuccess<ReturnType<ValidatorsSchema[Key]>>['data'] }>
+  | TObjectValidationErrorResult<ValidatorsSchema>
+  : [NonNullable<Params>['shouldReturnError']] extends [true]
+    ? TObjectValidationErrorResult<ValidatorsSchema>
+    : ISuccess<{ [Key in keyof ValidatorsSchema]: TRetrieveSuccess<ReturnType<ValidatorsSchema[Key]>>['data'] }>
+    | TObjectValidationErrorResult<ValidatorsSchema>;
 
-export default function createObjectValidationRule<
-  const ValidatorsSchema extends TObjectValidatorsSchema,
->(validatorsSchema: ValidatorsSchema, params?: TCreateObjectRuleParams) {
+export default function createObjectValidationRule<const ValidatorsSchema extends TObjectValidatorsSchema>(
+  validatorsSchema: ValidatorsSchema,
+  params?: TCreateObjectRuleParams,
+) {
   const schemaEntries = Object.entries(validatorsSchema) as TObjectEntries<typeof validatorsSchema>;
   return <Params extends TValidationParams | undefined = undefined>(
     value: Record<string | symbol, any> & { length?: never },
@@ -55,6 +55,7 @@ export default function createObjectValidationRule<
       const result = schemaEntries.reduce((acc, [field, fieldValidator]) => {
         const validationResult = fieldValidator(value?.[field as keyof typeof value], {
           key: field,
+          path: validationParams?.path ? `${(validationParams?.path)}.${String(field)}` : String(field),
           shouldReturnError: isObject(value).status === 'error' || validationParams?.shouldReturnError,
         });
         if (validationResult.status === 'success') {
