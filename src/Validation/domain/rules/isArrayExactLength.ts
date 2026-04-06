@@ -7,7 +7,9 @@ import type { TValidationParams } from '../types/TValidator';
 declare const ArrayExactLengthBrand: unique symbol;
 export type TIsArrayExactLengthNominal<Number extends number> = { readonly [ArrayExactLengthBrand]: `isArrayExactLength${Number}`, length: Number };
 
-export type TIsArrayExactLengthValidationError<ExactLength extends number> = IError<`Array should contain exactly ${ExactLength} elements`, undefined>;
+export const generateArrayExactLengthErrorMessage = <ExactLength extends number>(exactLength: ExactLength) => `Array should contain exactly ${exactLength} elements` as const;
+
+export type TIsArrayExactLengthValidationError<ExactLength extends number> = IError<ReturnType<typeof generateArrayExactLengthErrorMessage<ExactLength>>, undefined>;
 export type TIsArrayExactLengthValidationSuccess<ExactLength extends number> = ISuccess<TIsArrayExactLengthNominal<ExactLength>>;
 
 type TIsArrayExactLengthValidationResult<ExactLength extends number, Params extends TValidationParams | undefined = undefined> =
@@ -23,7 +25,7 @@ type TIsArrayExactLengthValidationRule<ExactLength extends number> =
     params?: Params,
   ) => TIsArrayExactLengthValidationResult<ExactLength, Params>;
 
-export default function generateArrayExactLengthValidator<ExactLength extends number>(
+export default function generateArrayExactLengthValidationRule<ExactLength extends number>(
   exactLength: ExactLength,
 ): TIsArrayExactLengthValidationRule<ExactLength> {
   function isArrayExactLength<const Params extends TValidationParams | undefined = undefined>(
@@ -31,16 +33,16 @@ export default function generateArrayExactLengthValidator<ExactLength extends nu
     params?: Params,
   ): TIsArrayExactLengthValidationResult<ExactLength, Params> {
     if (params?.shouldReturnError === true) {
-      return new ErrorResult(`Array should contain exactly ${exactLength} elements`, undefined) as TIsArrayExactLengthValidationResult<ExactLength, Params>;
+      return new ErrorResult(generateArrayExactLengthErrorMessage<ExactLength>(exactLength), undefined) as TIsArrayExactLengthValidationResult<ExactLength, Params>;
     }
     try {
       if (Array.isArray(value) && value.length === exactLength) {
         return new SuccessResult(value as unknown as TIsArrayExactLengthNominal<ExactLength>) as TIsArrayExactLengthValidationResult<ExactLength, Params>;
       }
-      return new ErrorResult(`Array should contain exactly ${exactLength} elements`, undefined) as TIsArrayExactLengthValidationResult<ExactLength, Params>;
+      return new ErrorResult(generateArrayExactLengthErrorMessage<ExactLength>(exactLength), undefined) as TIsArrayExactLengthValidationResult<ExactLength, Params>;
     } catch (e) {
       console.error(e);
-      return new ErrorResult(`Array should contain exactly ${exactLength} elements`, undefined) as TIsArrayExactLengthValidationResult<ExactLength, Params>;
+      return new ErrorResult(generateArrayExactLengthErrorMessage<ExactLength>(exactLength), undefined) as TIsArrayExactLengthValidationResult<ExactLength, Params>;
     }
   }
   return isArrayExactLength;
