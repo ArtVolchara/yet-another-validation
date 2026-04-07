@@ -8,9 +8,9 @@ import isOnlyEnglishLettersString from '../../rules/isOnlyEnglishLettersString';
 import isUndefined from '../../rules/isUndefined';
 import isObject from '../../rules/isObject';
 import createTupleValidationRule, {
-  DEFAULT_ERROR_MESSAGE_HYPERNYM,
-  DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR,
-  DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR,
+  TUPLE_DEFAULT_ERROR_MESSAGE_HYPERNYM,
+  TUPLE_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR,
+  TUPLE_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR,
 } from '../createTupleValidationRule';
 import createObjectValidationRule from '../createObjectValidationRule';
 import composeValidator from '../composeValidator';
@@ -30,9 +30,9 @@ describe('createTupleValidationRule', () => {
 
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
-        expect(actualResult.message).toContain(`${DEFAULT_ERROR_MESSAGE_HYPERNYM}${DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
-        expect(actualResult.message).toContain(`0${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
-        expect(actualResult.message).toContain(`1${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
+        expect(actualResult.message).toContain(`${TUPLE_DEFAULT_ERROR_MESSAGE_HYPERNYM}${TUPLE_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
+        expect(actualResult.message).toContain(`0${TUPLE_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
+        expect(actualResult.message).toContain(`1${TUPLE_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
         expect(actualResult.message).toContain(IS_STRING_ERROR_MESSAGE);
         expect(actualResult.message).toContain(IS_NUMBER_ERROR_MESSAGE);
         expect(actualResult?.data?.[0]).toBeDefined();
@@ -51,9 +51,9 @@ describe('createTupleValidationRule', () => {
 
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
-        expect(actualResult.message).toContain(`${DEFAULT_ERROR_MESSAGE_HYPERNYM}${DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
-        expect(actualResult.message).toContain(`0${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
-        expect(actualResult.message).toContain(`1${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
+        expect(actualResult.message).toContain(`${TUPLE_DEFAULT_ERROR_MESSAGE_HYPERNYM}${TUPLE_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
+        expect(actualResult.message).toContain(`0${TUPLE_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
+        expect(actualResult.message).toContain(`1${TUPLE_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
         expect(actualResult.message).toContain(IS_STRING_ERROR_MESSAGE);
         expect(actualResult.message).toContain(IS_NUMBER_ERROR_MESSAGE);
         expect(actualResult?.data?.[0]).toBeDefined();
@@ -74,9 +74,9 @@ describe('createTupleValidationRule', () => {
 
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
-        expect(actualResult.message).toContain(`${DEFAULT_ERROR_MESSAGE_HYPERNYM}${DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
-        expect(actualResult.message).toContain(`1${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
-        expect(actualResult.message).toContain(`2${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
+        expect(actualResult.message).toContain(`${TUPLE_DEFAULT_ERROR_MESSAGE_HYPERNYM}${TUPLE_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
+        expect(actualResult.message).toContain(`1${TUPLE_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
+        expect(actualResult.message).toContain(`2${TUPLE_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
         expect(actualResult.message).toContain(IS_ONLY_POSITIVE_NUMBER_ERROR_MESSAGE);
         expect(actualResult?.data?.[0]).toBeUndefined();
         expect(actualResult?.data?.[1]).toBeDefined();
@@ -96,8 +96,8 @@ describe('createTupleValidationRule', () => {
 
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
-        expect(actualResult.message).toContain(`${DEFAULT_ERROR_MESSAGE_HYPERNYM}${DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
-        expect(actualResult.message).toContain(`1${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
+        expect(actualResult.message).toContain(`${TUPLE_DEFAULT_ERROR_MESSAGE_HYPERNYM}${TUPLE_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
+        expect(actualResult.message).toContain(`1${TUPLE_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
         expect(actualResult?.data?.[1]).toBeDefined();
       }
     });
@@ -112,8 +112,8 @@ describe('createTupleValidationRule', () => {
 
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
-        expect(actualResult.message).toContain(`${DEFAULT_ERROR_MESSAGE_HYPERNYM}${DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
-        expect(actualResult.message).toContain(`0${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
+        expect(actualResult.message).toContain(`${TUPLE_DEFAULT_ERROR_MESSAGE_HYPERNYM}${TUPLE_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
+        expect(actualResult.message).toContain(`0${TUPLE_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
         expect(actualResult.message).toContain(IS_STRING_ERROR_MESSAGE);
         expect(actualResult?.data?.[0]).toBeDefined();
       }
@@ -130,9 +130,9 @@ describe('createTupleValidationRule', () => {
 
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
-        expect(actualResult.message).toContain(`${DEFAULT_ERROR_MESSAGE_HYPERNYM}${DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
-        expect(actualResult.message).toContain(`0${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
-        expect(actualResult.message).toContain(`1${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
+        expect(actualResult.message).toContain(`${TUPLE_DEFAULT_ERROR_MESSAGE_HYPERNYM}${TUPLE_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
+        expect(actualResult.message).toContain(`0${TUPLE_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
+        expect(actualResult.message).toContain(`1${TUPLE_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
         expect(actualResult?.data?.[0]).toBeDefined();
         expect(actualResult?.data?.[1]).toBeDefined();
       }
@@ -150,8 +150,8 @@ describe('createTupleValidationRule', () => {
 
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
-        expect(actualResult.message).toContain(`0${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
-        expect(actualResult.message).toContain(`1${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
+        expect(actualResult.message).toContain(`0${TUPLE_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
+        expect(actualResult.message).toContain(`1${TUPLE_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
         expect(actualResult.message).toContain(IS_STRING_ERROR_MESSAGE);
         expect(actualResult.message).toContain(IS_NUMBER_ERROR_MESSAGE);
       }
@@ -170,7 +170,7 @@ describe('createTupleValidationRule', () => {
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
         expect(actualResult.message).toContain(customHypernym);
-        expect(actualResult.message).not.toContain(DEFAULT_ERROR_MESSAGE_HYPERNYM);
+        expect(actualResult.message).not.toContain(TUPLE_DEFAULT_ERROR_MESSAGE_HYPERNYM);
       }
     });
 
@@ -186,7 +186,7 @@ describe('createTupleValidationRule', () => {
 
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
-        expect(actualResult.message).toContain(`${DEFAULT_ERROR_MESSAGE_HYPERNYM}${customSeparator}`);
+        expect(actualResult.message).toContain(`${TUPLE_DEFAULT_ERROR_MESSAGE_HYPERNYM}${customSeparator}`);
       }
     });
 
@@ -246,9 +246,9 @@ describe('createTupleValidationRule', () => {
 
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
-        expect(actualResult.message).toContain(`${DEFAULT_ERROR_MESSAGE_HYPERNYM}${DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
-        expect(actualResult.message).toContain(`0${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
-        expect(actualResult.message).toContain(`1${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
+        expect(actualResult.message).toContain(`${TUPLE_DEFAULT_ERROR_MESSAGE_HYPERNYM}${TUPLE_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
+        expect(actualResult.message).toContain(`0${TUPLE_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
+        expect(actualResult.message).toContain(`1${TUPLE_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
         expect(actualResult?.data?.[0]).toBeDefined();
         expect(actualResult?.data?.[1]).toBeDefined();
       }
@@ -267,11 +267,11 @@ describe('createTupleValidationRule', () => {
 
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
-        expect(actualResult.message).toContain(`${DEFAULT_ERROR_MESSAGE_HYPERNYM}${DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
-        expect(actualResult.message).toContain(`0${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
-        expect(actualResult.message).toContain(`1${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
-        expect(actualResult.message).toContain(`2${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
-        expect(actualResult.message).toContain(`3${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
+        expect(actualResult.message).toContain(`${TUPLE_DEFAULT_ERROR_MESSAGE_HYPERNYM}${TUPLE_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
+        expect(actualResult.message).toContain(`0${TUPLE_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
+        expect(actualResult.message).toContain(`1${TUPLE_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
+        expect(actualResult.message).toContain(`2${TUPLE_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
+        expect(actualResult.message).toContain(`3${TUPLE_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
         expect(actualResult?.data?.[0]).toBeDefined();
         expect(actualResult?.data?.[1]).toBeDefined();
         expect(actualResult?.data?.[2]).toBeDefined();

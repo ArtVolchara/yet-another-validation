@@ -6,9 +6,9 @@ import isBoolean from '../../rules/isBoolean';
 import isUndefined from '../../rules/isUndefined';
 import isArray from '../../rules/isArray';
 import createObjectValidationRule, {
-  DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR,
-  DEFAULT_ERROR_MESSAGE_HYPERNYM,
-  DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR,
+  OBJECT_DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR,
+  OBJECT_DEFAULT_ERROR_MESSAGE_HYPERNYM,
+  OBJECT_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR,
 } from '../createObjectValidationRule';
 import createArrayValidationRule from '../createArrayValidationRule';
 import composeValidator from '../composeValidator';
@@ -28,9 +28,9 @@ describe('createObjectValidationRule', () => {
 
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
-        expect(actualResult.message).toContain(`${DEFAULT_ERROR_MESSAGE_HYPERNYM}${DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
-        expect(actualResult.message).toContain(`name${DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
-        expect(actualResult.message).toContain(`age${DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
+        expect(actualResult.message).toContain(`${OBJECT_DEFAULT_ERROR_MESSAGE_HYPERNYM}${OBJECT_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
+        expect(actualResult.message).toContain(`name${OBJECT_DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
+        expect(actualResult.message).toContain(`age${OBJECT_DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
         expect(actualResult.message).toContain(IS_STRING_ERROR_MESSAGE);
         expect(actualResult.message).toContain(IS_NUMBER_ERROR_MESSAGE);
         expect(actualResult?.data?.name).toBeDefined();
@@ -48,8 +48,8 @@ describe('createObjectValidationRule', () => {
 
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
-        expect(actualResult.message).toContain(`${DEFAULT_ERROR_MESSAGE_HYPERNYM}${DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
-        expect(actualResult.message).toContain(`name${DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
+        expect(actualResult.message).toContain(`${OBJECT_DEFAULT_ERROR_MESSAGE_HYPERNYM}${OBJECT_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
+        expect(actualResult.message).toContain(`name${OBJECT_DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
         expect(actualResult.message).toContain(IS_STRING_ERROR_MESSAGE);
         expect(actualResult?.data?.name).toBeDefined();
       }
@@ -68,9 +68,9 @@ describe('createObjectValidationRule', () => {
 
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
-        expect(actualResult.message).toContain(`${DEFAULT_ERROR_MESSAGE_HYPERNYM}${DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
-        expect(actualResult.message).toContain(`age${DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
-        expect(actualResult.message).toContain(`isActive${DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
+        expect(actualResult.message).toContain(`${OBJECT_DEFAULT_ERROR_MESSAGE_HYPERNYM}${OBJECT_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
+        expect(actualResult.message).toContain(`age${OBJECT_DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
+        expect(actualResult.message).toContain(`isActive${OBJECT_DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
         expect(actualResult.message).toContain(IS_ONLY_POSITIVE_NUMBER_ERROR_MESSAGE);
         expect(actualResult?.data?.name).toBeUndefined();
         expect(actualResult?.data?.age).toBeDefined();
@@ -91,9 +91,9 @@ describe('createObjectValidationRule', () => {
 
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
-        expect(actualResult.message).toContain(`name${DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
-        expect(actualResult.message).toContain(`age${DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
-        expect(actualResult.message).toContain(`isActive${DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
+        expect(actualResult.message).toContain(`name${OBJECT_DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
+        expect(actualResult.message).toContain(`age${OBJECT_DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
+        expect(actualResult.message).toContain(`isActive${OBJECT_DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
         expect(actualResult?.data?.name).toBeDefined();
         expect(actualResult?.data?.age).toBeDefined();
         expect(actualResult?.data?.isActive).toBeDefined();
@@ -109,7 +109,7 @@ describe('createObjectValidationRule', () => {
 
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
-        expect(actualResult.message).toContain(`optionalField${DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
+        expect(actualResult.message).toContain(`optionalField${OBJECT_DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
         expect(actualResult?.data?.optionalField).toBeDefined();
       }
     });
@@ -125,9 +125,9 @@ describe('createObjectValidationRule', () => {
 
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
-        expect(actualResult.message).toContain(`${DEFAULT_ERROR_MESSAGE_HYPERNYM}${DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
-        expect(actualResult.message).toContain(`name${DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
-        expect(actualResult.message).toContain(`age${DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
+        expect(actualResult.message).toContain(`${OBJECT_DEFAULT_ERROR_MESSAGE_HYPERNYM}${OBJECT_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
+        expect(actualResult.message).toContain(`name${OBJECT_DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
+        expect(actualResult.message).toContain(`age${OBJECT_DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
         expect(actualResult.message).toContain(IS_STRING_ERROR_MESSAGE);
         expect(actualResult.message).toContain(IS_NUMBER_ERROR_MESSAGE);
         expect(actualResult?.data?.name).toBeDefined();
@@ -205,7 +205,7 @@ describe('createObjectValidationRule', () => {
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
         expect(actualResult.message).toContain(customHypernym);
-        expect(actualResult.message).not.toContain(DEFAULT_ERROR_MESSAGE_HYPERNYM);
+        expect(actualResult.message).not.toContain(OBJECT_DEFAULT_ERROR_MESSAGE_HYPERNYM);
       }
     });
 
@@ -220,7 +220,7 @@ describe('createObjectValidationRule', () => {
 
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
-        expect(actualResult.message).toContain(`${DEFAULT_ERROR_MESSAGE_HYPERNYM}${customSeparator}`);
+        expect(actualResult.message).toContain(`${OBJECT_DEFAULT_ERROR_MESSAGE_HYPERNYM}${customSeparator}`);
       }
     });
 
@@ -249,9 +249,9 @@ describe('createObjectValidationRule', () => {
 
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
-        expect(actualResult.message).toContain(`${DEFAULT_ERROR_MESSAGE_HYPERNYM}${DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
-        expect(actualResult.message).toContain(`name${DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
-        expect(actualResult.message).toContain(`age${DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
+        expect(actualResult.message).toContain(`${OBJECT_DEFAULT_ERROR_MESSAGE_HYPERNYM}${OBJECT_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
+        expect(actualResult.message).toContain(`name${OBJECT_DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
+        expect(actualResult.message).toContain(`age${OBJECT_DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
         expect(actualResult?.data?.name).toBeDefined();
         expect(actualResult?.data?.age).toBeDefined();
       }
@@ -272,11 +272,11 @@ describe('createObjectValidationRule', () => {
 
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
-        expect(actualResult.message).toContain(`${DEFAULT_ERROR_MESSAGE_HYPERNYM}${DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
-        expect(actualResult.message).toContain(`name${DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
-        expect(actualResult.message).toContain(`age${DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
-        expect(actualResult.message).toContain(`isActive${DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
-        expect(actualResult.message).toContain(`score${DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
+        expect(actualResult.message).toContain(`${OBJECT_DEFAULT_ERROR_MESSAGE_HYPERNYM}${OBJECT_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
+        expect(actualResult.message).toContain(`name${OBJECT_DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
+        expect(actualResult.message).toContain(`age${OBJECT_DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
+        expect(actualResult.message).toContain(`isActive${OBJECT_DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
+        expect(actualResult.message).toContain(`score${OBJECT_DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
         expect(actualResult?.data?.name).toBeDefined();
         expect(actualResult?.data?.age).toBeDefined();
         expect(actualResult?.data?.isActive).toBeDefined();

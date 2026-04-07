@@ -11,9 +11,9 @@ import ErrorResult from '../../../_Root/domain/factories/ErrorResult';
 import SuccessResult from '../../../_Root/domain/factories/SuccessResult';
 import isArray from '../rules/isArray';
 
-export const DEFAULT_ERROR_MESSAGE_HYPERNYM = 'Array validation failed for the following elements';
-export const DEFAULT_ERROR_MESSAGE_EMPTY_HYPERNYM = 'Array does not consist of elements following next validation rules';
-export const DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR = ':';
+export const ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM = 'Array validation failed for the following elements';
+export const ARRAY_DEFAULT_ERROR_MESSAGE_EMPTY_HYPERNYM = 'Array does not consist of elements following next validation rules';
+export const ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR = ':';
 export const DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR = ':';
 
 export type TValidationAccumulator<Validator extends TValidator> = {
@@ -40,7 +40,7 @@ type TArrayValidationRuleResult<
     : [NonNullable<Params>['shouldReturnError']] extends [true]
       ? IError<string, Array<TRetrieveError<ReturnType<Validator>> | undefined>>
       : ISuccess<Array<TRetrieveValidationSuccessData<Validator>['data']>>
-        | IError<string, Array<TRetrieveError<ReturnType<Validator>> | undefined>>;
+      | IError<string, Array<TRetrieveError<ReturnType<Validator>> | undefined>>;
 
 export default function createArrayValidationRule<
   const Validator extends TValidator,
@@ -59,11 +59,13 @@ export default function createArrayValidationRule<
         errorMessage: '',
         isError: false,
       };
-      if (isArray(value).status === 'error') {
+      if (isArray(value).status === 'error'
+      || (isArray(value).status === 'success' && value.length === 0 && validationParams?.shouldReturnError)
+      ) {
         const validationResult = validator(undefined, { shouldReturnError: true });
         if (validationResult.status === 'error') {
           return new ErrorResult(
-            `${params?.errorMessageEmptyHypernym || DEFAULT_ERROR_MESSAGE_EMPTY_HYPERNYM}${params?.errorMessageHypernymSeparator || DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}\n${validationResult.message}`,
+            `${params?.errorMessageEmptyHypernym || ARRAY_DEFAULT_ERROR_MESSAGE_EMPTY_HYPERNYM}${params?.errorMessageHypernymSeparator || ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}\n${validationResult.message}`,
             [],
           ) as TArrayValidationRuleResult<Validator, Params>;
         }
@@ -86,7 +88,7 @@ export default function createArrayValidationRule<
       }, initialAcc);
       if (result.isError) {
         return new ErrorResult(
-          `${params?.errorMessageHypernym || DEFAULT_ERROR_MESSAGE_HYPERNYM}${params?.errorMessageHypernymSeparator || DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}\n${result.errorMessage}`,
+          `${params?.errorMessageHypernym || ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM}${params?.errorMessageHypernymSeparator || ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}\n${result.errorMessage}`,
           result.errors,
         ) as TArrayValidationRuleResult<Validator, Params>;
       }

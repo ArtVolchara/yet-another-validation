@@ -13,10 +13,10 @@ import ErrorResult from '../../../_Root/domain/factories/ErrorResult';
 import SuccessResult from '../../../_Root/domain/factories/SuccessResult';
 import isArray from '../rules/isArray';
 
-export const DEFAULT_ERROR_MESSAGE_HYPERNYM = 'Tuple validation failed for the following elements';
-export const DEFAULT_ERROR_MESSAGE_EMPTY_HYPERNYM = 'Tuple does not consist of elements following next validation rules';
-export const DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR = ':';
-export const DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR = ':';
+export const TUPLE_DEFAULT_ERROR_MESSAGE_HYPERNYM = 'Tuple validation failed for the following elements';
+export const TUPLE_DEFAULT_ERROR_MESSAGE_EMPTY_HYPERNYM = 'Tuple does not consist of elements following next validation rules';
+export const TUPLE_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR = ':';
+export const TUPLE_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR = ':';
 
 export type TInputValue<Validators extends Partial<TValidators>> = Validators extends [infer First extends TValidator]
   ? [TRetrieveValidationInputData<First>]
@@ -104,13 +104,13 @@ export default function createTupleValidationRule<const Validators extends TVali
         } else {
           result.isError = true;
           result.errors[index] = validationResult;
-          result.errorMessage += `${index}${params?.errorMessageIndexSeparator || DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}${validationResult.message}\n`;
+          result.errorMessage += `${index}${params?.errorMessageIndexSeparator || TUPLE_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}${validationResult.message}\n`;
         }
       }
 
       if (result.isError) {
         return new ErrorResult(
-          `${params?.errorMessageHypernym || DEFAULT_ERROR_MESSAGE_HYPERNYM}${params?.errorMessageHypernymSeparator || DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}\n${result.errorMessage}`,
+          `${params?.errorMessageHypernym || TUPLE_DEFAULT_ERROR_MESSAGE_HYPERNYM}${params?.errorMessageHypernymSeparator || TUPLE_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}\n${result.errorMessage}`,
           result.errors,
         ) as TTupleValidationRuleResult<Validators, Params>;
       }

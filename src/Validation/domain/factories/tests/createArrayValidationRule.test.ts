@@ -7,9 +7,9 @@ import isBoolean from '../../rules/isBoolean';
 import isOnlyDigitsString from '../../rules/isOnlyDigitsString';
 import isUndefined from '../../rules/isUndefined';
 import createArrayValidationRule, {
-  DEFAULT_ERROR_MESSAGE_EMPTY_HYPERNYM,
-  DEFAULT_ERROR_MESSAGE_HYPERNYM,
-  DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR,
+  ARRAY_DEFAULT_ERROR_MESSAGE_EMPTY_HYPERNYM,
+  ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM,
+  ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR,
   DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR,
 } from '../createArrayValidationRule';
 import composeValidator from '../composeValidator';
@@ -26,7 +26,7 @@ describe('createArrayValidationRule', () => {
 
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
-        expect(actualResult.message).toContain(`${DEFAULT_ERROR_MESSAGE_HYPERNYM}${DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
+        expect(actualResult.message).toContain(`${ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM}${ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
         expect(actualResult.message).toContain(`1${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
         expect(actualResult.message).toContain(IS_STRING_ERROR_MESSAGE);
         expect(actualResult.data).toHaveLength(3);
@@ -44,7 +44,7 @@ describe('createArrayValidationRule', () => {
 
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
-        expect(actualResult.message).toContain(`${DEFAULT_ERROR_MESSAGE_EMPTY_HYPERNYM}${DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
+        expect(actualResult.message).toContain(`${ARRAY_DEFAULT_ERROR_MESSAGE_EMPTY_HYPERNYM}${ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
         expect(actualResult.message).toContain(IS_STRING_ERROR_MESSAGE);
         expect(actualResult.data).toEqual([]);
       }
@@ -58,7 +58,7 @@ describe('createArrayValidationRule', () => {
 
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
-        expect(actualResult.message).toContain(`${DEFAULT_ERROR_MESSAGE_HYPERNYM}${DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
+        expect(actualResult.message).toContain(`${ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM}${ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
         expect(actualResult.message).toContain(`1${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
         expect(actualResult.message).toContain(`2${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
         expect(actualResult.message).toContain(IS_ONLY_POSITIVE_NUMBER_ERROR_MESSAGE);
@@ -78,7 +78,7 @@ describe('createArrayValidationRule', () => {
 
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
-        expect(actualResult.message).toContain(`${DEFAULT_ERROR_MESSAGE_HYPERNYM}${DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
+        expect(actualResult.message).toContain(`${ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM}${ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
         expect(actualResult.message).toContain(`1${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
         expect(actualResult.message).toContain(`2${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
         expect(actualResult.data).toHaveLength(4);
@@ -97,7 +97,7 @@ describe('createArrayValidationRule', () => {
 
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
-        expect(actualResult.message).toContain(`${DEFAULT_ERROR_MESSAGE_HYPERNYM}${DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
+        expect(actualResult.message).toContain(`${ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM}${ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
         expect(actualResult.message).toContain(`1${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
         expect(actualResult?.data?.[1]).toBeDefined();
       }
@@ -111,7 +111,7 @@ describe('createArrayValidationRule', () => {
 
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
-        expect(actualResult.message).toContain(`${DEFAULT_ERROR_MESSAGE_HYPERNYM}${DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
+        expect(actualResult.message).toContain(`${ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM}${ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
         expect(actualResult.message).toContain(`0${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
         expect(actualResult.message).toContain(`1${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
         expect(actualResult.message).toContain(`2${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
@@ -150,7 +150,7 @@ describe('createArrayValidationRule', () => {
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
         expect(actualResult.message).toContain(customHypernym);
-        expect(actualResult.message).not.toContain(DEFAULT_ERROR_MESSAGE_HYPERNYM);
+        expect(actualResult.message).not.toContain(ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM);
       }
     });
 
@@ -166,7 +166,7 @@ describe('createArrayValidationRule', () => {
 
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
-        expect(actualResult.message).toContain(`${DEFAULT_ERROR_MESSAGE_HYPERNYM}${customSeparator}`);
+        expect(actualResult.message).toContain(`${ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM}${customSeparator}`);
       }
     });
 
@@ -203,7 +203,7 @@ describe('createArrayValidationRule', () => {
         const firstValidator = firstOperand[0];
         expect(firstValidator.status).toBe('error');
         if (firstValidator.status === 'error') {
-          expect(firstValidator.message).toContain(DEFAULT_ERROR_MESSAGE_HYPERNYM);
+          expect(firstValidator.message).toContain(ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM);
           expect(firstValidator.data).toBeDefined();
           expect(Array.isArray(firstValidator.data)).toBe(true);
           expect(firstValidator.data).toHaveLength(3);
@@ -227,7 +227,7 @@ describe('createArrayValidationRule', () => {
 
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
-        expect(actualResult.message).toContain(`${DEFAULT_ERROR_MESSAGE_HYPERNYM}${DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
+        expect(actualResult.message).toContain(`${ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM}${ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
         expect(actualResult.message).toContain(`0${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
         expect(actualResult.message).toContain(`1${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
         expect(actualResult.message).toContain(`2${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
@@ -246,11 +246,23 @@ describe('createArrayValidationRule', () => {
 
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
-        expect(actualResult.message).toContain(`${DEFAULT_ERROR_MESSAGE_HYPERNYM}${DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
+        expect(actualResult.message).toContain(`${ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM}${ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
         expect(actualResult.data).toHaveLength(3);
         expect(actualResult?.data?.[0]).toBeDefined();
         expect(actualResult?.data?.[1]).toBeDefined();
         expect(actualResult?.data?.[2]).toBeDefined();
+      }
+    });
+
+    test('Should return error when shouldReturnError is true for empty array', () => {
+      const inputValue: string[] = [];
+      const arrayValidationRule = createArrayValidationRule(composeValidator([[isString]]));
+
+      const actualResult = arrayValidationRule(inputValue, { shouldReturnError: true });
+      expect(actualResult.status).toBe('error');
+      if (actualResult.status === 'error') {
+        expect(actualResult.message).toContain(`${ARRAY_DEFAULT_ERROR_MESSAGE_EMPTY_HYPERNYM}${ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}\n${IS_STRING_ERROR_MESSAGE}`);
+        expect(actualResult?.data).toEqual([]);
       }
     });
   });
@@ -340,16 +352,6 @@ describe('createArrayValidationRule', () => {
         expect(Array.isArray(actualResult.data)).toBe(true);
         expect(actualResult.data).toEqual(['5', '2', '3']);
       }
-    });
-
-    test('Should still succeed for empty array even when shouldReturnError is true', () => {
-      const inputValue: string[] = [];
-      const arrayValidationRule = createArrayValidationRule(composeValidator([[isString]]));
-
-      const actualResult = arrayValidationRule(inputValue, { shouldReturnError: true });
-
-      expect(actualResult.status).toBe('success');
-      expect((actualResult as { data: unknown }).data).toEqual([]);
     });
 
     test('Should pass correct path to element validators without initial path', () => {
