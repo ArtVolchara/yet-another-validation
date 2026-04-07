@@ -18,7 +18,7 @@ export { default as isNull } from './isNull';
 export { default as isNumber } from './isNumber';
 export { default as isObject } from './isObject';
 export { default as isOnlyDigitsString } from './isOnlyDigitsString';
-export { default as isOnlyEnglishLettersString } from './isOnlyEnglishLettersString';
+export { default as isOnlyEnglishLettersString } from './isOnlyLatinLettersString';
 export { default as isPositiveNumber } from './isPositiveNumber';
 export { default as isPromise } from './isPromise';
 export { default as isSet } from './isSet';

@@ -1,7 +1,7 @@
 import { describe, test, expect } from 'vitest';
 import isString, { IS_STRING_ERROR_MESSAGE } from '../../rules/isString';
 import isNumber from '../../rules/isNumber';
-import isPositiveNumber, { IS_ONLY_POSITIVE_NUMBER_ERROR_MESSAGE } from '../../rules/isPositiveNumber';
+import isPositiveNumber, { IS_POSITIVE_NUMBER_ERROR_MESSAGE } from '../../rules/isPositiveNumber';
 import isArray from '../../rules/isArray';
 import isBoolean from '../../rules/isBoolean';
 import isOnlyDigitsString from '../../rules/isOnlyDigitsString';
@@ -61,7 +61,7 @@ describe('createArrayValidationRule', () => {
         expect(actualResult.message).toContain(`${ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM}${ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
         expect(actualResult.message).toContain(`1${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
         expect(actualResult.message).toContain(`2${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
-        expect(actualResult.message).toContain(IS_ONLY_POSITIVE_NUMBER_ERROR_MESSAGE);
+        expect(actualResult.message).toContain(IS_POSITIVE_NUMBER_ERROR_MESSAGE);
         expect(actualResult.data).toHaveLength(4);
         expect(actualResult?.data?.[0]).toBeUndefined();
         expect(actualResult?.data?.[1]).toBeDefined();

@@ -1,10 +1,10 @@
 import { describe, test, expect } from 'vitest';
 import isString, { IS_STRING_ERROR_MESSAGE } from '../../rules/isString';
 import isNumber, { IS_NUMBER_ERROR_MESSAGE } from '../../rules/isNumber';
-import isPositiveNumber, { IS_ONLY_POSITIVE_NUMBER_ERROR_MESSAGE } from '../../rules/isPositiveNumber';
+import isPositiveNumber, { IS_POSITIVE_NUMBER_ERROR_MESSAGE } from '../../rules/isPositiveNumber';
 import isBoolean from '../../rules/isBoolean';
 import isArray from '../../rules/isArray';
-import isOnlyEnglishLettersString from '../../rules/isOnlyEnglishLettersString';
+import isOnlyLatinLettersString from '../../rules/isOnlyLatinLettersString';
 import isUndefined from '../../rules/isUndefined';
 import isObject from '../../rules/isObject';
 import createTupleValidationRule, {
@@ -77,7 +77,7 @@ describe('createTupleValidationRule', () => {
         expect(actualResult.message).toContain(`${TUPLE_DEFAULT_ERROR_MESSAGE_HYPERNYM}${TUPLE_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
         expect(actualResult.message).toContain(`1${TUPLE_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
         expect(actualResult.message).toContain(`2${TUPLE_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
-        expect(actualResult.message).toContain(IS_ONLY_POSITIVE_NUMBER_ERROR_MESSAGE);
+        expect(actualResult.message).toContain(IS_POSITIVE_NUMBER_ERROR_MESSAGE);
         expect(actualResult?.data?.[0]).toBeUndefined();
         expect(actualResult?.data?.[1]).toBeDefined();
         expect(actualResult?.data?.[2]).toBeDefined();
@@ -209,8 +209,8 @@ describe('createTupleValidationRule', () => {
 
     test('Should have correct nested error structure with object validation inside tuple', () => {
       const workplaceSchema = {
-        position: composeValidator([[isString, isOnlyEnglishLettersString]]),
-        company: composeValidator([[isString, isOnlyEnglishLettersString]]),
+        position: composeValidator([[isString, isOnlyLatinLettersString]]),
+        company: composeValidator([[isString, isOnlyLatinLettersString]]),
       };
       const workplaceValidationRule = createObjectValidationRule(workplaceSchema);
       const workplaceValidator = composeValidator([[isObject, workplaceValidationRule]]);
@@ -358,8 +358,8 @@ describe('createTupleValidationRule', () => {
 
     test('Should have correct success structure with nested object validation inside tuple', () => {
       const workplaceSchema = {
-        position: composeValidator([[isString, isOnlyEnglishLettersString]]),
-        company: composeValidator([[isString, isOnlyEnglishLettersString]]),
+        position: composeValidator([[isString, isOnlyLatinLettersString]]),
+        company: composeValidator([[isString, isOnlyLatinLettersString]]),
       };
       const workplaceValidationRule = createObjectValidationRule(workplaceSchema);
       const workplaceValidator = composeValidator([[isObject, workplaceValidationRule]]);

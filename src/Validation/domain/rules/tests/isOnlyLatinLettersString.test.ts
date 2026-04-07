@@ -1,10 +1,10 @@
 import { describe, test, expect } from "vitest";
-import isOnlyEnglishLettersString, { IS_ONLY_ENGLISH_LETTERS_STRING_ERROR_MESSAGE } from '../isOnlyEnglishLettersString';
+import isOnlyLatinLettersString, { IS_ONLY_LATIN_LETTERS_STRING_ERROR_MESSAGE } from '../isOnlyLatinLettersString';
 import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
 import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
 
-describe('isOnlyEnglishLettersString validation rule test', () => {
-  describe('isOnlyEnglishLettersString error cases', () => {
+describe('isOnlyLatinLettersString validation rule test', () => {
+  describe('isOnlyLatinLettersString error cases', () => {
     const errorTestCases = [
       { input: '', description: 'empty string' },
       { input: '123', description: 'string with digits' },
@@ -12,7 +12,7 @@ describe('isOnlyEnglishLettersString validation rule test', () => {
       { input: '123abc', description: 'string with digits and letters' },
       { input: 'abc def', description: 'string with space' },
       { input: 'abc!', description: 'string with special character' },
-      { input: 'абв', description: 'string with non-English letters' },
+      { input: 'абв', description: 'string with non-Latin letters' },
       { input: ' abc', description: 'string with leading space' },
       { input: 'abc ', description: 'string with trailing space' },
       { input: null, description: 'null value' },
@@ -34,10 +34,10 @@ describe('isOnlyEnglishLettersString validation rule test', () => {
       test(`Should return error result for ${description}`, () => {
         // Arrange
         const inputValue = input as unknown as string;
-        const expectedResult = new ErrorResult(IS_ONLY_ENGLISH_LETTERS_STRING_ERROR_MESSAGE, undefined);
+        const expectedResult = new ErrorResult(IS_ONLY_LATIN_LETTERS_STRING_ERROR_MESSAGE, undefined);
 
         // Act
-        const actualResult = isOnlyEnglishLettersString(inputValue);
+        const actualResult = isOnlyLatinLettersString(inputValue);
 
         // Assert
         expect(actualResult).toEqual(expectedResult);
@@ -45,13 +45,13 @@ describe('isOnlyEnglishLettersString validation rule test', () => {
     });
 
     test('Should return error when params.shouldReturnError is true even for valid value', () => {
-      const expectedResult = new ErrorResult(IS_ONLY_ENGLISH_LETTERS_STRING_ERROR_MESSAGE, undefined);
-      const actualResult = isOnlyEnglishLettersString('abc', { shouldReturnError: true });
+      const expectedResult = new ErrorResult(IS_ONLY_LATIN_LETTERS_STRING_ERROR_MESSAGE, undefined);
+      const actualResult = isOnlyLatinLettersString('abc', { shouldReturnError: true });
       expect(actualResult).toEqual(expectedResult);
     });
   });
 
-  describe('isOnlyEnglishLettersString success cases', () => {
+  describe('isOnlyLatinLettersString success cases', () => {
     const successTestCases = [
       { input: 'a', description: 'single lowercase letter' },
       { input: 'A', description: 'single uppercase letter' },
@@ -68,7 +68,7 @@ describe('isOnlyEnglishLettersString validation rule test', () => {
         const expectedResult = new SuccessResult(input);
 
         // Act
-        const actualResult = isOnlyEnglishLettersString(input);
+        const actualResult = isOnlyLatinLettersString(input);
 
         // Assert
         expect(actualResult).toEqual(expectedResult);

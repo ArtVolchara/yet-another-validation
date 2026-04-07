@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import isArrayMinLength from '../isArrayMinLength';
+import isArrayMinLength, { generateArrayMinLengthErrorMessage } from '../isArrayMinLength';
 import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
 import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
 
@@ -25,7 +25,7 @@ describe('isArrayMinLength validation rule test', () => {
       test(`Should return error result for ${description}`, () => {
         // Arrange
         const inputValue = input as unknown as unknown[];
-        const expectedResult = new ErrorResult(`Array should contain more than ${minLength} elements`, undefined);
+        const expectedResult = new ErrorResult(generateArrayMinLengthErrorMessage(minLength), undefined);
 
         // Act
         const actualResult = isArrayMinLength(minLength)(inputValue);
@@ -36,10 +36,9 @@ describe('isArrayMinLength validation rule test', () => {
     });
 
     test('Should return error when params.shouldReturnError is true even for valid value', () => {
-      const exactMinLength = 2;
       const value = [1, 2];
-      const expectedResult = new ErrorResult(`Array should contain more than ${exactMinLength} elements`, undefined);
-      const actualResult = isArrayMinLength(exactMinLength)(value, { shouldReturnError: true });
+      const expectedResult = new ErrorResult(generateArrayMinLengthErrorMessage(minLength), undefined);
+      const actualResult = isArrayMinLength(minLength)(value, { shouldReturnError: true });
       expect(actualResult).toEqual(expectedResult);
     });
   });

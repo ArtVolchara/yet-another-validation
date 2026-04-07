@@ -1,5 +1,5 @@
 import { describe, test, expect } from "vitest";
-import isPositiveNumber, { IS_ONLY_POSITIVE_NUMBER_ERROR_MESSAGE } from '../isPositiveNumber';
+import isPositiveNumber, { IS_POSITIVE_NUMBER_ERROR_MESSAGE } from '../isPositiveNumber';
 import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
 import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
 
@@ -43,7 +43,7 @@ describe('isPositiveNumber validation rule test', () => {
       test(`Should return error result for ${description}`, () => {
         // Arrange
         const inputValue = input as unknown as number;
-        const expectedResult = new ErrorResult(IS_ONLY_POSITIVE_NUMBER_ERROR_MESSAGE, undefined);
+        const expectedResult = new ErrorResult(IS_POSITIVE_NUMBER_ERROR_MESSAGE, undefined);
 
         // Act
         const actualResult = isPositiveNumber(inputValue);
@@ -54,7 +54,7 @@ describe('isPositiveNumber validation rule test', () => {
     });
 
     test('Should return error when params.shouldReturnError is true even for valid value', () => {
-      const expectedResult = new ErrorResult(IS_ONLY_POSITIVE_NUMBER_ERROR_MESSAGE, undefined);
+      const expectedResult = new ErrorResult(IS_POSITIVE_NUMBER_ERROR_MESSAGE, undefined);
       const actualResult = isPositiveNumber(5, { shouldReturnError: true });
       expect(actualResult).toEqual(expectedResult);
     });

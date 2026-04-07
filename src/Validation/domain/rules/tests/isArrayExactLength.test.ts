@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import isArrayExactLength from '../isArrayExactLength';
+import isArrayExactLength, { generateArrayExactLengthErrorMessage } from '../isArrayExactLength';
 import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
 import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
 
@@ -31,7 +31,7 @@ describe('isArrayExactLength validation rule test', () => {
       test(`Should return error result for ${description}`, () => {
         // Arrange
         const inputValue = input as unknown as unknown[];
-        const expectedResult = new ErrorResult(`Array should contain exactly ${exactLength} elements`, undefined);
+        const expectedResult = new ErrorResult(generateArrayExactLengthErrorMessage(exactLength), undefined);
 
         // Act
         const actualResult = isArrayExactLength(exactLength)(inputValue);
@@ -42,9 +42,8 @@ describe('isArrayExactLength validation rule test', () => {
     });
 
     test('Should return error when params.shouldReturnError is true even for valid value', () => {
-      const exactLength = 2;
       const value = [1, 2];
-      const expectedResult = new ErrorResult(`Array should contain exactly ${exactLength} elements`, undefined);
+      const expectedResult = new ErrorResult(generateArrayExactLengthErrorMessage(exactLength), undefined);
       const actualResult = isArrayExactLength(exactLength)(value, { shouldReturnError: true });
       expect(actualResult).toEqual(expectedResult);
     });

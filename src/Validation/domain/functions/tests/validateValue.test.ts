@@ -1,8 +1,8 @@
 import { describe, test, expect } from 'vitest';
 import isString, { IS_STRING_ERROR_MESSAGE } from '../../rules/isString';
-import isOnlyEnglishLettersString, { IS_ONLY_ENGLISH_LETTERS_STRING_ERROR_MESSAGE } from '../../rules/isOnlyEnglishLettersString';
+import isOnlyLatinLettersString, { IS_ONLY_LATIN_LETTERS_STRING_ERROR_MESSAGE } from '../../rules/isOnlyLatinLettersString';
 import isNumber, { IS_NUMBER_ERROR_MESSAGE } from '../../rules/isNumber';
-import isPositiveNumber, { IS_ONLY_POSITIVE_NUMBER_ERROR_MESSAGE } from '../../rules/isPositiveNumber';
+import isPositiveNumber, { IS_POSITIVE_NUMBER_ERROR_MESSAGE } from '../../rules/isPositiveNumber';
 import isArray, { IS_ARRAY_ERROR_MESSAGE } from '../../rules/isArray';
 import isArrayMinLength from '../../rules/isArrayMinLength';
 import isUndefined, { IS_UNDEFINED_ERROR_MESSAGE } from '../../rules/isUndefined';
@@ -91,14 +91,14 @@ describe('validateValue', () => {
       // Arrange
       const inputValue = null;
       const expectedMessage = `${IS_STRING_ERROR_MESSAGE}${DEFAULT_AND_SEPARATOR}`
-        + `${IS_ONLY_ENGLISH_LETTERS_STRING_ERROR_MESSAGE}${DEFAULT_OR_SEPARATOR}`
-        + `${IS_NUMBER_ERROR_MESSAGE}${DEFAULT_AND_SEPARATOR}${IS_ONLY_POSITIVE_NUMBER_ERROR_MESSAGE}`;
+        + `${IS_ONLY_LATIN_LETTERS_STRING_ERROR_MESSAGE}${DEFAULT_OR_SEPARATOR}`
+        + `${IS_NUMBER_ERROR_MESSAGE}${DEFAULT_AND_SEPARATOR}${IS_POSITIVE_NUMBER_ERROR_MESSAGE}`;
 
       // Act
       const actualResult = validateValue(
         inputValue,
         [
-          [isString, isOnlyEnglishLettersString],
+          [isString, isOnlyLatinLettersString],
           [isNumber, isPositiveNumber],
         ],
       );
@@ -117,10 +117,10 @@ describe('validateValue', () => {
       // Arrange
       const inputValue = null;
       const expectedMessage = `${IS_STRING_ERROR_MESSAGE}${DEFAULT_AND_SEPARATOR}`
-        + `${IS_ONLY_ENGLISH_LETTERS_STRING_ERROR_MESSAGE}${DEFAULT_OR_SEPARATOR}`
-        + `${IS_NUMBER_ERROR_MESSAGE}${DEFAULT_AND_SEPARATOR}${IS_ONLY_POSITIVE_NUMBER_ERROR_MESSAGE}`;
+        + `${IS_ONLY_LATIN_LETTERS_STRING_ERROR_MESSAGE}${DEFAULT_OR_SEPARATOR}`
+        + `${IS_NUMBER_ERROR_MESSAGE}${DEFAULT_AND_SEPARATOR}${IS_POSITIVE_NUMBER_ERROR_MESSAGE}`;
       const validator = composeValidator([
-        [isString, isOnlyEnglishLettersString],
+        [isString, isOnlyLatinLettersString],
         composeValidator([[isNumber, isPositiveNumber]]),
       ]);
 
@@ -135,9 +135,9 @@ describe('validateValue', () => {
         expect(actualResult.data[0]).toHaveLength(2);
         expect(actualResult.data[1]).toHaveLength(2);
         expect(actualResult.data[0][0]?.message).toBe(IS_STRING_ERROR_MESSAGE);
-        expect(actualResult.data[0][1]?.message).toBe(IS_ONLY_ENGLISH_LETTERS_STRING_ERROR_MESSAGE);
+        expect(actualResult.data[0][1]?.message).toBe(IS_ONLY_LATIN_LETTERS_STRING_ERROR_MESSAGE);
         expect(actualResult.data[1][0]?.message).toBe(IS_NUMBER_ERROR_MESSAGE);
-        expect(actualResult.data[1][1]?.message).toBe(IS_ONLY_POSITIVE_NUMBER_ERROR_MESSAGE);
+        expect(actualResult.data[1][1]?.message).toBe(IS_POSITIVE_NUMBER_ERROR_MESSAGE);
       }
     });
 
@@ -145,13 +145,13 @@ describe('validateValue', () => {
       // Arrange
       const inputValue = null;
       const expectedMessage = `${IS_STRING_ERROR_MESSAGE}${DEFAULT_AND_SEPARATOR}`
-        + `${IS_ONLY_ENGLISH_LETTERS_STRING_ERROR_MESSAGE}${DEFAULT_OR_SEPARATOR}`
+        + `${IS_ONLY_LATIN_LETTERS_STRING_ERROR_MESSAGE}${DEFAULT_OR_SEPARATOR}`
         + `${IS_NUMBER_ERROR_MESSAGE}${DEFAULT_AND_SEPARATOR}`
-        + `${IS_ONLY_POSITIVE_NUMBER_ERROR_MESSAGE}${DEFAULT_OR_SEPARATOR}`
+        + `${IS_POSITIVE_NUMBER_ERROR_MESSAGE}${DEFAULT_OR_SEPARATOR}`
         + `${IS_ARRAY_ERROR_MESSAGE}${DEFAULT_AND_SEPARATOR}Array should contain more than 2 elements`;
       const validator = composeValidator(
         [
-          [isString, isOnlyEnglishLettersString],
+          [isString, isOnlyLatinLettersString],
           composeValidator([
             [isNumber, isPositiveNumber],
             composeValidator([[isArray, isArrayMinLength(2)]]),
@@ -170,9 +170,9 @@ describe('validateValue', () => {
         expect(actualResult.data[0]).toHaveLength(2);
         expect(actualResult.data[1]).toHaveLength(2);
         expect(actualResult.data[0][0]?.message).toBe(IS_STRING_ERROR_MESSAGE);
-        expect(actualResult.data[0][1]?.message).toBe(IS_ONLY_ENGLISH_LETTERS_STRING_ERROR_MESSAGE);
+        expect(actualResult.data[0][1]?.message).toBe(IS_ONLY_LATIN_LETTERS_STRING_ERROR_MESSAGE);
         expect(actualResult.data[1][0]?.message).toBe(IS_NUMBER_ERROR_MESSAGE);
-        expect(actualResult.data[1][1]?.message).toBe(IS_ONLY_POSITIVE_NUMBER_ERROR_MESSAGE);
+        expect(actualResult.data[1][1]?.message).toBe(IS_POSITIVE_NUMBER_ERROR_MESSAGE);
       }
     });
 
@@ -180,7 +180,7 @@ describe('validateValue', () => {
       // Arrange
       const inputValue = 123;
       const expectedMessage = `${IS_STRING_ERROR_MESSAGE}${DEFAULT_AND_SEPARATOR}`
-        + `${IS_ONLY_ENGLISH_LETTERS_STRING_ERROR_MESSAGE}${DEFAULT_OR_SEPARATOR}Custom error`;
+        + `${IS_ONLY_LATIN_LETTERS_STRING_ERROR_MESSAGE}${DEFAULT_OR_SEPARATOR}Custom error`;
       const customErrorData = [[{
         status: 'error' as const, message: 'Custom error', data: undefined,
       }]];
@@ -189,7 +189,7 @@ describe('validateValue', () => {
       const actualResult = validateValue(
         inputValue,
         [
-          [isString, isOnlyEnglishLettersString],
+          [isString, isOnlyLatinLettersString],
           (value: any) => {
             if (typeof value === 'string') {
               return { status: 'success' as const, data: value };
@@ -211,12 +211,12 @@ describe('validateValue', () => {
       // Arrange
       const inputValue = 123;
       const customSeparatorAND = ' & ';
-      const expectedMessage = `${IS_STRING_ERROR_MESSAGE}${customSeparatorAND}${IS_ONLY_ENGLISH_LETTERS_STRING_ERROR_MESSAGE}`;
+      const expectedMessage = `${IS_STRING_ERROR_MESSAGE}${customSeparatorAND}${IS_ONLY_LATIN_LETTERS_STRING_ERROR_MESSAGE}`;
 
       // Act
       const actualResult = validateValue(
         inputValue,
-        [[isString, isOnlyEnglishLettersString]],
+        [[isString, isOnlyLatinLettersString]],
         { separatorAND: customSeparatorAND },
       );
 
@@ -234,14 +234,14 @@ describe('validateValue', () => {
       const inputValue = null;
       const customSeparatorOR = ' || ';
       const expectedMessage = `${IS_STRING_ERROR_MESSAGE}${DEFAULT_AND_SEPARATOR}`
-        + `${IS_ONLY_ENGLISH_LETTERS_STRING_ERROR_MESSAGE}${customSeparatorOR}`
-        + `${IS_NUMBER_ERROR_MESSAGE}${DEFAULT_AND_SEPARATOR}${IS_ONLY_POSITIVE_NUMBER_ERROR_MESSAGE}`;
+        + `${IS_ONLY_LATIN_LETTERS_STRING_ERROR_MESSAGE}${customSeparatorOR}`
+        + `${IS_NUMBER_ERROR_MESSAGE}${DEFAULT_AND_SEPARATOR}${IS_POSITIVE_NUMBER_ERROR_MESSAGE}`;
 
       // Act
       const actualResult = validateValue(
         inputValue,
         [
-          [isString, isOnlyEnglishLettersString],
+          [isString, isOnlyLatinLettersString],
           [isNumber, isPositiveNumber],
         ],
         { separatorOR: customSeparatorOR },
@@ -261,14 +261,14 @@ describe('validateValue', () => {
       const customSeparatorAND = ' >>> ';
       const customSeparatorOR = ' <<OR>> ';
       const expectedMessage = `${IS_STRING_ERROR_MESSAGE}${customSeparatorAND}`
-        + `${IS_ONLY_ENGLISH_LETTERS_STRING_ERROR_MESSAGE}${customSeparatorOR}`
-        + `${IS_NUMBER_ERROR_MESSAGE}${customSeparatorAND}${IS_ONLY_POSITIVE_NUMBER_ERROR_MESSAGE}`;
+        + `${IS_ONLY_LATIN_LETTERS_STRING_ERROR_MESSAGE}${customSeparatorOR}`
+        + `${IS_NUMBER_ERROR_MESSAGE}${customSeparatorAND}${IS_POSITIVE_NUMBER_ERROR_MESSAGE}`;
 
       // Act
       const actualResult = validateValue(
         inputValue,
         [
-          [isString, isOnlyEnglishLettersString],
+          [isString, isOnlyLatinLettersString],
           [isNumber, isPositiveNumber],
         ],
         { separatorAND: customSeparatorAND, separatorOR: customSeparatorOR },
@@ -290,15 +290,15 @@ describe('validateValue', () => {
       const customSeparatorAND = ' => ';
       const customSeparatorOR = ' <OR> ';
       const expectedMessage = `${IS_STRING_ERROR_MESSAGE}${customSeparatorAND}`
-        + `${IS_ONLY_ENGLISH_LETTERS_STRING_ERROR_MESSAGE}${customSeparatorOR}`
-        + `${IS_NUMBER_ERROR_MESSAGE}${customSeparatorAND}${IS_ONLY_POSITIVE_NUMBER_ERROR_MESSAGE}`;
+        + `${IS_ONLY_LATIN_LETTERS_STRING_ERROR_MESSAGE}${customSeparatorOR}`
+        + `${IS_NUMBER_ERROR_MESSAGE}${customSeparatorAND}${IS_POSITIVE_NUMBER_ERROR_MESSAGE}`;
       const innerValidator = composeValidator(
         [[isNumber, isPositiveNumber]],
         { separatorAND: customSeparatorAND, separatorOR: customSeparatorOR },
       );
       const validator = composeValidator(
         [
-          [isString, isOnlyEnglishLettersString],
+          [isString, isOnlyLatinLettersString],
           innerValidator,
         ],
         { separatorAND: customSeparatorAND, separatorOR: customSeparatorOR },
@@ -321,16 +321,16 @@ describe('validateValue', () => {
       const customSeparatorAND = ' + ';
       const customSeparatorOR = ' / ';
       const expectedMessage = `${IS_STRING_ERROR_MESSAGE}${customSeparatorAND}`
-        + `${IS_ONLY_ENGLISH_LETTERS_STRING_ERROR_MESSAGE}${customSeparatorOR}`
+        + `${IS_ONLY_LATIN_LETTERS_STRING_ERROR_MESSAGE}${customSeparatorOR}`
         + `${IS_STRING_ERROR_MESSAGE}${customSeparatorAND}`
-        + `${IS_ONLY_ENGLISH_LETTERS_STRING_ERROR_MESSAGE}${customSeparatorOR}`
+        + `${IS_ONLY_LATIN_LETTERS_STRING_ERROR_MESSAGE}${customSeparatorOR}`
         + `${IS_ARRAY_ERROR_MESSAGE}${customSeparatorAND}Array should contain more than 2 elements`;
       const deepValidator = composeValidator(
         [[isArray, isArrayMinLength(2)]],
       );
       const middleValidator = composeValidator(
         [
-          [isString, isOnlyEnglishLettersString],
+          [isString, isOnlyLatinLettersString],
           deepValidator,
         ],
         { separatorAND: customSeparatorAND, separatorOR: customSeparatorOR },
@@ -340,7 +340,7 @@ describe('validateValue', () => {
       const actualResult = validateValue(
         inputValue,
         [
-          [isString, isOnlyEnglishLettersString],
+          [isString, isOnlyLatinLettersString],
           middleValidator,
         ],
         { separatorAND: customSeparatorAND, separatorOR: customSeparatorOR },
@@ -379,14 +379,14 @@ describe('validateValue', () => {
       // Arrange
       const inputValue = 'Hello';
       const expectedMessage = `${IS_STRING_ERROR_MESSAGE}${DEFAULT_AND_SEPARATOR}`
-        + `${IS_ONLY_ENGLISH_LETTERS_STRING_ERROR_MESSAGE}${DEFAULT_OR_SEPARATOR}`
-        + `${IS_NUMBER_ERROR_MESSAGE}${DEFAULT_AND_SEPARATOR}${IS_ONLY_POSITIVE_NUMBER_ERROR_MESSAGE}`;
+        + `${IS_ONLY_LATIN_LETTERS_STRING_ERROR_MESSAGE}${DEFAULT_OR_SEPARATOR}`
+        + `${IS_NUMBER_ERROR_MESSAGE}${DEFAULT_AND_SEPARATOR}${IS_POSITIVE_NUMBER_ERROR_MESSAGE}`;
 
       // Act
       const actualResult = validateValue(
         inputValue,
         [
-          [isString, isOnlyEnglishLettersString],
+          [isString, isOnlyLatinLettersString],
           [isNumber, isPositiveNumber],
         ],
         { shouldReturnError: true },
@@ -488,7 +488,7 @@ describe('validateValue', () => {
       const actualResult = validateValue(
         inputValue,
         [
-          [isString, isOnlyEnglishLettersString],
+          [isString, isOnlyLatinLettersString],
           [isNumber, isPositiveNumber],
         ],
       );
@@ -508,7 +508,7 @@ describe('validateValue', () => {
       const actualResult = validateValue(
         inputValue,
         [
-          [isString, isOnlyEnglishLettersString],
+          [isString, isOnlyLatinLettersString],
           [isNumber, isPositiveNumber],
         ],
       );
@@ -524,7 +524,7 @@ describe('validateValue', () => {
       // Arrange
       const inputValue = 'Hello';
       const validator = composeValidator([
-        [isString, isOnlyEnglishLettersString],
+        [isString, isOnlyLatinLettersString],
         composeValidator([[isNumber, isPositiveNumber]]),
       ]);
 
@@ -542,9 +542,9 @@ describe('validateValue', () => {
       // Arrange
       const inputValue = ['a', 'b', 'c'];
       const validator = composeValidator([
-        [isString, isOnlyEnglishLettersString],
+        [isString, isOnlyLatinLettersString],
         composeValidator([
-          [isString, isOnlyEnglishLettersString],
+          [isString, isOnlyLatinLettersString],
           composeValidator([[isArray, isArrayMinLength(2)]]),
         ]),
       ]);
@@ -570,7 +570,7 @@ describe('validateValue', () => {
       const actualResult = validateValue(
         inputValue,
         [
-          [isString, isOnlyEnglishLettersString],
+          [isString, isOnlyLatinLettersString],
           (value: any) => {
             if (typeof value === 'string') {
               return { status: 'success' as const, data: value };

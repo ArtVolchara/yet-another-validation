@@ -1,7 +1,7 @@
 import { describe, test, expect } from 'vitest';
 import isString, { IS_STRING_ERROR_MESSAGE } from '../../rules/isString';
 import isNumber, { IS_NUMBER_ERROR_MESSAGE } from '../../rules/isNumber';
-import isPositiveNumber, { IS_ONLY_POSITIVE_NUMBER_ERROR_MESSAGE } from '../../rules/isPositiveNumber';
+import isPositiveNumber, { IS_POSITIVE_NUMBER_ERROR_MESSAGE } from '../../rules/isPositiveNumber';
 import isBoolean from '../../rules/isBoolean';
 import isUndefined from '../../rules/isUndefined';
 import isArray from '../../rules/isArray';
@@ -71,7 +71,7 @@ describe('createObjectValidationRule', () => {
         expect(actualResult.message).toContain(`${OBJECT_DEFAULT_ERROR_MESSAGE_HYPERNYM}${OBJECT_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
         expect(actualResult.message).toContain(`age${OBJECT_DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
         expect(actualResult.message).toContain(`isActive${OBJECT_DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
-        expect(actualResult.message).toContain(IS_ONLY_POSITIVE_NUMBER_ERROR_MESSAGE);
+        expect(actualResult.message).toContain(IS_POSITIVE_NUMBER_ERROR_MESSAGE);
         expect(actualResult?.data?.name).toBeUndefined();
         expect(actualResult?.data?.age).toBeDefined();
         expect(actualResult?.data?.isActive).toBeDefined();

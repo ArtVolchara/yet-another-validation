@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import isString, { IS_STRING_ERROR_MESSAGE } from '../../rules/isString';
-import isOnlyEnglishLettersString, { IS_ONLY_ENGLISH_LETTERS_STRING_ERROR_MESSAGE } from '../../rules/isOnlyEnglishLettersString';
+import isOnlyLatinLettersString, { IS_ONLY_LATIN_LETTERS_STRING_ERROR_MESSAGE } from '../../rules/isOnlyLatinLettersString';
 import isNumber, { IS_NUMBER_ERROR_MESSAGE } from '../../rules/isNumber';
-import isPositiveNumber, { IS_ONLY_POSITIVE_NUMBER_ERROR_MESSAGE } from '../../rules/isPositiveNumber';
+import isPositiveNumber, { IS_POSITIVE_NUMBER_ERROR_MESSAGE } from '../../rules/isPositiveNumber';
 import isArray, { IS_ARRAY_ERROR_MESSAGE } from '../../rules/isArray';
 import isArrayMinLength from '../../rules/isArrayMinLength';
 import isUndefined, { IS_UNDEFINED_ERROR_MESSAGE } from '../../rules/isUndefined';
@@ -101,10 +101,10 @@ describe('composeValidator', () => {
         // Arrange
         const inputValue = null;
         const expectedMessage = `${IS_STRING_ERROR_MESSAGE}${DEFAULT_AND_SEPARATOR}`
-          + `${IS_ONLY_ENGLISH_LETTERS_STRING_ERROR_MESSAGE}${DEFAULT_OR_SEPARATOR}`
-          + `${IS_NUMBER_ERROR_MESSAGE}${DEFAULT_AND_SEPARATOR}${IS_ONLY_POSITIVE_NUMBER_ERROR_MESSAGE}`;
+          + `${IS_ONLY_LATIN_LETTERS_STRING_ERROR_MESSAGE}${DEFAULT_OR_SEPARATOR}`
+          + `${IS_NUMBER_ERROR_MESSAGE}${DEFAULT_AND_SEPARATOR}${IS_POSITIVE_NUMBER_ERROR_MESSAGE}`;
         const validator = composeValidator([
-          [isString, isOnlyEnglishLettersString],
+          [isString, isOnlyLatinLettersString],
           [isNumber, isPositiveNumber],
         ]);
 
@@ -125,10 +125,10 @@ describe('composeValidator', () => {
         // Arrange
         const inputValue = null;
         const expectedMessage = `${IS_STRING_ERROR_MESSAGE}${DEFAULT_AND_SEPARATOR}`
-          + `${IS_ONLY_ENGLISH_LETTERS_STRING_ERROR_MESSAGE}${DEFAULT_OR_SEPARATOR}`
-          + `${IS_NUMBER_ERROR_MESSAGE}${DEFAULT_AND_SEPARATOR}${IS_ONLY_POSITIVE_NUMBER_ERROR_MESSAGE}`;
+          + `${IS_ONLY_LATIN_LETTERS_STRING_ERROR_MESSAGE}${DEFAULT_OR_SEPARATOR}`
+          + `${IS_NUMBER_ERROR_MESSAGE}${DEFAULT_AND_SEPARATOR}${IS_POSITIVE_NUMBER_ERROR_MESSAGE}`;
         const validator = composeValidator([
-          [isString, isOnlyEnglishLettersString],
+          [isString, isOnlyLatinLettersString],
           composeValidator([[isNumber, isPositiveNumber]]),
         ]);
 
@@ -145,9 +145,9 @@ describe('composeValidator', () => {
 
           // Проверяем конкретные сообщения об ошибках
           expect(actualResult.data[0][0]?.message).toBe(IS_STRING_ERROR_MESSAGE);
-          expect(actualResult.data[0][1]?.message).toBe(IS_ONLY_ENGLISH_LETTERS_STRING_ERROR_MESSAGE);
+          expect(actualResult.data[0][1]?.message).toBe(IS_ONLY_LATIN_LETTERS_STRING_ERROR_MESSAGE);
           expect(actualResult.data[1][0]?.message).toBe(IS_NUMBER_ERROR_MESSAGE);
-          expect(actualResult.data[1][1]?.message).toBe(IS_ONLY_POSITIVE_NUMBER_ERROR_MESSAGE);
+          expect(actualResult.data[1][1]?.message).toBe(IS_POSITIVE_NUMBER_ERROR_MESSAGE);
         }
       });
 
@@ -155,12 +155,12 @@ describe('composeValidator', () => {
         // Arrange
         const inputValue = null;
         const expectedMessage = `${IS_STRING_ERROR_MESSAGE}${DEFAULT_AND_SEPARATOR}`
-          + `${IS_ONLY_ENGLISH_LETTERS_STRING_ERROR_MESSAGE}${DEFAULT_OR_SEPARATOR}`
+          + `${IS_ONLY_LATIN_LETTERS_STRING_ERROR_MESSAGE}${DEFAULT_OR_SEPARATOR}`
           + `${IS_NUMBER_ERROR_MESSAGE}${DEFAULT_AND_SEPARATOR}`
-          + `${IS_ONLY_POSITIVE_NUMBER_ERROR_MESSAGE}${DEFAULT_OR_SEPARATOR}`
+          + `${IS_POSITIVE_NUMBER_ERROR_MESSAGE}${DEFAULT_OR_SEPARATOR}`
           + `${IS_ARRAY_ERROR_MESSAGE}${DEFAULT_AND_SEPARATOR}Array should contain more than 2 elements`;
         const validator = composeValidator([
-          [isString, isOnlyEnglishLettersString],
+          [isString, isOnlyLatinLettersString],
           composeValidator([
             [isNumber, isPositiveNumber],
             composeValidator([[isArray, isArrayMinLength(2)]]),
@@ -181,9 +181,9 @@ describe('composeValidator', () => {
 
           // Проверяем конкретные сообщения об ошибках
           expect(actualResult.data[0][0]?.message).toBe(IS_STRING_ERROR_MESSAGE);
-          expect(actualResult.data[0][1]?.message).toBe(IS_ONLY_ENGLISH_LETTERS_STRING_ERROR_MESSAGE);
+          expect(actualResult.data[0][1]?.message).toBe(IS_ONLY_LATIN_LETTERS_STRING_ERROR_MESSAGE);
           expect(actualResult.data[1][0]?.message).toBe(IS_NUMBER_ERROR_MESSAGE);
-          expect(actualResult.data[1][1]?.message).toBe(IS_ONLY_POSITIVE_NUMBER_ERROR_MESSAGE);
+          expect(actualResult.data[1][1]?.message).toBe(IS_POSITIVE_NUMBER_ERROR_MESSAGE);
         }
       });
 
@@ -191,9 +191,9 @@ describe('composeValidator', () => {
         // Arrange
         const inputValue = 123;
         const expectedMessage = `${IS_STRING_ERROR_MESSAGE}${DEFAULT_AND_SEPARATOR}`
-          + `${IS_ONLY_ENGLISH_LETTERS_STRING_ERROR_MESSAGE}${DEFAULT_OR_SEPARATOR}Custom error`;
+          + `${IS_ONLY_LATIN_LETTERS_STRING_ERROR_MESSAGE}${DEFAULT_OR_SEPARATOR}Custom error`;
         const validator = composeValidator([
-          [isString, isOnlyEnglishLettersString],
+          [isString, isOnlyLatinLettersString],
           (value: any) => {
             if (typeof value === 'string') {
               return { status: 'success' as const, data: value };
@@ -239,7 +239,7 @@ describe('composeValidator', () => {
         // Arrange
         const inputValue = 'Hello123';
         const customStringError = new ErrorResult('Custom: not only letters', undefined);
-        const decoratedOnlyLetters = customErrorDecorator(isOnlyEnglishLettersString, customStringError);
+        const decoratedOnlyLetters = customErrorDecorator(isOnlyLatinLettersString, customStringError);
         const validator = composeValidator([[isString, decoratedOnlyLetters]]);
 
         // Act
@@ -352,7 +352,7 @@ describe('composeValidator', () => {
         const inputValue = 'Hello';
         const expectedData = 'Hello';
         const validator = composeValidator([
-          [isString, isOnlyEnglishLettersString],
+          [isString, isOnlyLatinLettersString],
           [isNumber, isPositiveNumber],
         ]);
 
@@ -371,7 +371,7 @@ describe('composeValidator', () => {
         const inputValue = 42;
         const expectedData = 42;
         const validator = composeValidator([
-          [isString, isOnlyEnglishLettersString],
+          [isString, isOnlyLatinLettersString],
           [isNumber, isPositiveNumber],
         ]);
 
@@ -390,7 +390,7 @@ describe('composeValidator', () => {
         const inputValue = 'Hello';
         const expectedData = 'Hello';
         const validator = composeValidator([
-          [isString, isOnlyEnglishLettersString],
+          [isString, isOnlyLatinLettersString],
           composeValidator([[isNumber, isPositiveNumber]]),
         ]);
 
@@ -409,9 +409,9 @@ describe('composeValidator', () => {
         const inputValue = ['a', 'b', 'c'];
         const expectedData = ['a', 'b', 'c'];
         const validator = composeValidator([
-          [isString, isOnlyEnglishLettersString],
+          [isString, isOnlyLatinLettersString],
           composeValidator([
-            [isString, isOnlyEnglishLettersString],
+            [isString, isOnlyLatinLettersString],
             composeValidator([[isArray, isArrayMinLength(2)]]),
           ]),
         ]);
@@ -431,7 +431,7 @@ describe('composeValidator', () => {
         const inputValue = 'Hello';
         const expectedData = 'Hello';
         const validator = composeValidator([
-          [isString, isOnlyEnglishLettersString],
+          [isString, isOnlyLatinLettersString],
           (value: any) => {
             if (typeof value === 'string') {
               return { status: 'success' as const, data: value };

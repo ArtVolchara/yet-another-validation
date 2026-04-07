@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import isArrayMaxLength from '../isArrayMaxLength';
+import isArrayMaxLength, { generateArrayMaxLengthErrorMessage } from '../isArrayMaxLength';
 import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
 import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
 
@@ -31,7 +31,7 @@ describe('isArrayMaxLength validation rule test', () => {
       test(`Should return error result for ${description}`, () => {
         // Arrange
         const inputValue = input as unknown as unknown[];
-        const expectedResult = new ErrorResult(`Array should contain less than ${maxLength} elements`, undefined);
+        const expectedResult = new ErrorResult(generateArrayMaxLengthErrorMessage(maxLength), undefined);
 
         // Act
         const actualResult = isArrayMaxLength(maxLength)(inputValue);
@@ -42,10 +42,9 @@ describe('isArrayMaxLength validation rule test', () => {
     });
 
     test('Should return error when params.shouldReturnError is true even for valid value', () => {
-      const exactMaxLength = 2;
       const value = [1];
-      const expectedResult = new ErrorResult(`Array should contain less than ${exactMaxLength} elements`, undefined);
-      const actualResult = isArrayMaxLength(exactMaxLength)(value, { shouldReturnError: true });
+      const expectedResult = new ErrorResult(generateArrayMaxLengthErrorMessage(maxLength), undefined);
+      const actualResult = isArrayMaxLength(maxLength)(value, { shouldReturnError: true });
       expect(actualResult).toEqual(expectedResult);
     });
   });
