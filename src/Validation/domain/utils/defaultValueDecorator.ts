@@ -1,80 +1,102 @@
-import { TRetrieveSuccess } from 'src/_Root/domain/types/Result/TResult';
+import { TRetrieveError, TRetrieveSuccess } from 'src/_Root/domain/types/Result/TResult';
 import { ISuccess } from '../../../_Root/domain/types/Result/ISuccess';
 import { IError } from '../../../_Root/domain/types/Result/IError';
 import SuccessResult from '../../../_Root/domain/factories/SuccessResult';
-import { TValidationParams, TValidationRule, TValidator } from '../types/TValidator';
+import {
+  TValidationParams, TValidationResult, TValidationRule, TValidator,
+} from '../types/TValidator';
 
 type TDefaultValueDecoratorResult<
   RuleOrValidator extends TValidationRule | TValidator,
   DefaultValue extends Extract<ReturnType<RuleOrValidator>, ISuccess>['data'],
   ShouldReturnError extends boolean | undefined = undefined,
 > = [ShouldReturnError] extends [never]
-  ? TRetrieveSuccess<ReturnType<RuleOrValidator>> | DefaultValue
+  ? TRetrieveSuccess<ReturnType<RuleOrValidator>> | ISuccess<DefaultValue>
   : [ShouldReturnError] extends [true]
-    ? DefaultValue
-    : TRetrieveSuccess<ReturnType<RuleOrValidator>> | DefaultValue;
+    ? ISuccess<DefaultValue>
+    : TRetrieveSuccess<ReturnType<RuleOrValidator>> | ISuccess<DefaultValue>;
 
-// Перегрузка с фабрикой значения по умолчанию на основе ошибки (более специфичная — первой)
+type TDecoratedRule<
+  RuleOrValidator extends TValidationRule | TValidator,
+  DefaultData extends Extract<ReturnType<RuleOrValidator>, ISuccess>['data'],
+> = <
+  const Params extends Parameters<RuleOrValidator>[1] = undefined,
+  const ShouldReturnError extends [Params] extends [never]
+    ? undefined
+    : Params extends TValidationParams ? Params['shouldReturnError'] : undefined
+  = [Params] extends [never]
+    ? undefined
+    : Params extends TValidationParams ? Params['shouldReturnError'] : undefined,
+>(value: Parameters<RuleOrValidator>[0], params?: Params) => TDefaultValueDecoratorResult<RuleOrValidator, DefaultData, ShouldReturnError>;
+
+type TNonDecoratedRule<RuleOrValidator extends TValidationRule | TValidator> = <
+  const Params extends Parameters<RuleOrValidator>[1] = undefined,
+  const ShouldReturnError extends [Params] extends [never]
+    ? undefined
+    : Params extends TValidationParams ? Params['shouldReturnError'] : undefined
+  = [Params] extends [never]
+    ? undefined
+    : Params extends TValidationParams ? Params['shouldReturnError'] : undefined,
+>(value: Parameters<RuleOrValidator>[0], params?: Params) => TValidationResult<
+TRetrieveSuccess<ReturnType<RuleOrValidator>>,
+TRetrieveError<ReturnType<RuleOrValidator>>,
+ShouldReturnError>;
+
+type TDefaultDataFromFactoryOrValue<
+  RuleOrValidator extends TValidationRule | TValidator,
+  DefaultValueOrFactory extends
+  | Extract<ReturnType<RuleOrValidator>, ISuccess>['data']
+  | (
+    (error: Extract<ReturnType<RuleOrValidator>, IError<string, any>>) =>
+    Extract<ReturnType<RuleOrValidator>, ISuccess>['data']
+  ),
+> = DefaultValueOrFactory extends (error: Extract<ReturnType<RuleOrValidator>, IError<string, any>>) => infer Data
+  ? Data
+  : DefaultValueOrFactory;
+
+type TDefaultValueDecoratorReturn<
+  RuleOrValidator extends TValidationRule | TValidator,
+  DefaultValueOrFactory extends
+  | Extract<ReturnType<RuleOrValidator>, ISuccess>['data']
+  | (
+    (
+      error: Extract<ReturnType<RuleOrValidator>, IError<string, any>>
+    ) => Extract<ReturnType<RuleOrValidator>, ISuccess>['data']
+  ),
+  IsEnabled extends boolean | undefined = undefined,
+> = [IsEnabled] extends [true]
+  ? TDecoratedRule<RuleOrValidator, TDefaultDataFromFactoryOrValue<RuleOrValidator, DefaultValueOrFactory>>
+  : [IsEnabled] extends [false] | [undefined]
+    ? TNonDecoratedRule<RuleOrValidator>
+    : TDecoratedRule<RuleOrValidator, TDefaultDataFromFactoryOrValue<RuleOrValidator, DefaultValueOrFactory>>
+      | TNonDecoratedRule<RuleOrValidator>;
+
 function defaultValueDecorator<
   const RuleOrValidator extends TValidationRule | TValidator,
-  const DefaultFactory extends (
-    error: Extract<ReturnType<RuleOrValidator>, IError<string, any>>
-  ) => Extract<ReturnType<RuleOrValidator>, ISuccess>['data'],
-  const IsEnabled extends boolean,
->(
-  ruleOrValidator: RuleOrValidator,
-  defaultFactory: DefaultFactory,
-  isEnabled?: IsEnabled,
-): IsEnabled extends true
-  ? <
-  const Params extends Parameters<RuleOrValidator>[1] = undefined,
-  const ShouldReturnError extends [Params] extends [never]
-    ? undefined
-    : Params extends TValidationParams ? Params['shouldReturnError'] : undefined
-  = [Params] extends [never]
-    ? undefined
-    : Params extends TValidationParams ? Params['shouldReturnError'] : undefined,
-  >(value: Parameters<RuleOrValidator>[0], params?: Params) => TDefaultValueDecoratorResult<RuleOrValidator, ISuccess<ReturnType<DefaultFactory>>, ShouldReturnError>
-  : RuleOrValidator;
-
-// Перегрузка со статическим значением по умолчанию
-function defaultValueDecorator<
-  const RuleOrValidator extends (value: any, ...args: any[]) => ISuccess | IError<string, any>,
-  const DefaultValue extends Extract<ReturnType<RuleOrValidator>, ISuccess>['data'],
-  const IsEnabled extends boolean,
->(
-  ruleOrValidator: RuleOrValidator,
-  defaultValue: DefaultValue,
-  isEnabled?: IsEnabled,
-): IsEnabled extends true
-  ? <
-  const Params extends Parameters<RuleOrValidator>[1] = undefined,
-  const ShouldReturnError extends [Params] extends [never]
-    ? undefined
-    : Params extends TValidationParams ? Params['shouldReturnError'] : undefined
-  = [Params] extends [never]
-    ? undefined
-    : Params extends TValidationParams ? Params['shouldReturnError'] : undefined,
-  >(value: Parameters<RuleOrValidator>[0], params?: Params) => TDefaultValueDecoratorResult<RuleOrValidator, ISuccess<DefaultValue>, ShouldReturnError>
-  : RuleOrValidator;
-
-function defaultValueDecorator<
-  const RuleOrValidator extends (
-    value: any, ...args: any[]) => ISuccess | IError<string, any>,
-  const DefaultValueOrFactory extends Extract<ReturnType<RuleOrValidator>, ISuccess>['data']
-  | ((error: Extract<ReturnType<RuleOrValidator>, IError<string, any>>) => Extract<ReturnType<RuleOrValidator>, ISuccess>['data']),
-  const IsEnabled extends boolean,
+  const DefaultValueOrFactory extends
+  | Extract<ReturnType<RuleOrValidator>, ISuccess>['data']
+  | (
+    (
+      error: Extract<ReturnType<RuleOrValidator>, IError<string, any>>
+    ) => Extract<ReturnType<RuleOrValidator>, ISuccess>['data']
+  ),
+  const IsEnabled extends boolean | undefined = undefined,
 >(
   ruleOrValidator: RuleOrValidator,
   defaultValueOrFactory: DefaultValueOrFactory,
   isEnabled?: IsEnabled,
-) {
+): TDefaultValueDecoratorReturn<RuleOrValidator, DefaultValueOrFactory, IsEnabled> {
   if (!isEnabled) {
-    return ruleOrValidator;
+    return ruleOrValidator as unknown as TDefaultValueDecoratorReturn<
+    RuleOrValidator,
+    DefaultValueOrFactory,
+    IsEnabled
+    >;
   }
-  return <
-  const Params extends Parameters<RuleOrValidator>[1] = undefined,
-  >(value: Parameters<RuleOrValidator>[0], params?: Params) => {
+  const decorated = (
+    value: Parameters<typeof ruleOrValidator>[0],
+    params?: Parameters<typeof ruleOrValidator>[1],
+  ) => {
     const result = ruleOrValidator(value, params);
     if (result.status === 'error') {
       const defaultValue = typeof defaultValueOrFactory === 'function'
@@ -84,6 +106,12 @@ function defaultValueDecorator<
     }
     return result;
   };
+  return decorated as unknown as TDefaultValueDecoratorReturn<
+  RuleOrValidator,
+  DefaultValueOrFactory,
+  IsEnabled
+  >;
 }
 
 export default defaultValueDecorator;
+

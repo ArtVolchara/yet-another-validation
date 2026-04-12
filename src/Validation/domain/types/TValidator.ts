@@ -9,6 +9,16 @@ undefined | Array<IError<string, any> | undefined> | Record<string | symbol, IEr
 
 export type TValidationParams = { shouldReturnError?: boolean, key?: string | number | symbol, path?: string };
 
+export type TValidationResult<
+  Success extends ISuccess,
+  Error extends TValidationRuleError | TValidatorError,
+  ShouldReturnError extends boolean | undefined,
+> = [ShouldReturnError] extends [never]
+  ? TResult<Success, Error>
+  : [ShouldReturnError] extends [true]
+    ? Error
+    : TResult<Success, Error>;
+
 // Атомарное валидационное правило
 export type TValidationRule<
     Args extends [value: any, params?: TValidationParams | undefined]
@@ -16,11 +26,7 @@ export type TValidationRule<
     Success extends ISuccess = ISuccess,
     Error extends TValidationRuleError = TValidationRuleError,
     Params extends TValidationParams | undefined = undefined,
-> = (...args: Args) => [NonNullable<Params>['shouldReturnError']] extends [never]
-  ? TResult<Success, Error>
-  : [NonNullable<Params>['shouldReturnError']] extends [true]
-    ? Error
-    : TResult<Success, Error>;
+> = (...args: Args) => TValidationResult<Success, Error, NonNullable<Params>['shouldReturnError']>;
 
 export type TValidationRules = [TValidationRule, ...Array<TValidationRule>]
 | Readonly<[TValidationRule, ...Array<TValidationRule>]>;
@@ -34,11 +40,7 @@ export type TValidator<
     Success extends ISuccess = ISuccess,
     Error extends TValidatorError = TValidatorError,
     Params extends TValidationParams | undefined = undefined,
-> = (...args: Args) => [NonNullable<Params>['shouldReturnError']] extends [never]
-  ? TResult<Success, Error>
-  : [NonNullable<Params>['shouldReturnError']] extends [true]
-    ? Error
-    : TResult<Success, Error>;
+    > = (...args: Args) => TValidationResult<Success, Error, NonNullable<Params>['shouldReturnError']>;
 
 export type TValidators = [TValidator, ...Array<TValidator>] | Readonly<[TValidator, ...Array<TValidator>]>;
 
@@ -47,10 +49,6 @@ export type TRetrieveValidationInputData<Validator extends TValidator | TValidat
       ? Input
       : never;
 
-export type TRetrieveValidationSuccessData<
-    Validator extends TValidator | TValidationRule,
-> = TRetrieveSuccess<ReturnType<Validator>>;
+export type TRetrieveValidationSuccessData<Validator extends TValidator | TValidationRule> = TRetrieveSuccess<ReturnType<Validator>>;
 
-export type TRetrieveErrorData<
-    Validator extends TValidator | TValidationRule,
-> = TRetrieveError<ReturnType<Validator>>;
+export type TRetrieveErrorData<Validator extends TValidator | TValidationRule> = TRetrieveError<ReturnType<Validator>>;
