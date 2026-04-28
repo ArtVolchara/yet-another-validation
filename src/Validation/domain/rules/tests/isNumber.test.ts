@@ -1,7 +1,6 @@
 import { describe, test, expect } from 'vitest';
 import isNumber, { IS_NUMBER_ERROR_MESSAGE } from '../isNumber';
-import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
-import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
+import { SuccessResult, ErrorResult } from '../../../../_Root/domain/factories';
 
 describe('isNumber validation rule test', () => {
   describe('isNumber error cases', () => {

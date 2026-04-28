@@ -1,7 +1,6 @@
 import { describe, test, expect } from "vitest";
 import isOnlyDigitsString, { IS_ONLY_DIGITS_STRING_DEFAULT_ERROR_MESSAGE } from '../isOnlyDigitsString';
-import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
-import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
+import { SuccessResult, ErrorResult } from '../../../../_Root/domain/factories';
 
 describe('isOnlyDigitsString validation rule test', () => {
   describe('isOnlyDigitsString error cases', () => {

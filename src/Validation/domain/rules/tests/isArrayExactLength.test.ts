@@ -1,7 +1,6 @@
 import { describe, test, expect } from 'vitest';
 import isArrayExactLength, { generateArrayExactLengthErrorMessage } from '../isArrayExactLength';
-import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
-import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
+import { SuccessResult, ErrorResult } from '../../../../_Root/domain/factories';
 
 // There are no tests for string, function, array-like objects and typed arrays values, which may lead to false positive results,
 // because isArrayExactLength has the input parameter of array type, it is made as next item in validation rules chain

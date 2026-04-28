@@ -1,23 +1,22 @@
 import {
   TRetrieveValidationInputData,
-  TRetrieveValidationSuccessData,
+  TRetrieveValidationSuccess,
   TValidationParams,
   TValidator,
 } from '../types/TValidator';
 import { TRetrieveError } from '../../../_Root/domain/types/Result/TResult';
 import { ISuccess } from '../../../_Root/domain/types/Result/ISuccess';
 import { IError } from '../../../_Root/domain/types/Result/IError';
-import ErrorResult from '../../../_Root/domain/factories/ErrorResult';
-import SuccessResult from '../../../_Root/domain/factories/SuccessResult';
-import isArray from '../rules/isArray';
+import { ErrorResult, SuccessResult } from '../../../_Root/domain/factories';
+import { isArray } from '../rules';
 
 export const ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM = 'Array validation failed for the following elements';
 export const ARRAY_DEFAULT_ERROR_MESSAGE_EMPTY_HYPERNYM = 'Array does not consist of elements following next validation rules';
-export const ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR = ':';
-export const DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR = ':';
+export const ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR = ': ';
+export const DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR = ': ';
 
 export type TValidationAccumulator<Validator extends TValidator> = {
-  validResults: Array<TRetrieveValidationSuccessData<Validator>>;
+  validResults: Array<TRetrieveValidationSuccess<Validator>>;
   errors: Array<TRetrieveError<ReturnType<Validator>> | undefined>;
   errorMessage: string;
   isError: boolean;
@@ -35,11 +34,11 @@ type TArrayValidationRuleResult<
   Params extends TValidationParams | undefined = undefined,
 > =
   [NonNullable<Params>['shouldReturnError']] extends [never]
-    ? ISuccess<Array<TRetrieveValidationSuccessData<Validator>['data']>>
+    ? ISuccess<Array<TRetrieveValidationSuccess<Validator>['data']>>
     | IError<string, Array<TRetrieveError<ReturnType<Validator>> | undefined>>
     : [NonNullable<Params>['shouldReturnError']] extends [true]
       ? IError<string, Array<TRetrieveError<ReturnType<Validator>> | undefined>>
-      : ISuccess<Array<TRetrieveValidationSuccessData<Validator>['data']>>
+      : ISuccess<Array<TRetrieveValidationSuccess<Validator>['data']>>
       | IError<string, Array<TRetrieveError<ReturnType<Validator>> | undefined>>;
 
 export default function createArrayValidationRule<
@@ -73,7 +72,6 @@ export default function createArrayValidationRule<
       const result = value?.reduce((acc, item, index) => {
         const validationResult = validator(item, {
           key: index,
-          path: validationParams?.path ? `${(validationParams?.path)}[${String(index)}]` : `[${String(index)}]`,
           shouldReturnError: validationParams?.shouldReturnError,
         });
         if (validationResult.status === 'success') {

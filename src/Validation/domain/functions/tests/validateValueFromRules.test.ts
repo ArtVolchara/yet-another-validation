@@ -2,8 +2,8 @@ import { describe, test, expect } from 'vitest';
 import validateValueFromRules, { DEFAULT_AND_SEPARATOR } from '../validateValueFromRules';
 import isString, { IS_STRING_ERROR_MESSAGE } from '../../rules/isString';
 import isOnlyLatinLettersString, { IS_ONLY_LATIN_LETTERS_STRING_ERROR_MESSAGE } from '../../rules/isOnlyLatinLettersString';
-import customErrorDecorator from '../../utils/customErrorDecorator';
-import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
+import decorateWithCustomError from '../../utils/decorateWithCustomError';
+import { ErrorResult } from '../../../../_Root/domain/factories';
 
 describe('validateValueFromRules', () => {
   describe('validateValueFromRules error cases', () => {
@@ -19,8 +19,8 @@ describe('validateValueFromRules', () => {
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
         expect(actualResult.message).toBe(expectedMessage);
-        expect(actualResult.data).toHaveLength(1);
-        expect(actualResult.data[0]?.message).toBe(expectedMessage);
+        expect(actualResult.errors).toHaveLength(1);
+        expect(actualResult.errors[0]?.message).toBe(expectedMessage);
       }
     });
 
@@ -36,9 +36,9 @@ describe('validateValueFromRules', () => {
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
         expect(actualResult.message).toBe(expectedMessage);
-        expect(actualResult.data).toHaveLength(2);
-        expect(actualResult.data[0]?.message).toBe(IS_STRING_ERROR_MESSAGE);
-        expect(actualResult.data[1]?.message).toBe(IS_ONLY_LATIN_LETTERS_STRING_ERROR_MESSAGE);
+        expect(actualResult.errors).toHaveLength(2);
+        expect(actualResult.errors[0]?.message).toBe(IS_STRING_ERROR_MESSAGE);
+        expect(actualResult.errors[1]?.message).toBe(IS_ONLY_LATIN_LETTERS_STRING_ERROR_MESSAGE);
       }
     });
 
@@ -59,7 +59,7 @@ describe('validateValueFromRules', () => {
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
         expect(actualResult.message).toBe(expectedMessage);
-        expect(actualResult.data).toHaveLength(2);
+        expect(actualResult.errors).toHaveLength(2);
       }
     });
 
@@ -84,7 +84,7 @@ describe('validateValueFromRules', () => {
       // Arrange
       const inputValue = 123;
       const customError = new ErrorResult('Custom string validation error', undefined);
-      const decoratedValidationRule = customErrorDecorator(isString, customError);
+      const decoratedValidationRule = decorateWithCustomError(isString, customError);
 
       // Act
       const actualResult = validateValueFromRules(inputValue, [decoratedValidationRule]);
@@ -93,8 +93,8 @@ describe('validateValueFromRules', () => {
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
         expect(actualResult.message).toBe('Custom string validation error');
-        expect(actualResult.data).toHaveLength(1);
-        expect(actualResult.data[0]?.message).toBe('Custom string validation error');
+        expect(actualResult.errors).toHaveLength(1);
+        expect(actualResult.errors[0]?.message).toBe('Custom string validation error');
       }
     });
 
@@ -102,7 +102,7 @@ describe('validateValueFromRules', () => {
       // Arrange
       const inputValue = 123;
       const customStringError = new ErrorResult('Custom: not a string', undefined);
-      const decoratedIsString = customErrorDecorator(isString, customStringError);
+      const decoratedIsString = decorateWithCustomError(isString, customStringError);
       const expectedMessage = `Custom: not a string${DEFAULT_AND_SEPARATOR}${IS_ONLY_LATIN_LETTERS_STRING_ERROR_MESSAGE}`;
 
       // Act
@@ -112,9 +112,9 @@ describe('validateValueFromRules', () => {
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
         expect(actualResult.message).toBe(expectedMessage);
-        expect(actualResult.data).toHaveLength(2);
-        expect(actualResult.data[0]?.message).toBe('Custom: not a string');
-        expect(actualResult.data[1]?.message).toBe(IS_ONLY_LATIN_LETTERS_STRING_ERROR_MESSAGE);
+        expect(actualResult.errors).toHaveLength(2);
+        expect(actualResult.errors[0]?.message).toBe('Custom: not a string');
+        expect(actualResult.errors[1]?.message).toBe(IS_ONLY_LATIN_LETTERS_STRING_ERROR_MESSAGE);
       }
     });
 
@@ -123,7 +123,7 @@ describe('validateValueFromRules', () => {
       const inputValue = 123;
       const customSeparator = ' --- ';
       const customStringError = new ErrorResult('Custom: not a string', undefined);
-      const decoratedIsString = customErrorDecorator(isString, customStringError);
+      const decoratedIsString = decorateWithCustomError(isString, customStringError);
       const expectedMessage = `Custom: not a string${customSeparator}${IS_ONLY_LATIN_LETTERS_STRING_ERROR_MESSAGE}`;
 
       // Act
@@ -137,7 +137,7 @@ describe('validateValueFromRules', () => {
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
         expect(actualResult.message).toBe(expectedMessage);
-        expect(actualResult.data).toHaveLength(2);
+        expect(actualResult.errors).toHaveLength(2);
       }
     });
 
@@ -152,8 +152,8 @@ describe('validateValueFromRules', () => {
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
         expect(actualResult.message).toBe(IS_STRING_ERROR_MESSAGE);
-        expect(actualResult.data).toHaveLength(1);
-        expect(actualResult.data[0]?.message).toBe(IS_STRING_ERROR_MESSAGE);
+        expect(actualResult.errors).toHaveLength(1);
+        expect(actualResult.errors[0]?.message).toBe(IS_STRING_ERROR_MESSAGE);
       }
     });
 
@@ -173,9 +173,9 @@ describe('validateValueFromRules', () => {
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
         expect(actualResult.message).toBe(expectedMessage);
-        expect(actualResult.data).toHaveLength(2);
-        expect(actualResult.data[0]?.message).toBe(IS_STRING_ERROR_MESSAGE);
-        expect(actualResult.data[1]?.message).toBe(IS_ONLY_LATIN_LETTERS_STRING_ERROR_MESSAGE);
+        expect(actualResult.errors).toHaveLength(2);
+        expect(actualResult.errors[0]?.message).toBe(IS_STRING_ERROR_MESSAGE);
+        expect(actualResult.errors[1]?.message).toBe(IS_ONLY_LATIN_LETTERS_STRING_ERROR_MESSAGE);
       }
     });
 
@@ -183,7 +183,7 @@ describe('validateValueFromRules', () => {
       // Arrange
       const inputValue = 'Hello';
       const customError = new ErrorResult('Custom string error', undefined);
-      const decoratedIsString = customErrorDecorator(isString, customError);
+      const decoratedIsString = decorateWithCustomError(isString, customError);
 
       // Act
       const actualResult = validateValueFromRules(
@@ -196,7 +196,7 @@ describe('validateValueFromRules', () => {
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
         expect(actualResult.message).toBe('Custom string error');
-        expect(actualResult.data).toHaveLength(1);
+        expect(actualResult.errors).toHaveLength(1);
       }
     });
   });
@@ -249,7 +249,7 @@ describe('validateValueFromRules', () => {
       // Arrange
       const inputValue = 'Hello';
       const customError = new ErrorResult('Custom string validation error', undefined);
-      const decoratedValidator = customErrorDecorator(isString, customError);
+      const decoratedValidator = decorateWithCustomError(isString, customError);
 
       // Act
       const actualResult = validateValueFromRules(inputValue, [decoratedValidator]);

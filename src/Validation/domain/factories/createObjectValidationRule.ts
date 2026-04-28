@@ -1,17 +1,16 @@
 import { TObjectEntries } from '../../../_Root/domain/types/utils';
 import { IError } from '../../../_Root/domain/types/Result/IError';
-import ErrorResult from '../../../_Root/domain/factories/ErrorResult';
-import SuccessResult from '../../../_Root/domain/factories/SuccessResult';
+import { ErrorResult, SuccessResult } from '../../../_Root/domain/factories';
 import { ISuccess } from '../../../_Root/domain/types/Result/ISuccess';
 import { TValidationParams, TValidator } from '../types/TValidator';
 import { TRetrieveError, TRetrieveSuccess } from '../../../_Root/domain/types/Result/TResult';
-import isObject from '../rules/isObject';
+import { isObject } from '../rules';
 
 export type TObjectValidatorsSchema = Record<string, TValidator>;
 
 export const OBJECT_DEFAULT_ERROR_MESSAGE_HYPERNYM = 'Object validation failed for the following fields';
-export const OBJECT_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR = ':';
-export const OBJECT_DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR = ':';
+export const OBJECT_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR = ': ';
+export const OBJECT_DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR = ': ';
 
 export type TObjectValidationErrorResult<ValidatorsSchema extends TObjectValidatorsSchema> = (
   [{ [Key in keyof ValidatorsSchema]: TRetrieveError<ReturnType<ValidatorsSchema[Key]>> }[keyof ValidatorsSchema]] extends [never]
@@ -31,7 +30,9 @@ type TObjectValidationRuleResult<
   ? ISuccess<{ [Key in keyof ValidatorsSchema]: TRetrieveSuccess<ReturnType<ValidatorsSchema[Key]>>['data'] }>
   | TObjectValidationErrorResult<ValidatorsSchema>
   : [NonNullable<Params>['shouldReturnError']] extends [true]
-    ? TObjectValidationErrorResult<ValidatorsSchema>
+    ? [TObjectValidationErrorResult<ValidatorsSchema>] extends [never]
+      ? ISuccess<{ [Key in keyof ValidatorsSchema]: TRetrieveSuccess<ReturnType<ValidatorsSchema[Key]>>['data'] }>
+      : TObjectValidationErrorResult<ValidatorsSchema>
     : ISuccess<{ [Key in keyof ValidatorsSchema]: TRetrieveSuccess<ReturnType<ValidatorsSchema[Key]>>['data'] }>
     | TObjectValidationErrorResult<ValidatorsSchema>;
 
@@ -55,7 +56,6 @@ export default function createObjectValidationRule<const ValidatorsSchema extend
       const result = schemaEntries.reduce((acc, [field, fieldValidator]) => {
         const validationResult = fieldValidator(value?.[field as keyof typeof value], {
           key: field,
-          path: validationParams?.path ? `${(validationParams?.path)}.${String(field)}` : String(field),
           shouldReturnError: isObject(value).status === 'error' || validationParams?.shouldReturnError,
         });
         if (validationResult.status === 'success') {
@@ -63,7 +63,7 @@ export default function createObjectValidationRule<const ValidatorsSchema extend
         } else {
           acc.isError = true;
           acc.errors[field] = validationResult as TRetrieveError<ReturnType<ValidatorsSchema[typeof field]>>;
-          acc.errorMessage += `\n${String(field)}${params?.errorMessageFieldSeparator || OBJECT_DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR} ${validationResult.message}`;
+          acc.errorMessage += `\n${String(field)}${params?.errorMessageFieldSeparator || OBJECT_DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}${validationResult.message}`;
         }
         return acc;
       }, initialAcc);
@@ -72,7 +72,7 @@ export default function createObjectValidationRule<const ValidatorsSchema extend
         return new ErrorResult(
           `${params?.errorMessageHypernym || OBJECT_DEFAULT_ERROR_MESSAGE_HYPERNYM}${params?.errorMessageHypernymSeparator || OBJECT_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}${result.errorMessage}`,
           result.errors,
-        ) as TObjectValidationErrorResult<ValidatorsSchema>;
+        ) as TObjectValidationRuleResult<ValidatorsSchema, Params>;
       }
       return new SuccessResult(result.validResults) as TObjectValidationRuleResult<ValidatorsSchema, Params>;
     } catch (e) {

@@ -1,7 +1,6 @@
 import { describe, test, expect } from 'vitest';
 import isString, { IS_STRING_ERROR_MESSAGE } from '../isString';
-import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
-import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
+import { SuccessResult, ErrorResult } from '../../../../_Root/domain/factories';
 
 describe('isString validation rule test', () => {
   describe('isString error cases', () => {

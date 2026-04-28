@@ -1,7 +1,6 @@
 import { describe, test, expect } from "vitest";
 import isSet, { IS_SET_ERROR_MESSAGE } from '../isSet';
-import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
-import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
+import { SuccessResult, ErrorResult } from '../../../../_Root/domain/factories';
 
 describe('isSet validation rule test', () => {
   describe('isSet error cases', () => {

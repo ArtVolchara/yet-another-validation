@@ -1,7 +1,6 @@
 import { describe, test, expect } from 'vitest';
 import isNaN, { IS_NAN_ERROR_MESSAGE } from '../isNaN';
-import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
-import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
+import { SuccessResult, ErrorResult } from '../../../../_Root/domain/factories';
 
 describe('isNaN validation rule test', () => {
   describe('isNaN error cases', () => {

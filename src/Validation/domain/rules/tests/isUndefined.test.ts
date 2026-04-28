@@ -1,7 +1,6 @@
 import { describe, test, expect } from "vitest";
 import isUndefined, { IS_UNDEFINED_ERROR_MESSAGE } from '../isUndefined';
-import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
-import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
+import { SuccessResult, ErrorResult } from '../../../../_Root/domain/factories';
 
 describe('isUndefined validation rule test', () => {
   describe('isUndefined error cases', () => {

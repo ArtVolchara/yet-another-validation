@@ -1,7 +1,6 @@
 import { describe, test, expect } from "vitest";
 import isInt32Array, { IS_INT32_ARRAY_ERROR_MESSAGE } from '../isInt32Array';
-import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
-import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
+import { SuccessResult, ErrorResult } from '../../../../_Root/domain/factories';
 
 describe('isInt32Array validation rule test', () => {
   describe('isInt32Array error cases', () => {

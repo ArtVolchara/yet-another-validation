@@ -1,7 +1,6 @@
 import { describe, test, expect } from 'vitest';
 import isDataView, { IS_DATA_VIEW_ERROR_MESSAGE } from '../isDataView';
-import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
-import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
+import { SuccessResult, ErrorResult } from '../../../../_Root/domain/factories';
 
 describe('isDataView validation rule test', () => {
   describe('isDataView error cases', () => {

@@ -1,20 +1,17 @@
 import { TRetrieveError, TRetrieveSuccess } from 'src/_Root/domain/types/Result/TResult';
 import { ISuccess } from '../../../_Root/domain/types/Result/ISuccess';
 import { IError } from '../../../_Root/domain/types/Result/IError';
-import SuccessResult from '../../../_Root/domain/factories/SuccessResult';
-import {
-  TValidationParams, TValidationResult, TValidationRule, TValidator,
-} from '../types/TValidator';
+import { TValidationParams, TValidationResult, TValidationRule, TValidator } from '../types/TValidator';
 
 type TDefaultValueDecoratorResult<
   RuleOrValidator extends TValidationRule | TValidator,
   DefaultValue extends Extract<ReturnType<RuleOrValidator>, ISuccess>['data'],
   ShouldReturnError extends boolean | undefined = undefined,
 > = [ShouldReturnError] extends [never]
-  ? TRetrieveSuccess<ReturnType<RuleOrValidator>> | ISuccess<DefaultValue>
+  ? TRetrieveSuccess<ReturnType<RuleOrValidator>> | TRetrieveError<ReturnType<RuleOrValidator>> & { data: DefaultValue }
   : [ShouldReturnError] extends [true]
-    ? ISuccess<DefaultValue>
-    : TRetrieveSuccess<ReturnType<RuleOrValidator>> | ISuccess<DefaultValue>;
+    ? TRetrieveError<ReturnType<RuleOrValidator>> & { data: DefaultValue }
+    : TRetrieveSuccess<ReturnType<RuleOrValidator>> | TRetrieveError<ReturnType<RuleOrValidator>> & { data: DefaultValue };
 
 type TDecoratedRule<
   RuleOrValidator extends TValidationRule | TValidator,
@@ -47,10 +44,13 @@ type TDefaultDataFromFactoryOrValue<
   DefaultValueOrFactory extends
   | Extract<ReturnType<RuleOrValidator>, ISuccess>['data']
   | (
-    (error: Extract<ReturnType<RuleOrValidator>, IError<string, any>>) =>
+    (error: Extract<ReturnType<RuleOrValidator>, IError<string, any>>, value: Parameters<RuleOrValidator>[0]) =>
     Extract<ReturnType<RuleOrValidator>, ISuccess>['data']
   ),
-> = DefaultValueOrFactory extends (error: Extract<ReturnType<RuleOrValidator>, IError<string, any>>) => infer Data
+> = DefaultValueOrFactory extends (
+  error: Extract<ReturnType<RuleOrValidator>, IError<string, any>>,
+  value: Parameters<RuleOrValidator>[0]
+) => infer Data
   ? Data
   : DefaultValueOrFactory;
 
@@ -60,7 +60,8 @@ type TDefaultValueDecoratorReturn<
   | Extract<ReturnType<RuleOrValidator>, ISuccess>['data']
   | (
     (
-      error: Extract<ReturnType<RuleOrValidator>, IError<string, any>>
+      error: Extract<ReturnType<RuleOrValidator>, IError<string, any>>,
+      value: Parameters<RuleOrValidator>[0]
     ) => Extract<ReturnType<RuleOrValidator>, ISuccess>['data']
   ),
   IsEnabled extends boolean | undefined = undefined,
@@ -69,15 +70,16 @@ type TDefaultValueDecoratorReturn<
   : [IsEnabled] extends [false] | [undefined]
     ? TNonDecoratedRule<RuleOrValidator>
     : TDecoratedRule<RuleOrValidator, TDefaultDataFromFactoryOrValue<RuleOrValidator, DefaultValueOrFactory>>
-      | TNonDecoratedRule<RuleOrValidator>;
+    | TNonDecoratedRule<RuleOrValidator>;
 
-function defaultValueDecorator<
+function decorateWithDefaultValue<
   const RuleOrValidator extends TValidationRule | TValidator,
   const DefaultValueOrFactory extends
   | Extract<ReturnType<RuleOrValidator>, ISuccess>['data']
   | (
     (
-      error: Extract<ReturnType<RuleOrValidator>, IError<string, any>>
+      error: Extract<ReturnType<RuleOrValidator>, IError<string, any>>,
+      value: Parameters<RuleOrValidator>[0]
     ) => Extract<ReturnType<RuleOrValidator>, ISuccess>['data']
   ),
   const IsEnabled extends boolean | undefined = undefined,
@@ -100,9 +102,9 @@ function defaultValueDecorator<
     const result = ruleOrValidator(value, params);
     if (result.status === 'error') {
       const defaultValue = typeof defaultValueOrFactory === 'function'
-        ? defaultValueOrFactory(result)
+        ? defaultValueOrFactory(result, value)
         : defaultValueOrFactory;
-      return new SuccessResult(defaultValue);
+      return { ...result, data: defaultValue };
     }
     return result;
   };
@@ -113,5 +115,4 @@ function defaultValueDecorator<
   >;
 }
 
-export default defaultValueDecorator;
-
+export default decorateWithDefaultValue;

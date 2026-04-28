@@ -1,22 +1,21 @@
 /* eslint-disable max-len */
 import {
-  TRetrieveErrorData,
+  TRetrieveValidationError,
   TRetrieveValidationInputData,
-  TRetrieveValidationSuccessData,
+  TRetrieveValidationSuccess,
   TValidationParams,
   TValidator,
   TValidators,
 } from '../types/TValidator';
 import { ISuccess } from '../../../_Root/domain/types/Result/ISuccess';
 import { IError } from '../../../_Root/domain/types/Result/IError';
-import ErrorResult from '../../../_Root/domain/factories/ErrorResult';
-import SuccessResult from '../../../_Root/domain/factories/SuccessResult';
-import isArray from '../rules/isArray';
+import { ErrorResult, SuccessResult } from '../../../_Root/domain/factories';
+import { isArray } from '../rules';
 
 export const TUPLE_DEFAULT_ERROR_MESSAGE_HYPERNYM = 'Tuple validation failed for the following elements';
 export const TUPLE_DEFAULT_ERROR_MESSAGE_EMPTY_HYPERNYM = 'Tuple does not consist of elements following next validation rules';
-export const TUPLE_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR = ':';
-export const TUPLE_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR = ':';
+export const TUPLE_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR = ': ';
+export const TUPLE_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR = ': ';
 
 export type TInputValue<Validators extends Partial<TValidators>> = Validators extends [infer First extends TValidator]
   ? [TRetrieveValidationInputData<First>]
@@ -28,21 +27,21 @@ export type TInputValue<Validators extends Partial<TValidators>> = Validators ex
     : [];
 
 export type TSuccessTupleValidationData<Validators extends Partial<TValidators>> = Validators extends [infer First extends TValidator]
-  ? [TRetrieveValidationSuccessData<First>['data']]
+  ? [TRetrieveValidationSuccess<First>['data']]
   : Validators extends [
     infer First extends TValidator,
     ...infer Rest extends TValidators,
   ]
-    ? [TRetrieveValidationSuccessData<First>['data'], ...TSuccessTupleValidationData<Rest>]
+    ? [TRetrieveValidationSuccess<First>['data'], ...TSuccessTupleValidationData<Rest>]
     : [];
 
 export type TErrorTupleValidationData<Validators extends Partial<TValidators>> = Validators extends [infer First extends TValidator]
-  ? [TRetrieveErrorData<First> | undefined]
+  ? [TRetrieveValidationError<First> | undefined]
   : Validators extends [
     infer First extends TValidator,
     ...infer Rest extends TValidators,
   ]
-    ? [TRetrieveErrorData<First> | undefined, ...TErrorTupleValidationData<Rest>]
+    ? [TRetrieveValidationError<First> | undefined, ...TErrorTupleValidationData<Rest>]
     : [];
 
 type TValidationAccumulator<Validators extends TValidators> = {
@@ -95,7 +94,6 @@ export default function createTupleValidationRule<const Validators extends TVali
         const validationResult = validator(value?.[index], {
           key: index,
           shouldReturnError: isArray(value).status === 'error' || validationParams?.shouldReturnError,
-          path: validationParams?.path ? `${(validationParams?.path)}[${String(index)}]` : `[${String(index)}]`,
         });
 
         if (validationResult.status === 'success') {

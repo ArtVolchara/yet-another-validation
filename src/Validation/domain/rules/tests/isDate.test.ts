@@ -1,7 +1,6 @@
 import { describe, test, expect } from 'vitest';
 import isDate, { IS_DATE_ERROR_MESSAGE } from '../isDate';
-import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
-import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
+import { SuccessResult, ErrorResult } from '../../../../_Root/domain/factories';
 
 describe('isDate validation rule test', () => {
   describe('isDate error cases', () => {

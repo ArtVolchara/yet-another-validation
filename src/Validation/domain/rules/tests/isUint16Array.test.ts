@@ -1,7 +1,6 @@
 import { describe, test, expect } from "vitest";
 import isUint16Array, { IS_UINT16_ARRAY_ERROR_MESSAGE } from '../isUint16Array';
-import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
-import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
+import { SuccessResult, ErrorResult } from '../../../../_Root/domain/factories';
 
 describe('isUint16Array validation rule test', () => {
   describe('isUint16Array error cases', () => {

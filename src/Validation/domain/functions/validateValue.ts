@@ -1,10 +1,10 @@
 import {
-  TRetrieveErrorData,
+  TRetrieveValidationError,
   TRetrieveValidationInputData,
-  TRetrieveValidationSuccessData,
   TValidationParams,
   TValidationRules,
   TValidator,
+  TRetrieveValidationSuccess,
 } from '../types/TValidator';
 import {
   TConcatWithSeparator,
@@ -12,7 +12,7 @@ import {
 } from '../../../_Root/domain/types/utils';
 import { ISuccess } from '../../../_Root/domain/types/Result/ISuccess';
 import { IError } from '../../../_Root/domain/types/Result/IError';
-import ErrorResult from '../../../_Root/domain/factories/ErrorResult';
+import { ErrorResult } from '../../../_Root/domain/factories';
 import validateValueFromRules, {
   TConsistentValidationRules,
   TErrorValidationRulesData,
@@ -42,7 +42,7 @@ export type TSuccessORValidationData<
   ? Validators extends TValidationRules
     ? TSuccessValidationRulesData<Validators, InputData>
     : Validators extends TValidator
-      ? TRetrieveValidationSuccessData<Validators>['data']
+      ? TRetrieveValidationSuccess<Validators>['data']
       : never
   : never;
 
@@ -61,7 +61,7 @@ export type TORValidationErrorsMessages<
   > = ORValidators extends [infer First extends TValidator | TValidationRules, ...infer Tail]
     ? First extends TValidator
       ? [
-        TRetrieveErrorData<First>['message'],
+        TRetrieveValidationError<First>['message'],
         ...TORValidationErrorsMessages<Tail extends TORValidators ? Tail : []>,
       ]
       : First extends TValidationRules
@@ -99,7 +99,7 @@ TRemoveReadonly<ORValidators> extends [
   ...infer Tail extends TORValidators,
 ]
   ? First extends TValidator
-    ? [...TRetrieveErrorData<First>['data'], ...TErrorORValidationErrorData<Tail>]
+    ? [...TRetrieveValidationError<First>['errors'], ...TErrorORValidationErrorData<Tail>]
     : First extends TValidationRules | Readonly<TValidationRules>
       ? [TErrorValidationRulesData<First>, ...TErrorORValidationErrorData<Tail>]
       : []
@@ -169,18 +169,18 @@ export default function validateValue<
       const result = validateValueFromRules.apply(null, [
         value,
         validator,
-        { separator: params?.separatorAND, shouldReturnError: params?.shouldReturnError, path: params?.path },
+        { separator: params?.separatorAND, shouldReturnError: params?.shouldReturnError },
       ]);
       if (result.status === 'error') {
-        const errorsAND = result.data;
+        const errorsAND = result.errors;
         errors.push(errorsAND);
       } else {
         return result as TValidateValueResult<ORValidators, SeparatorOR, SeparatorAND, ShouldReturnError>;
       }
     } else if (validator instanceof Function) {
-      const result = validator(value, { shouldReturnError: params?.shouldReturnError, path: params?.path });
+      const result = validator(value, { shouldReturnError: params?.shouldReturnError });
       if (result.status === 'error') {
-        const errorsOR = result.data;
+        const errorsOR = result.errors;
         if (errorsOR) {
           errorsOR.forEach((errorsAND) => {
             if (Array.isArray(errorsAND)) {

@@ -2,9 +2,7 @@ import { describe, test, expect } from 'vitest';
 import isString, { IS_STRING_ERROR_MESSAGE } from '../../rules/isString';
 import isNumber, { IS_NUMBER_ERROR_MESSAGE } from '../../rules/isNumber';
 import isPositiveNumber, { IS_POSITIVE_NUMBER_ERROR_MESSAGE } from '../../rules/isPositiveNumber';
-import isBoolean from '../../rules/isBoolean';
-import isUndefined from '../../rules/isUndefined';
-import isArray from '../../rules/isArray';
+import { isBoolean, isUndefined, isArray } from '../../rules';
 import createObjectValidationRule, {
   OBJECT_DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR,
   OBJECT_DEFAULT_ERROR_MESSAGE_HYPERNYM,
@@ -12,7 +10,7 @@ import createObjectValidationRule, {
 } from '../createObjectValidationRule';
 import createArrayValidationRule from '../createArrayValidationRule';
 import composeValidator from '../composeValidator';
-import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
+import { SuccessResult } from '../../../../_Root/domain/factories';
 import { TValidationParams, TValidator } from '../../types/TValidator';
 
 describe('createObjectValidationRule', () => {
@@ -33,8 +31,8 @@ describe('createObjectValidationRule', () => {
         expect(actualResult.message).toContain(`age${OBJECT_DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
         expect(actualResult.message).toContain(IS_STRING_ERROR_MESSAGE);
         expect(actualResult.message).toContain(IS_NUMBER_ERROR_MESSAGE);
-        expect(actualResult?.data?.name).toBeDefined();
-        expect(actualResult?.data?.age).toBeDefined();
+        expect(actualResult?.errors?.name).toBeDefined();
+        expect(actualResult?.errors?.age).toBeDefined();
       }
     });
 
@@ -51,7 +49,7 @@ describe('createObjectValidationRule', () => {
         expect(actualResult.message).toContain(`${OBJECT_DEFAULT_ERROR_MESSAGE_HYPERNYM}${OBJECT_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
         expect(actualResult.message).toContain(`name${OBJECT_DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
         expect(actualResult.message).toContain(IS_STRING_ERROR_MESSAGE);
-        expect(actualResult?.data?.name).toBeDefined();
+        expect(actualResult?.errors?.name).toBeDefined();
       }
     });
 
@@ -72,10 +70,10 @@ describe('createObjectValidationRule', () => {
         expect(actualResult.message).toContain(`age${OBJECT_DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
         expect(actualResult.message).toContain(`isActive${OBJECT_DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
         expect(actualResult.message).toContain(IS_POSITIVE_NUMBER_ERROR_MESSAGE);
-        expect(actualResult?.data?.name).toBeUndefined();
-        expect(actualResult?.data?.age).toBeDefined();
-        expect(actualResult?.data?.isActive).toBeDefined();
-        expect(actualResult?.data?.score).toBeUndefined();
+        expect(actualResult?.errors?.name).toBeUndefined();
+        expect(actualResult?.errors?.age).toBeDefined();
+        expect(actualResult?.errors?.isActive).toBeDefined();
+        expect(actualResult?.errors?.score).toBeUndefined();
       }
     });
 
@@ -94,9 +92,9 @@ describe('createObjectValidationRule', () => {
         expect(actualResult.message).toContain(`name${OBJECT_DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
         expect(actualResult.message).toContain(`age${OBJECT_DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
         expect(actualResult.message).toContain(`isActive${OBJECT_DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
-        expect(actualResult?.data?.name).toBeDefined();
-        expect(actualResult?.data?.age).toBeDefined();
-        expect(actualResult?.data?.isActive).toBeDefined();
+        expect(actualResult?.errors?.name).toBeDefined();
+        expect(actualResult?.errors?.age).toBeDefined();
+        expect(actualResult?.errors?.isActive).toBeDefined();
       }
     });
 
@@ -110,7 +108,7 @@ describe('createObjectValidationRule', () => {
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
         expect(actualResult.message).toContain(`optionalField${OBJECT_DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
-        expect(actualResult?.data?.optionalField).toBeDefined();
+        expect(actualResult?.errors?.optionalField).toBeDefined();
       }
     });
 
@@ -130,8 +128,8 @@ describe('createObjectValidationRule', () => {
         expect(actualResult.message).toContain(`age${OBJECT_DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
         expect(actualResult.message).toContain(IS_STRING_ERROR_MESSAGE);
         expect(actualResult.message).toContain(IS_NUMBER_ERROR_MESSAGE);
-        expect(actualResult?.data?.name).toBeDefined();
-        expect(actualResult?.data?.age).toBeDefined();
+        expect(actualResult?.errors?.name).toBeDefined();
+        expect(actualResult?.errors?.age).toBeDefined();
       }
     });
 
@@ -145,8 +143,8 @@ describe('createObjectValidationRule', () => {
 
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
-        expect(actualResult?.data?.age).toBeDefined();
-        const ageError = actualResult.data?.age as any;
+        expect(actualResult?.errors?.age).toBeDefined();
+        const ageError = actualResult.errors?.age as any;
         expect(ageError.status).toBe('error');
         expect(ageError.message).toContain('number');
       }
@@ -162,13 +160,13 @@ describe('createObjectValidationRule', () => {
 
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
-        expect(typeof actualResult.data).toBe('object');
-        expect(actualResult.data).toHaveProperty('name');
-        expect(actualResult.data).toHaveProperty('age');
-        expect(actualResult.data?.name).toHaveProperty('status', 'error');
-        expect(actualResult.data?.name).toHaveProperty('message');
-        expect(actualResult.data?.age).toHaveProperty('status', 'error');
-        expect(actualResult.data?.age).toHaveProperty('message');
+        expect(typeof actualResult.errors).toBe('object');
+        expect(actualResult.errors).toHaveProperty('name');
+        expect(actualResult.errors).toHaveProperty('age');
+        expect(actualResult.errors?.name).toHaveProperty('status', 'error');
+        expect(actualResult.errors?.name).toHaveProperty('message');
+        expect(actualResult.errors?.age).toHaveProperty('status', 'error');
+        expect(actualResult.errors?.age).toHaveProperty('message');
       }
     });
 
@@ -184,10 +182,10 @@ describe('createObjectValidationRule', () => {
 
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
-        const ageError = actualResult.data?.age as any;
+        const ageError = actualResult.errors?.age as any;
         expect(ageError?.status).toBe('error');
         expect(ageError?.message).toContain('positive number');
-        const isActiveError = actualResult.data?.isActive as any;
+        const isActiveError = actualResult.errors?.isActive as any;
         expect(isActiveError?.status).toBe('error');
         expect(isActiveError?.message).toContain('boolean');
       }
@@ -252,8 +250,8 @@ describe('createObjectValidationRule', () => {
         expect(actualResult.message).toContain(`${OBJECT_DEFAULT_ERROR_MESSAGE_HYPERNYM}${OBJECT_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
         expect(actualResult.message).toContain(`name${OBJECT_DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
         expect(actualResult.message).toContain(`age${OBJECT_DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
-        expect(actualResult?.data?.name).toBeDefined();
-        expect(actualResult?.data?.age).toBeDefined();
+        expect(actualResult?.errors?.name).toBeDefined();
+        expect(actualResult?.errors?.age).toBeDefined();
       }
     });
 
@@ -277,10 +275,10 @@ describe('createObjectValidationRule', () => {
         expect(actualResult.message).toContain(`age${OBJECT_DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
         expect(actualResult.message).toContain(`isActive${OBJECT_DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
         expect(actualResult.message).toContain(`score${OBJECT_DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`);
-        expect(actualResult?.data?.name).toBeDefined();
-        expect(actualResult?.data?.age).toBeDefined();
-        expect(actualResult?.data?.isActive).toBeDefined();
-        expect(actualResult?.data?.score).toBeDefined();
+        expect(actualResult?.errors?.name).toBeDefined();
+        expect(actualResult?.errors?.age).toBeDefined();
+        expect(actualResult?.errors?.isActive).toBeDefined();
+        expect(actualResult?.errors?.score).toBeDefined();
       }
     });
   });
@@ -365,114 +363,6 @@ describe('createObjectValidationRule', () => {
       if (actualResult.status === 'success') {
         expect(actualResult.data).toEqual({});
       }
-    });
-
-    test('Should pass correct path to field validators without initial path', () => {
-      // Arrange
-      const capturedPaths: Record<string, string | undefined> = {};
-      const createCapturingValidator = (fieldName: string): TValidator =>
-        ((value: any, params?: TValidationParams) => {
-          capturedPaths[fieldName] = params?.path;
-          return new SuccessResult(value);
-        }) as TValidator;
-
-      const objectRule = createObjectValidationRule({
-        name: createCapturingValidator('name'),
-        age: createCapturingValidator('age'),
-        isActive: createCapturingValidator('isActive'),
-      });
-
-      // Act
-      objectRule({ name: 'John', age: 25, isActive: true });
-
-      // Assert
-      expect(capturedPaths.name).toBe('name');
-      expect(capturedPaths.age).toBe('age');
-      expect(capturedPaths.isActive).toBe('isActive');
-    });
-
-    test('Should prepend parent path to field paths for nested object', () => {
-      // Arrange
-      const capturedPaths: Record<string, string | undefined> = {};
-      const createCapturingValidator = (fieldName: string): TValidator =>
-        ((value: any, params?: TValidationParams) => {
-          capturedPaths[fieldName] = params?.path;
-          return new SuccessResult(value);
-        }) as TValidator;
-
-      const addressRule = createObjectValidationRule({
-        city: createCapturingValidator('city'),
-        zip: createCapturingValidator('zip'),
-      });
-
-      // Act
-      addressRule({ city: 'NY', zip: '10001' }, { path: '.user.address' });
-
-      // Assert
-      expect(capturedPaths.city).toBe('.user.address.city');
-      expect(capturedPaths.zip).toBe('.user.address.zip');
-    });
-
-    test('Should build accumulated path for object with nested array field', () => {
-      // Arrange
-      const capturedPaths: Array<string | undefined> = [];
-      const capturingValidator: TValidator = ((value: any, params?: TValidationParams) => {
-        capturedPaths.push(params?.path);
-        return new SuccessResult(value);
-      }) as TValidator;
-
-      const arrayRule = createArrayValidationRule(capturingValidator);
-      const objectRule = createObjectValidationRule({
-        items: composeValidator([[isArray, arrayRule]]),
-      });
-
-      // Act
-      objectRule({ items: ['a', 'b', 'c'] });
-
-      // Assert
-      expect(capturedPaths).toEqual(['items[0]', 'items[1]', 'items[2]']);
-    });
-
-    test('Should build accumulated path for object with nested array of objects', () => {
-      // Arrange
-      const capturedPaths: Record<string, Array<string | undefined>> = {
-        name: [],
-        age: [],
-      };
-      const createCapturingValidator = (fieldName: string): TValidator =>
-        ((value: any, params?: TValidationParams) => {
-          capturedPaths[fieldName].push(params?.path);
-          return new SuccessResult(value);
-        }) as TValidator;
-
-      const userObjectRule = createObjectValidationRule({
-        name: createCapturingValidator('name'),
-        age: createCapturingValidator('age'),
-      });
-      const usersArrayRule = createArrayValidationRule(
-        composeValidator([[userObjectRule]]) as TValidator,
-      );
-      const formRule = createObjectValidationRule({
-        users: composeValidator([[isArray, usersArrayRule]]),
-      });
-
-      // Act
-      formRule({
-        users: [
-          { name: 'Alice', age: 25 },
-          { name: 'Bob', age: 30 },
-        ],
-      });
-
-      // Assert
-      expect(capturedPaths.name).toEqual([
-        'users[0].name',
-        'users[1].name',
-      ]);
-      expect(capturedPaths.age).toEqual([
-        'users[0].age',
-        'users[1].age',
-      ]);
     });
   });
 });

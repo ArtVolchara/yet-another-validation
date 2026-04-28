@@ -4,11 +4,11 @@ import isOnlyLatinLettersString, { IS_ONLY_LATIN_LETTERS_STRING_ERROR_MESSAGE } 
 import isNumber, { IS_NUMBER_ERROR_MESSAGE } from '../../rules/isNumber';
 import isPositiveNumber, { IS_POSITIVE_NUMBER_ERROR_MESSAGE } from '../../rules/isPositiveNumber';
 import isArray, { IS_ARRAY_ERROR_MESSAGE } from '../../rules/isArray';
-import isArrayMinLength from '../../rules/isArrayMinLength';
+import { isArrayMinLength } from '../../rules';
 import isUndefined, { IS_UNDEFINED_ERROR_MESSAGE } from '../../rules/isUndefined';
 import isBoolean, { IS_BOOLEAN_ERROR_MESSAGE } from '../../rules/isBoolean';
 import validateValue, { DEFAULT_OR_SEPARATOR } from '../validateValue';
-import composeValidator from '../../factories/composeValidator';
+import { composeValidator } from '../../factories';
 import { DEFAULT_AND_SEPARATOR } from '../validateValueFromRules';
 
 describe('validateValue', () => {
@@ -25,9 +25,9 @@ describe('validateValue', () => {
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
         expect(actualResult.message).toBe(expectedMessage);
-        expect(actualResult.data).toHaveLength(1);
-        expect(actualResult.data[0]).toHaveLength(1);
-        expect(actualResult.data[0][0]?.message).toBe(expectedMessage);
+        expect(actualResult.errors).toHaveLength(1);
+        expect(actualResult.errors[0]).toHaveLength(1);
+        expect(actualResult.errors[0][0]?.message).toBe(expectedMessage);
       }
     });
 
@@ -43,9 +43,9 @@ describe('validateValue', () => {
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
         expect(actualResult.message).toBe(expectedMessage);
-        expect(actualResult.data).toHaveLength(1);
-        expect(actualResult.data[0]).toHaveLength(1);
-        expect(actualResult.data[0][0]?.message).toBe(expectedMessage);
+        expect(actualResult.errors).toHaveLength(1);
+        expect(actualResult.errors[0]).toHaveLength(1);
+        expect(actualResult.errors[0][0]?.message).toBe(expectedMessage);
       }
     });
 
@@ -61,9 +61,9 @@ describe('validateValue', () => {
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
         expect(actualResult.message).toBe(expectedMessage);
-        expect(actualResult.data).toHaveLength(1);
-        expect(actualResult.data[0]).toHaveLength(1);
-        expect(actualResult.data[0][0]?.message).toBe(expectedMessage);
+        expect(actualResult.errors).toHaveLength(1);
+        expect(actualResult.errors[0]).toHaveLength(1);
+        expect(actualResult.errors[0][0]?.message).toBe(expectedMessage);
       }
     });
 
@@ -80,10 +80,10 @@ describe('validateValue', () => {
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
         expect(actualResult.message).toBe(expectedMessage);
-        expect(actualResult.data).toHaveLength(1);
-        expect(actualResult.data[0]).toHaveLength(2);
-        expect(actualResult.data[0][0]?.message).toBe(IS_ARRAY_ERROR_MESSAGE);
-        expect(actualResult.data[0][1]?.message).toBe('Array should contain more than 2 elements');
+        expect(actualResult.errors).toHaveLength(1);
+        expect(actualResult.errors[0]).toHaveLength(2);
+        expect(actualResult.errors[0][0]?.message).toBe(IS_ARRAY_ERROR_MESSAGE);
+        expect(actualResult.errors[0][1]?.message).toBe('Array should contain more than 2 elements');
       }
     });
 
@@ -107,9 +107,9 @@ describe('validateValue', () => {
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
         expect(actualResult.message).toBe(expectedMessage);
-        expect(actualResult.data).toHaveLength(2);
-        expect(actualResult.data[0]).toHaveLength(2);
-        expect(actualResult.data[1]).toHaveLength(2);
+        expect(actualResult.errors).toHaveLength(2);
+        expect(actualResult.errors[0]).toHaveLength(2);
+        expect(actualResult.errors[1]).toHaveLength(2);
       }
     });
 
@@ -131,13 +131,13 @@ describe('validateValue', () => {
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
         expect(actualResult.message).toBe(expectedMessage);
-        expect(actualResult.data).toHaveLength(2);
-        expect(actualResult.data[0]).toHaveLength(2);
-        expect(actualResult.data[1]).toHaveLength(2);
-        expect(actualResult.data[0][0]?.message).toBe(IS_STRING_ERROR_MESSAGE);
-        expect(actualResult.data[0][1]?.message).toBe(IS_ONLY_LATIN_LETTERS_STRING_ERROR_MESSAGE);
-        expect(actualResult.data[1][0]?.message).toBe(IS_NUMBER_ERROR_MESSAGE);
-        expect(actualResult.data[1][1]?.message).toBe(IS_POSITIVE_NUMBER_ERROR_MESSAGE);
+        expect(actualResult.errors).toHaveLength(2);
+        expect(actualResult.errors[0]).toHaveLength(2);
+        expect(actualResult.errors[1]).toHaveLength(2);
+        expect(actualResult.errors[0][0]?.message).toBe(IS_STRING_ERROR_MESSAGE);
+        expect(actualResult.errors[0][1]?.message).toBe(IS_ONLY_LATIN_LETTERS_STRING_ERROR_MESSAGE);
+        expect(actualResult.errors[1][0]?.message).toBe(IS_NUMBER_ERROR_MESSAGE);
+        expect(actualResult.errors[1][1]?.message).toBe(IS_POSITIVE_NUMBER_ERROR_MESSAGE);
       }
     });
 
@@ -166,13 +166,13 @@ describe('validateValue', () => {
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
         expect(actualResult.message).toBe(expectedMessage);
-        expect(actualResult.data).toHaveLength(3);
-        expect(actualResult.data[0]).toHaveLength(2);
-        expect(actualResult.data[1]).toHaveLength(2);
-        expect(actualResult.data[0][0]?.message).toBe(IS_STRING_ERROR_MESSAGE);
-        expect(actualResult.data[0][1]?.message).toBe(IS_ONLY_LATIN_LETTERS_STRING_ERROR_MESSAGE);
-        expect(actualResult.data[1][0]?.message).toBe(IS_NUMBER_ERROR_MESSAGE);
-        expect(actualResult.data[1][1]?.message).toBe(IS_POSITIVE_NUMBER_ERROR_MESSAGE);
+        expect(actualResult.errors).toHaveLength(3);
+        expect(actualResult.errors[0]).toHaveLength(2);
+        expect(actualResult.errors[1]).toHaveLength(2);
+        expect(actualResult.errors[0][0]?.message).toBe(IS_STRING_ERROR_MESSAGE);
+        expect(actualResult.errors[0][1]?.message).toBe(IS_ONLY_LATIN_LETTERS_STRING_ERROR_MESSAGE);
+        expect(actualResult.errors[1][0]?.message).toBe(IS_NUMBER_ERROR_MESSAGE);
+        expect(actualResult.errors[1][1]?.message).toBe(IS_POSITIVE_NUMBER_ERROR_MESSAGE);
       }
     });
 
@@ -182,7 +182,7 @@ describe('validateValue', () => {
       const expectedMessage = `${IS_STRING_ERROR_MESSAGE}${DEFAULT_AND_SEPARATOR}`
         + `${IS_ONLY_LATIN_LETTERS_STRING_ERROR_MESSAGE}${DEFAULT_OR_SEPARATOR}Custom error`;
       const customErrorData = [[{
-        status: 'error' as const, message: 'Custom error', data: undefined,
+        status: 'error' as const, message: 'Custom error', errors: undefined,
       }]];
 
       // Act
@@ -194,7 +194,7 @@ describe('validateValue', () => {
             if (typeof value === 'string') {
               return { status: 'success' as const, data: value };
             }
-            return { status: 'error' as const, message: 'Custom error', data: customErrorData };
+            return { status: 'error' as const, message: 'Custom error', errors: customErrorData };
           },
         ],
       );
@@ -203,7 +203,7 @@ describe('validateValue', () => {
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
         expect(actualResult.message).toBe(expectedMessage);
-        expect(actualResult.data).toHaveLength(2);
+        expect(actualResult.errors).toHaveLength(2);
       }
     });
 
@@ -224,8 +224,8 @@ describe('validateValue', () => {
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
         expect(actualResult.message).toBe(expectedMessage);
-        expect(actualResult.data).toHaveLength(1);
-        expect(actualResult.data[0]).toHaveLength(2);
+        expect(actualResult.errors).toHaveLength(1);
+        expect(actualResult.errors[0]).toHaveLength(2);
       }
     });
 
@@ -251,7 +251,7 @@ describe('validateValue', () => {
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
         expect(actualResult.message).toBe(expectedMessage);
-        expect(actualResult.data).toHaveLength(2);
+        expect(actualResult.errors).toHaveLength(2);
       }
     });
 
@@ -278,9 +278,9 @@ describe('validateValue', () => {
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
         expect(actualResult.message).toBe(expectedMessage);
-        expect(actualResult.data).toHaveLength(2);
-        expect(actualResult.data[0]).toHaveLength(2);
-        expect(actualResult.data[1]).toHaveLength(2);
+        expect(actualResult.errors).toHaveLength(2);
+        expect(actualResult.errors[0]).toHaveLength(2);
+        expect(actualResult.errors[1]).toHaveLength(2);
       }
     });
 
@@ -311,7 +311,7 @@ describe('validateValue', () => {
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
         expect(actualResult.message).toBe(expectedMessage);
-        expect(actualResult.data).toHaveLength(2);
+        expect(actualResult.errors).toHaveLength(2);
       }
     });
 
@@ -350,7 +350,7 @@ describe('validateValue', () => {
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
         expect(actualResult.message).toBe(expectedMessage);
-        expect(actualResult.data).toHaveLength(3);
+        expect(actualResult.errors).toHaveLength(3);
       }
     });
 
@@ -369,9 +369,9 @@ describe('validateValue', () => {
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
         expect(actualResult.message).toBe(IS_STRING_ERROR_MESSAGE);
-        expect(actualResult.data).toHaveLength(1);
-        expect(actualResult.data[0]).toHaveLength(1);
-        expect(actualResult.data[0][0]?.message).toBe(IS_STRING_ERROR_MESSAGE);
+        expect(actualResult.errors).toHaveLength(1);
+        expect(actualResult.errors[0]).toHaveLength(1);
+        expect(actualResult.errors[0][0]?.message).toBe(IS_STRING_ERROR_MESSAGE);
       }
     });
 
@@ -396,9 +396,9 @@ describe('validateValue', () => {
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
         expect(actualResult.message).toBe(expectedMessage);
-        expect(actualResult.data).toHaveLength(2);
-        expect(actualResult.data[0]).toHaveLength(2);
-        expect(actualResult.data[1]).toHaveLength(2);
+        expect(actualResult.errors).toHaveLength(2);
+        expect(actualResult.errors[0]).toHaveLength(2);
+        expect(actualResult.errors[1]).toHaveLength(2);
       }
     });
 
@@ -417,7 +417,7 @@ describe('validateValue', () => {
       // Assert
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
-        expect(actualResult.data).toHaveLength(1);
+        expect(actualResult.errors).toHaveLength(1);
       }
     });
   });
@@ -563,7 +563,7 @@ describe('validateValue', () => {
       // Arrange
       const inputValue = 'Hello';
       const customErrorData = [[{
-        status: 'error' as const, message: 'Custom error', data: undefined,
+        status: 'error' as const, message: 'Custom error', errors: undefined,
       }]];
 
       // Act
@@ -575,7 +575,7 @@ describe('validateValue', () => {
             if (typeof value === 'string') {
               return { status: 'success' as const, data: value };
             }
-            return { status: 'error' as const, message: 'Custom error', data: customErrorData };
+            return { status: 'error' as const, message: 'Custom error', errors: customErrorData };
           },
         ],
       );

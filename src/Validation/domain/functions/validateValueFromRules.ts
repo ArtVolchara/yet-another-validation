@@ -1,6 +1,6 @@
 import {
   TRetrieveValidationInputData,
-  TRetrieveValidationSuccessData,
+  TRetrieveValidationSuccess,
   TValidationRule,
   TValidationRules,
 } from '../types/TValidator';
@@ -8,8 +8,7 @@ import { ISuccess } from '../../../_Root/domain/types/Result/ISuccess';
 import { IsAnyOrUnknown, TUnionToIntersection } from '../../../_Root/domain/types/utils';
 import { TRetrieveError } from '../../../_Root/domain/types/Result/TResult';
 import { IError, isInternalError } from '../../../_Root/domain/types/Result/IError';
-import SuccessResult from '../../../_Root/domain/factories/SuccessResult';
-import ErrorResult from '../../../_Root/domain/factories/ErrorResult';
+import { SuccessResult, ErrorResult } from '../../../_Root/domain/factories';
 
 export const DEFAULT_AND_SEPARATOR = '. ' as const;
 
@@ -60,7 +59,7 @@ export type TSuccessValidationRulesData<
 > = ValidationRules extends [TValidationRule<[InputData], ISuccess<infer SuccessValidationRulesData>>]
   ? SuccessValidationRulesData
   : ValidationRules extends [infer First extends TValidationRule<[InputData]>, ...infer Tail extends TValidationRules]
-    ? TRetrieveValidationSuccessData<First>['data'] & TSuccessValidationRulesData<Tail, InputData>
+    ? TRetrieveValidationSuccess<First>['data'] & TSuccessValidationRulesData<Tail, InputData>
     : TUnionToIntersection<ValidationRules extends Array<TValidationRule<any, ISuccess<infer DesiredType>>>
       ? DesiredType
       : never
@@ -108,7 +107,7 @@ type TValidateValueFromRulesResult<
 export default function validateValueFromRules<
   const Value,
   const Rules extends TValidationRules,
-  const Params extends { separator?: string, shouldReturnError?: boolean, path?: string } | undefined = undefined,
+  const Params extends { separator?: string, shouldReturnError?: boolean } | undefined = undefined,
   const Separator extends Params extends { separator?: infer Separator }
     ? undefined extends Separator ? typeof DEFAULT_AND_SEPARATOR : Separator
     : typeof DEFAULT_AND_SEPARATOR
@@ -123,7 +122,7 @@ export default function validateValueFromRules<
   const localErrors = [] as Array<IError<string, any>>;
   const result = rules.reduce((acc, rule) => {
     try {
-      const res = rule(acc, { shouldReturnError: params?.shouldReturnError, path: params?.path });
+      const res = rule(acc, { shouldReturnError: params?.shouldReturnError });
       if (res.status === 'error') {
         localErrors.push(res);
         return acc;

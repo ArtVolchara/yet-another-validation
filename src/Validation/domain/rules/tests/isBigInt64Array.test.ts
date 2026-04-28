@@ -1,7 +1,6 @@
 import { describe, test, expect } from 'vitest';
 import isBigInt64Array, { IS_BIGINT64_ARRAY_ERROR_MESSAGE } from '../isBigInt64Array';
-import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
-import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
+import { SuccessResult, ErrorResult } from '../../../../_Root/domain/factories';
 
 describe('isBigInt64Array validation rule test', () => {
   describe('isBigInt64Array error cases', () => {

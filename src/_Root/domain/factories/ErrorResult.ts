@@ -5,10 +5,10 @@ export default class ErrorResult<const Message extends string, const Data extend
 
   message: IError<Message, Data>['message'];
 
-  data: Data;
+  errors: Data;
 
   constructor(message: Message, data: Data) {
     this.message = message;
-    this.data = data;
+    this.errors = data;
   }
 }

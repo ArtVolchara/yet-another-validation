@@ -1,7 +1,6 @@
 import { describe, test, expect } from "vitest";
 import isWeakMap, { IS_WEAK_MAP_ERROR_MESSAGE } from '../isWeakMap';
-import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
-import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
+import { SuccessResult, ErrorResult } from '../../../../_Root/domain/factories';
 
 describe('isWeakMap validation rule test', () => {
   describe('isWeakMap error cases', () => {

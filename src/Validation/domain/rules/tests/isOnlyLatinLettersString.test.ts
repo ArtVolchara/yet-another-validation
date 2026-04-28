@@ -1,7 +1,6 @@
 import { describe, test, expect } from "vitest";
 import isOnlyLatinLettersString, { IS_ONLY_LATIN_LETTERS_STRING_ERROR_MESSAGE } from '../isOnlyLatinLettersString';
-import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
-import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
+import { SuccessResult, ErrorResult } from '../../../../_Root/domain/factories';
 
 describe('isOnlyLatinLettersString validation rule test', () => {
   describe('isOnlyLatinLettersString error cases', () => {

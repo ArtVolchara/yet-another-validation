@@ -7,7 +7,7 @@ string,
 undefined | Array<IError<string, any> | undefined> | Record<string | symbol, IError<string, any>>
 >;
 
-export type TValidationParams = { shouldReturnError?: boolean, key?: string | number | symbol, path?: string };
+export type TValidationParams = { shouldReturnError?: boolean, key?: string | number | symbol };
 
 export type TValidationResult<
   Success extends ISuccess,
@@ -49,6 +49,6 @@ export type TRetrieveValidationInputData<Validator extends TValidator | TValidat
       ? Input
       : never;
 
-export type TRetrieveValidationSuccessData<Validator extends TValidator | TValidationRule> = TRetrieveSuccess<ReturnType<Validator>>;
+export type TRetrieveValidationSuccess<Validator extends TValidator | TValidationRule> = TRetrieveSuccess<ReturnType<Validator>>;
 
-export type TRetrieveErrorData<Validator extends TValidator | TValidationRule> = TRetrieveError<ReturnType<Validator>>;
+export type TRetrieveValidationError<Validator extends TValidator | TValidationRule> = TRetrieveError<ReturnType<Validator>>;

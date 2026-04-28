@@ -1,7 +1,6 @@
 import { describe, test, expect } from 'vitest';
 import isFunction, { IS_FUNCTION_ERROR_MESSAGE } from '../isFunction';
-import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
-import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
+import { SuccessResult, ErrorResult } from '../../../../_Root/domain/factories';
 
 describe('isFunction validation rule test', () => {
   describe('isFunction error cases', () => {

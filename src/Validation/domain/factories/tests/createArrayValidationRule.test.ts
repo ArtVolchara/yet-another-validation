@@ -1,11 +1,7 @@
 import { describe, test, expect } from 'vitest';
 import isString, { IS_STRING_ERROR_MESSAGE } from '../../rules/isString';
-import isNumber from '../../rules/isNumber';
+import { isNumber, isArray, isBoolean, isOnlyDigitsString, isUndefined } from '../../rules';
 import isPositiveNumber, { IS_POSITIVE_NUMBER_ERROR_MESSAGE } from '../../rules/isPositiveNumber';
-import isArray from '../../rules/isArray';
-import isBoolean from '../../rules/isBoolean';
-import isOnlyDigitsString from '../../rules/isOnlyDigitsString';
-import isUndefined from '../../rules/isUndefined';
 import createArrayValidationRule, {
   ARRAY_DEFAULT_ERROR_MESSAGE_EMPTY_HYPERNYM,
   ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM,
@@ -13,7 +9,7 @@ import createArrayValidationRule, {
   DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR,
 } from '../createArrayValidationRule';
 import composeValidator from '../composeValidator';
-import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
+import { SuccessResult } from '../../../../_Root/domain/factories';
 import { TValidationParams, TValidator } from '../../types/TValidator';
 
 describe('createArrayValidationRule', () => {
@@ -29,10 +25,10 @@ describe('createArrayValidationRule', () => {
         expect(actualResult.message).toContain(`${ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM}${ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
         expect(actualResult.message).toContain(`1${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
         expect(actualResult.message).toContain(IS_STRING_ERROR_MESSAGE);
-        expect(actualResult.data).toHaveLength(3);
-        expect(actualResult?.data?.[0]).toBeUndefined();
-        expect(actualResult?.data?.[1]).toBeDefined();
-        expect(actualResult?.data?.[2]).toBeUndefined();
+        expect(actualResult.errors).toHaveLength(3);
+        expect(actualResult?.errors?.[0]).toBeUndefined();
+        expect(actualResult?.errors?.[1]).toBeDefined();
+        expect(actualResult?.errors?.[2]).toBeUndefined();
       }
     });
 
@@ -46,7 +42,7 @@ describe('createArrayValidationRule', () => {
       if (actualResult.status === 'error') {
         expect(actualResult.message).toContain(`${ARRAY_DEFAULT_ERROR_MESSAGE_EMPTY_HYPERNYM}${ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
         expect(actualResult.message).toContain(IS_STRING_ERROR_MESSAGE);
-        expect(actualResult.data).toEqual([]);
+        expect(actualResult.errors).toEqual([]);
       }
     });
 
@@ -62,11 +58,11 @@ describe('createArrayValidationRule', () => {
         expect(actualResult.message).toContain(`1${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
         expect(actualResult.message).toContain(`2${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
         expect(actualResult.message).toContain(IS_POSITIVE_NUMBER_ERROR_MESSAGE);
-        expect(actualResult.data).toHaveLength(4);
-        expect(actualResult?.data?.[0]).toBeUndefined();
-        expect(actualResult?.data?.[1]).toBeDefined();
-        expect(actualResult?.data?.[2]).toBeDefined();
-        expect(actualResult?.data?.[3]).toBeUndefined();
+        expect(actualResult.errors).toHaveLength(4);
+        expect(actualResult?.errors?.[0]).toBeUndefined();
+        expect(actualResult?.errors?.[1]).toBeDefined();
+        expect(actualResult?.errors?.[2]).toBeDefined();
+        expect(actualResult?.errors?.[3]).toBeUndefined();
       }
     });
 
@@ -81,11 +77,11 @@ describe('createArrayValidationRule', () => {
         expect(actualResult.message).toContain(`${ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM}${ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
         expect(actualResult.message).toContain(`1${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
         expect(actualResult.message).toContain(`2${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
-        expect(actualResult.data).toHaveLength(4);
-        expect(actualResult?.data?.[0]).toBeUndefined();
-        expect(actualResult?.data?.[1]).toBeDefined();
-        expect(actualResult?.data?.[2]).toBeDefined();
-        expect(actualResult?.data?.[3]).toBeUndefined();
+        expect(actualResult.errors).toHaveLength(4);
+        expect(actualResult?.errors?.[0]).toBeUndefined();
+        expect(actualResult?.errors?.[1]).toBeDefined();
+        expect(actualResult?.errors?.[2]).toBeDefined();
+        expect(actualResult?.errors?.[3]).toBeUndefined();
       }
     });
 
@@ -99,7 +95,7 @@ describe('createArrayValidationRule', () => {
       if (actualResult.status === 'error') {
         expect(actualResult.message).toContain(`${ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM}${ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
         expect(actualResult.message).toContain(`1${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
-        expect(actualResult?.data?.[1]).toBeDefined();
+        expect(actualResult?.errors?.[1]).toBeDefined();
       }
     });
 
@@ -115,10 +111,10 @@ describe('createArrayValidationRule', () => {
         expect(actualResult.message).toContain(`0${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
         expect(actualResult.message).toContain(`1${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
         expect(actualResult.message).toContain(`2${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
-        expect(actualResult.data).toHaveLength(3);
-        expect(actualResult?.data?.[0]).toBeDefined();
-        expect(actualResult?.data?.[1]).toBeDefined();
-        expect(actualResult?.data?.[2]).toBeDefined();
+        expect(actualResult.errors).toHaveLength(3);
+        expect(actualResult?.errors?.[0]).toBeDefined();
+        expect(actualResult?.errors?.[1]).toBeDefined();
+        expect(actualResult?.errors?.[2]).toBeDefined();
       }
     });
 
@@ -195,23 +191,23 @@ describe('createArrayValidationRule', () => {
 
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
-        expect(Array.isArray(actualResult.data)).toBe(true);
-        expect(actualResult.data).toHaveLength(1);
-        const firstOperand = actualResult.data[0];
+        expect(Array.isArray(actualResult.errors)).toBe(true);
+        expect(actualResult.errors).toHaveLength(1);
+        const firstOperand = actualResult.errors[0];
         expect(Array.isArray(firstOperand)).toBe(true);
         expect(firstOperand).toHaveLength(1);
         const firstValidator = firstOperand[0];
         expect(firstValidator.status).toBe('error');
         if (firstValidator.status === 'error') {
           expect(firstValidator.message).toContain(ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM);
-          expect(firstValidator.data).toBeDefined();
-          expect(Array.isArray(firstValidator.data)).toBe(true);
-          expect(firstValidator.data).toHaveLength(3);
-          expect(firstValidator.data![0]).toBeUndefined();
-          expect(firstValidator.data![1]).toBeUndefined();
-          expect(firstValidator.data![2]).toBeDefined();
-          if (firstValidator.data![2] && typeof firstValidator.data![2] === 'object' && 'status' in firstValidator.data![2]) {
-            const thirdElementError = firstValidator.data![2] as any;
+          expect(firstValidator.errors).toBeDefined();
+          expect(Array.isArray(firstValidator.errors)).toBe(true);
+          expect(firstValidator.errors).toHaveLength(3);
+          expect(firstValidator.errors![0]).toBeUndefined();
+          expect(firstValidator.errors![1]).toBeUndefined();
+          expect(firstValidator.errors![2]).toBeDefined();
+          if (firstValidator.errors![2] && typeof firstValidator.errors![2] === 'object' && 'status' in firstValidator.errors![2]) {
+            const thirdElementError = firstValidator.errors![2] as any;
             expect(thirdElementError.status).toBe('error');
             expect(thirdElementError.message).toContain('only digits');
           }
@@ -231,10 +227,10 @@ describe('createArrayValidationRule', () => {
         expect(actualResult.message).toContain(`0${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
         expect(actualResult.message).toContain(`1${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
         expect(actualResult.message).toContain(`2${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
-        expect(actualResult.data).toHaveLength(3);
-        expect(actualResult?.data?.[0]).toBeDefined();
-        expect(actualResult?.data?.[1]).toBeDefined();
-        expect(actualResult?.data?.[2]).toBeDefined();
+        expect(actualResult.errors).toHaveLength(3);
+        expect(actualResult?.errors?.[0]).toBeDefined();
+        expect(actualResult?.errors?.[1]).toBeDefined();
+        expect(actualResult?.errors?.[2]).toBeDefined();
       }
     });
 
@@ -247,10 +243,10 @@ describe('createArrayValidationRule', () => {
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
         expect(actualResult.message).toContain(`${ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM}${ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
-        expect(actualResult.data).toHaveLength(3);
-        expect(actualResult?.data?.[0]).toBeDefined();
-        expect(actualResult?.data?.[1]).toBeDefined();
-        expect(actualResult?.data?.[2]).toBeDefined();
+        expect(actualResult.errors).toHaveLength(3);
+        expect(actualResult?.errors?.[0]).toBeDefined();
+        expect(actualResult?.errors?.[1]).toBeDefined();
+        expect(actualResult?.errors?.[2]).toBeDefined();
       }
     });
 
@@ -262,7 +258,7 @@ describe('createArrayValidationRule', () => {
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
         expect(actualResult.message).toContain(`${ARRAY_DEFAULT_ERROR_MESSAGE_EMPTY_HYPERNYM}${ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}\n${IS_STRING_ERROR_MESSAGE}`);
-        expect(actualResult?.data).toEqual([]);
+        expect(actualResult?.errors).toEqual([]);
       }
     });
   });
@@ -352,44 +348,6 @@ describe('createArrayValidationRule', () => {
         expect(Array.isArray(actualResult.data)).toBe(true);
         expect(actualResult.data).toEqual(['5', '2', '3']);
       }
-    });
-
-    test('Should pass correct path to element validators without initial path', () => {
-      // Arrange
-      const capturedPaths: Array<string | undefined> = [];
-      const capturingValidator: TValidator = ((value: any, params?: TValidationParams) => {
-        capturedPaths.push(params?.path);
-        return new SuccessResult(value);
-      }) as TValidator;
-
-      const arrayRule = createArrayValidationRule(capturingValidator);
-
-      // Act
-      arrayRule(['a', 'b', 'c']);
-
-      // Assert
-      expect(capturedPaths).toEqual(['[0]', '[1]', '[2]']);
-    });
-
-    test('Should prepend parent path to element paths for nested array', () => {
-      // Arrange
-      const capturedPaths: Array<string | undefined> = [];
-      const capturingValidator: TValidator = ((value: any, params?: TValidationParams) => {
-        capturedPaths.push(params?.path);
-        return new SuccessResult(value);
-      }) as TValidator;
-
-      const arrayRule = createArrayValidationRule(capturingValidator);
-
-      // Act
-      arrayRule(['js', 'ts', 'rust'], { path: 'project.tags' });
-
-      // Assert
-      expect(capturedPaths).toEqual([
-        'project.tags[0]',
-        'project.tags[1]',
-        'project.tags[2]',
-      ]);
     });
   });
 });

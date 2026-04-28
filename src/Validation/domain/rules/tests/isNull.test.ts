@@ -1,7 +1,6 @@
 import { describe, test, expect } from 'vitest';
 import isNull, { IS_NULL_ERROR_MESSAGE } from '../isNull';
-import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
-import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
+import { SuccessResult, ErrorResult } from '../../../../_Root/domain/factories';
 
 describe('isNull validation rule test', () => {
   describe('isNull error cases', () => {

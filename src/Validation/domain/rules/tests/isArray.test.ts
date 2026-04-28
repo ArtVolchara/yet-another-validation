@@ -1,7 +1,6 @@
 import { describe, test, expect } from 'vitest';
 import isArray, { IS_ARRAY_ERROR_MESSAGE } from '../isArray';
-import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
-import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
+import { SuccessResult, ErrorResult } from '../../../../_Root/domain/factories';
 
 describe('isArray validation rule test', () => {
   describe('isArray error cases', () => {

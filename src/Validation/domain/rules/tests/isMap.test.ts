@@ -1,7 +1,6 @@
 import { describe, test, expect } from "vitest";
 import isMap, { IS_MAP_ERROR_MESSAGE } from '../isMap';
-import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
-import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
+import { SuccessResult, ErrorResult } from '../../../../_Root/domain/factories';
 
 describe('isMap validation rule test', () => {
   describe('isMap error cases', () => {

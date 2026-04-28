@@ -1,9 +1,9 @@
 export type TErrorStatus = 'error';
 
-export interface IError<Message extends string = string, Data extends any = undefined> {
+export interface IError<Message extends string = string, Errors extends any = undefined> {
   status: TErrorStatus,
   message: Message,
-  data: Data
+  errors: Errors,
 }
 
 export function isInternalError(e: any): e is IError {

@@ -1,7 +1,6 @@
 import { describe, test, expect } from "vitest";
 import isUint8Array, { IS_UINT8_ARRAY_ERROR_MESSAGE } from '../isUint8Array';
-import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
-import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
+import { SuccessResult, ErrorResult } from '../../../../_Root/domain/factories';
 
 describe('isUint8Array validation rule test', () => {
   describe('isUint8Array error cases', () => {

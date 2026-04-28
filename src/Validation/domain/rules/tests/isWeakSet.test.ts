@@ -1,7 +1,6 @@
 import { describe, test, expect } from "vitest";
 import isWeakSet, { IS_WEAK_SET_ERROR_MESSAGE } from '../isWeakSet';
-import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
-import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
+import { SuccessResult, ErrorResult } from '../../../../_Root/domain/factories';
 
 describe('isWeakSet validation rule test', () => {
   describe('isWeakSet error cases', () => {

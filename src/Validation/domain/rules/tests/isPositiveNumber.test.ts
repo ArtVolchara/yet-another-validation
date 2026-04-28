@@ -1,7 +1,6 @@
 import { describe, test, expect } from "vitest";
 import isPositiveNumber, { IS_POSITIVE_NUMBER_ERROR_MESSAGE } from '../isPositiveNumber';
-import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
-import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
+import { SuccessResult, ErrorResult } from '../../../../_Root/domain/factories';
 
 // There are no tests for string and Date values, which may lead to false positive results,
 // because isPositiveNumber has the input parameter of number type, it is made as second item in validation rules chain

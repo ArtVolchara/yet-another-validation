@@ -1,7 +1,6 @@
 import { describe, test, expect } from 'vitest';
 import isBoolean, { IS_BOOLEAN_ERROR_MESSAGE } from '../isBoolean';
-import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
-import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
+import { ErrorResult, SuccessResult } from '../../../../_Root/domain/factories';
 
 describe('isBoolean validation rule test', () => {
   describe('isBoolean error cases', () => {

@@ -1,7 +1,6 @@
 import { describe, test, expect } from 'vitest';
 import isFloat64Array, { IS_FLOAT64_ARRAY_ERROR_MESSAGE } from '../isFloat64Array';
-import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
-import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
+import { SuccessResult, ErrorResult } from '../../../../_Root/domain/factories';
 
 describe('isFloat64Array validation rule test', () => {
   describe('isFloat64Array error cases', () => {

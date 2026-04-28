@@ -1,13 +1,11 @@
 import { describe, test, expect } from 'vitest';
-import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
-import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
+import { SuccessResult, ErrorResult } from '../../../../_Root/domain/factories';
 import { IError } from '../../../../_Root/domain/types/Result/IError';
-import customErrorDecorator from '../customErrorDecorator';
+import decorateWithCustomError from '../decorateWithCustomError';
 import isString, { IS_STRING_ERROR_MESSAGE } from '../../rules/isString';
 import isNumber, { IS_NUMBER_ERROR_MESSAGE } from '../../rules/isNumber';
-import isArray from '../../rules/isArray';
-import isOnlyDigitsString from '../../rules/isOnlyDigitsString';
-import composeValidator from '../../factories/composeValidator';
+import { isArray, isOnlyDigitsString } from '../../rules';
+import { composeValidator } from '../../factories';
 
 const createMockStringRule = () => (value: any, params?: { shouldReturnError?: boolean }) => {
   if (params?.shouldReturnError === true) return new ErrorResult('Mock string error', undefined);
@@ -21,13 +19,13 @@ const createMockNumberRule = () => (value: any, params?: { shouldReturnError?: b
   return new SuccessResult(value);
 };
 
-describe('customErrorDecorator', () => {
-  describe('customErrorDecorator error cases', () => {
+describe('decorateWithCustomError', () => {
+  describe('decorateWithCustomError error cases', () => {
     describe('with static error and mock rules', () => {
       test('Should replace mock rule error with static custom error', () => {
         const mockRule = createMockStringRule();
         const customError = new ErrorResult('Custom error', undefined);
-        const decorated = customErrorDecorator(mockRule, customError);
+        const decorated = decorateWithCustomError(mockRule, customError);
 
         const actualResult = decorated(123);
 
@@ -37,7 +35,7 @@ describe('customErrorDecorator', () => {
       test('Should replace mock rule error with static custom error for different rule', () => {
         const mockRule = createMockNumberRule();
         const customError = new ErrorResult('Must be a number', undefined);
-        const decorated = customErrorDecorator(mockRule, customError);
+        const decorated = decorateWithCustomError(mockRule, customError);
 
         const actualResult = decorated('not a number');
 
@@ -48,7 +46,7 @@ describe('customErrorDecorator', () => {
     describe('with static error and real rules', () => {
       test('Should replace isString error with static custom error for non-string value', () => {
         const customError = new ErrorResult('Must be a string!', undefined);
-        const decorated = customErrorDecorator(isString, customError);
+        const decorated = decorateWithCustomError(isString, customError);
 
         const actualResult = decorated(42);
 
@@ -57,7 +55,7 @@ describe('customErrorDecorator', () => {
 
       test('Should replace isNumber error with static custom error for non-number value', () => {
         const customError = new ErrorResult('Must be a number!', undefined);
-        const decorated = customErrorDecorator(isNumber, customError);
+        const decorated = decorateWithCustomError(isNumber, customError);
 
         const actualResult = decorated('hello');
 
@@ -69,7 +67,7 @@ describe('customErrorDecorator', () => {
       test('Should replace composed validator error when first rule fails', () => {
         const customError = new ErrorResult('Value must be a digit string', undefined);
         const validator = composeValidator([[isString, isOnlyDigitsString]]);
-        const decorated = customErrorDecorator(validator, customError);
+        const decorated = decorateWithCustomError(validator, customError);
 
         const actualResult = decorated(123);
 
@@ -79,7 +77,7 @@ describe('customErrorDecorator', () => {
       test('Should replace composed validator error when second rule fails', () => {
         const customError = new ErrorResult('Value must be a digit string', undefined);
         const validator = composeValidator([[isString, isOnlyDigitsString]]);
-        const decorated = customErrorDecorator(validator, customError);
+        const decorated = decorateWithCustomError(validator, customError);
 
         const actualResult = decorated('abc');
 
@@ -89,7 +87,7 @@ describe('customErrorDecorator', () => {
       test('Should replace composed OR-validator error when all branches fail', () => {
         const customError = new ErrorResult('Must be string or array', undefined);
         const validator = composeValidator([[isString], [isArray]]);
-        const decorated = customErrorDecorator(validator, customError);
+        const decorated = decorateWithCustomError(validator, customError);
 
         const actualResult = decorated(42);
 
@@ -101,7 +99,7 @@ describe('customErrorDecorator', () => {
       test('Should call error factory with original error when mock rule fails', () => {
         const mockRule = createMockNumberRule();
         const errorFactory = (error: IError<string, any>) => new ErrorResult(`Custom: ${error.message}`, undefined);
-        const decorated = customErrorDecorator(mockRule, errorFactory);
+        const decorated = decorateWithCustomError(mockRule, errorFactory);
 
         const actualResult = decorated('text');
 
@@ -114,7 +112,7 @@ describe('customErrorDecorator', () => {
     describe('with error factory and real rules', () => {
       test('Should call error factory with original error when isString fails', () => {
         const errorFactory = (error: IError<string, any>) => new ErrorResult(`Custom: ${error.message}`, undefined);
-        const decorated = customErrorDecorator(isString, errorFactory);
+        const decorated = decorateWithCustomError(isString, errorFactory);
 
         const actualResult = decorated(null);
 
@@ -125,7 +123,7 @@ describe('customErrorDecorator', () => {
 
       test('Should call error factory with original error when isNumber fails', () => {
         const errorFactory = (error: IError<string, any>) => new ErrorResult(`Custom: ${error.message}`, undefined);
-        const decorated = customErrorDecorator(isNumber, errorFactory);
+        const decorated = decorateWithCustomError(isNumber, errorFactory);
 
         const actualResult = decorated('abc');
 
@@ -138,8 +136,8 @@ describe('customErrorDecorator', () => {
     describe('with error factory and composed validators', () => {
       test('Should call error factory with composed validator error when validation fails', () => {
         const validator = composeValidator([[isString, isOnlyDigitsString]]);
-        const errorFactory = (error: IError<string, any>) => new ErrorResult('Digit string required', error.data);
-        const decorated = customErrorDecorator(validator, errorFactory);
+        const errorFactory = (error: IError<string, any>) => new ErrorResult('Digit string required', error.errors);
+        const decorated = decorateWithCustomError(validator, errorFactory);
 
         const actualResult = decorated(42);
 
@@ -152,7 +150,7 @@ describe('customErrorDecorator', () => {
       test('Should return static custom error when shouldReturnError is true with mock rule for valid value', () => {
         const mockRule = createMockStringRule();
         const customError = new ErrorResult('Forced error', undefined);
-        const decorated = customErrorDecorator(mockRule, customError);
+        const decorated = decorateWithCustomError(mockRule, customError);
 
         const actualResult = decorated('validString', { shouldReturnError: true });
 
@@ -161,7 +159,7 @@ describe('customErrorDecorator', () => {
 
       test('Should return static custom error when shouldReturnError is true with isString for valid string', () => {
         const customError = new ErrorResult('Forced string error', undefined);
-        const decorated = customErrorDecorator(isString, customError);
+        const decorated = decorateWithCustomError(isString, customError);
 
         const actualResult = decorated('hello', { shouldReturnError: true });
 
@@ -170,7 +168,7 @@ describe('customErrorDecorator', () => {
 
       test('Should return static custom error when shouldReturnError is true with isNumber for valid number', () => {
         const customError = new ErrorResult('Forced number error', undefined);
-        const decorated = customErrorDecorator(isNumber, customError);
+        const decorated = decorateWithCustomError(isNumber, customError);
 
         const actualResult = decorated(42, { shouldReturnError: true });
 
@@ -180,7 +178,7 @@ describe('customErrorDecorator', () => {
       test('Should return static custom error when shouldReturnError is true with composed validator for valid value', () => {
         const customError = new ErrorResult('Forced validator error', undefined);
         const validator = composeValidator([[isString, isOnlyDigitsString]]);
-        const decorated = customErrorDecorator(validator, customError);
+        const decorated = decorateWithCustomError(validator, customError);
 
         const actualResult = decorated('123', { shouldReturnError: true });
 
@@ -192,7 +190,7 @@ describe('customErrorDecorator', () => {
       test('Should call error factory when shouldReturnError is true with mock rule for valid value', () => {
         const mockRule = createMockNumberRule();
         const errorFactory = (error: IError<string, any>) => new ErrorResult(`Forced: ${error.message}`, undefined);
-        const decorated = customErrorDecorator(mockRule, errorFactory);
+        const decorated = decorateWithCustomError(mockRule, errorFactory);
 
         const actualResult = decorated(42, { shouldReturnError: true });
 
@@ -203,7 +201,7 @@ describe('customErrorDecorator', () => {
 
       test('Should call error factory when shouldReturnError is true with isString for valid string', () => {
         const errorFactory = (error: IError<string, any>) => new ErrorResult(`Forced: ${error.message}`, undefined);
-        const decorated = customErrorDecorator(isString, errorFactory);
+        const decorated = decorateWithCustomError(isString, errorFactory);
 
         const actualResult = decorated('hello', { shouldReturnError: true });
 
@@ -214,8 +212,8 @@ describe('customErrorDecorator', () => {
 
       test('Should call error factory when shouldReturnError is true with composed validator for valid value', () => {
         const validator = composeValidator([[isString, isOnlyDigitsString]]);
-        const errorFactory = (error: IError<string, any>) => new ErrorResult('Forced validator error', error.data);
-        const decorated = customErrorDecorator(validator, errorFactory);
+        const errorFactory = (error: IError<string, any>) => new ErrorResult('Forced validator error', error.errors);
+        const decorated = decorateWithCustomError(validator, errorFactory);
 
         const actualResult = decorated('123', { shouldReturnError: true });
 
@@ -225,12 +223,12 @@ describe('customErrorDecorator', () => {
     });
   });
 
-  describe('customErrorDecorator success cases', () => {
+  describe('decorateWithCustomError success cases', () => {
     describe('with static error and mock rules', () => {
       test('Should pass through success from mock rule', () => {
         const mockRule = createMockStringRule();
         const customError = new ErrorResult('Custom error', undefined);
-        const decorated = customErrorDecorator(mockRule, customError);
+        const decorated = decorateWithCustomError(mockRule, customError);
 
         const actualResult = decorated('hello');
 
@@ -240,7 +238,7 @@ describe('customErrorDecorator', () => {
       test('Should pass through success from mock number rule', () => {
         const mockRule = createMockNumberRule();
         const customError = new ErrorResult('Custom error', undefined);
-        const decorated = customErrorDecorator(mockRule, customError);
+        const decorated = decorateWithCustomError(mockRule, customError);
 
         const actualResult = decorated(42);
 
@@ -251,7 +249,7 @@ describe('customErrorDecorator', () => {
     describe('with static error and real rules', () => {
       test('Should pass through success from isString for valid string', () => {
         const customError = new ErrorResult('Must be a string!', undefined);
-        const decorated = customErrorDecorator(isString, customError);
+        const decorated = decorateWithCustomError(isString, customError);
 
         const actualResult = decorated('hello');
 
@@ -260,7 +258,7 @@ describe('customErrorDecorator', () => {
 
       test('Should pass through success from isNumber for valid number', () => {
         const customError = new ErrorResult('Must be a number!', undefined);
-        const decorated = customErrorDecorator(isNumber, customError);
+        const decorated = decorateWithCustomError(isNumber, customError);
 
         const actualResult = decorated(42);
 
@@ -272,7 +270,7 @@ describe('customErrorDecorator', () => {
       test('Should pass through success from composed validator for valid digit string', () => {
         const customError = new ErrorResult('Value must be a digit string', undefined);
         const validator = composeValidator([[isString, isOnlyDigitsString]]);
-        const decorated = customErrorDecorator(validator, customError);
+        const decorated = decorateWithCustomError(validator, customError);
 
         const actualResult = decorated('123');
 
@@ -282,7 +280,7 @@ describe('customErrorDecorator', () => {
       test('Should pass through success from composed OR-validator when first branch succeeds', () => {
         const customError = new ErrorResult('Must be string or array', undefined);
         const validator = composeValidator([[isString], [isArray]]);
-        const decorated = customErrorDecorator(validator, customError);
+        const decorated = decorateWithCustomError(validator, customError);
 
         const actualResult = decorated('hello');
 
@@ -292,7 +290,7 @@ describe('customErrorDecorator', () => {
       test('Should pass through success from composed OR-validator when second branch succeeds', () => {
         const customError = new ErrorResult('Must be string or array', undefined);
         const validator = composeValidator([[isString], [isArray]]);
-        const decorated = customErrorDecorator(validator, customError);
+        const decorated = decorateWithCustomError(validator, customError);
 
         const actualResult = decorated([1, 2, 3]);
 
@@ -304,7 +302,7 @@ describe('customErrorDecorator', () => {
       test('Should pass through success from mock rule when using error factory', () => {
         const mockRule = createMockNumberRule();
         const errorFactory = (error: IError<string, any>) => new ErrorResult(`Custom: ${error.message}`, undefined);
-        const decorated = customErrorDecorator(mockRule, errorFactory);
+        const decorated = decorateWithCustomError(mockRule, errorFactory);
 
         const actualResult = decorated(42);
 
@@ -315,7 +313,7 @@ describe('customErrorDecorator', () => {
     describe('with error factory and real rules', () => {
       test('Should pass through success from isString when using error factory for valid string', () => {
         const errorFactory = (error: IError<string, any>) => new ErrorResult(`Custom: ${error.message}`, undefined);
-        const decorated = customErrorDecorator(isString, errorFactory);
+        const decorated = decorateWithCustomError(isString, errorFactory);
 
         const actualResult = decorated('hello');
 
@@ -326,8 +324,8 @@ describe('customErrorDecorator', () => {
     describe('with error factory and composed validators', () => {
       test('Should pass through success from composed validator when using error factory for valid value', () => {
         const validator = composeValidator([[isString, isOnlyDigitsString]]);
-        const errorFactory = (error: IError<string, any>) => new ErrorResult('Digit string required', error.data);
-        const decorated = customErrorDecorator(validator, errorFactory);
+        const errorFactory = (error: IError<string, any>) => new ErrorResult('Digit string required', error.errors);
+        const decorated = decorateWithCustomError(validator, errorFactory);
 
         const actualResult = decorated('456');
 

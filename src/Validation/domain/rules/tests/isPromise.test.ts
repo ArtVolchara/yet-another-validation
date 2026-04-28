@@ -1,7 +1,6 @@
 import { describe, test, expect } from "vitest";
 import isPromise, { IS_PROMISE_ERROR_MESSAGE } from '../isPromise';
-import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
-import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
+import { SuccessResult, ErrorResult } from '../../../../_Root/domain/factories';
 
 describe('isPromise validation rule test', () => {
   describe('isPromise error cases', () => {

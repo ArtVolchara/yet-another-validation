@@ -2,19 +2,20 @@ import { describe, test, expect } from 'vitest';
 import isString, { IS_STRING_ERROR_MESSAGE } from '../../rules/isString';
 import isNumber, { IS_NUMBER_ERROR_MESSAGE } from '../../rules/isNumber';
 import isPositiveNumber, { IS_POSITIVE_NUMBER_ERROR_MESSAGE } from '../../rules/isPositiveNumber';
-import isBoolean from '../../rules/isBoolean';
-import isArray from '../../rules/isArray';
-import isOnlyLatinLettersString from '../../rules/isOnlyLatinLettersString';
-import isUndefined from '../../rules/isUndefined';
-import isObject from '../../rules/isObject';
+import { isBoolean, isArray, isUndefined, isObject } from '../../rules';
+import isOnlyLatinLettersString, { IS_ONLY_LATIN_LETTERS_STRING_ERROR_MESSAGE } from '../../rules/isOnlyLatinLettersString';
 import createTupleValidationRule, {
   TUPLE_DEFAULT_ERROR_MESSAGE_HYPERNYM,
   TUPLE_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR,
   TUPLE_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR,
 } from '../createTupleValidationRule';
-import createObjectValidationRule from '../createObjectValidationRule';
+import createObjectValidationRule, {
+  OBJECT_DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR,
+  OBJECT_DEFAULT_ERROR_MESSAGE_HYPERNYM,
+  OBJECT_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR,
+} from '../createObjectValidationRule';
 import composeValidator from '../composeValidator';
-import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
+import { SuccessResult, ErrorResult } from '../../../../_Root/domain/factories';
 import { TValidationParams, TValidator } from '../../types/TValidator';
 
 describe('createTupleValidationRule', () => {
@@ -35,8 +36,8 @@ describe('createTupleValidationRule', () => {
         expect(actualResult.message).toContain(`1${TUPLE_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
         expect(actualResult.message).toContain(IS_STRING_ERROR_MESSAGE);
         expect(actualResult.message).toContain(IS_NUMBER_ERROR_MESSAGE);
-        expect(actualResult?.data?.[0]).toBeDefined();
-        expect(actualResult?.data?.[1]).toBeDefined();
+        expect(actualResult?.errors?.[0]).toBeDefined();
+        expect(actualResult?.errors?.[1]).toBeDefined();
       }
     });
 
@@ -56,8 +57,8 @@ describe('createTupleValidationRule', () => {
         expect(actualResult.message).toContain(`1${TUPLE_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
         expect(actualResult.message).toContain(IS_STRING_ERROR_MESSAGE);
         expect(actualResult.message).toContain(IS_NUMBER_ERROR_MESSAGE);
-        expect(actualResult?.data?.[0]).toBeDefined();
-        expect(actualResult?.data?.[1]).toBeDefined();
+        expect(actualResult?.errors?.[0]).toBeDefined();
+        expect(actualResult?.errors?.[1]).toBeDefined();
       }
     });
 
@@ -78,10 +79,10 @@ describe('createTupleValidationRule', () => {
         expect(actualResult.message).toContain(`1${TUPLE_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
         expect(actualResult.message).toContain(`2${TUPLE_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
         expect(actualResult.message).toContain(IS_POSITIVE_NUMBER_ERROR_MESSAGE);
-        expect(actualResult?.data?.[0]).toBeUndefined();
-        expect(actualResult?.data?.[1]).toBeDefined();
-        expect(actualResult?.data?.[2]).toBeDefined();
-        expect(actualResult?.data?.[3]).toBeUndefined();
+        expect(actualResult?.errors?.[0]).toBeUndefined();
+        expect(actualResult?.errors?.[1]).toBeDefined();
+        expect(actualResult?.errors?.[2]).toBeDefined();
+        expect(actualResult?.errors?.[3]).toBeUndefined();
       }
     });
 
@@ -98,7 +99,7 @@ describe('createTupleValidationRule', () => {
       if (actualResult.status === 'error') {
         expect(actualResult.message).toContain(`${TUPLE_DEFAULT_ERROR_MESSAGE_HYPERNYM}${TUPLE_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
         expect(actualResult.message).toContain(`1${TUPLE_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
-        expect(actualResult?.data?.[1]).toBeDefined();
+        expect(actualResult?.errors?.[1]).toBeDefined();
       }
     });
 
@@ -115,7 +116,7 @@ describe('createTupleValidationRule', () => {
         expect(actualResult.message).toContain(`${TUPLE_DEFAULT_ERROR_MESSAGE_HYPERNYM}${TUPLE_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
         expect(actualResult.message).toContain(`0${TUPLE_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
         expect(actualResult.message).toContain(IS_STRING_ERROR_MESSAGE);
-        expect(actualResult?.data?.[0]).toBeDefined();
+        expect(actualResult?.errors?.[0]).toBeDefined();
       }
     });
 
@@ -133,8 +134,8 @@ describe('createTupleValidationRule', () => {
         expect(actualResult.message).toContain(`${TUPLE_DEFAULT_ERROR_MESSAGE_HYPERNYM}${TUPLE_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
         expect(actualResult.message).toContain(`0${TUPLE_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
         expect(actualResult.message).toContain(`1${TUPLE_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
-        expect(actualResult?.data?.[0]).toBeDefined();
-        expect(actualResult?.data?.[1]).toBeDefined();
+        expect(actualResult?.errors?.[0]).toBeDefined();
+        expect(actualResult?.errors?.[1]).toBeDefined();
       }
     });
 
@@ -215,23 +216,46 @@ describe('createTupleValidationRule', () => {
       const workplaceValidationRule = createObjectValidationRule(workplaceSchema);
       const workplaceValidator = composeValidator([[isObject, workplaceValidationRule]]);
       const tupleValidationRule = createTupleValidationRule([workplaceValidator]);
-      const inputValue = [[{ position: '1', company: 'w' }]];
+      const inputValue = [{ position: '1', company: 'w' }];
 
       const actualResult = tupleValidationRule(inputValue);
 
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
-        expect(Array.isArray(actualResult.data)).toBe(true);
-        expect(actualResult.data).toHaveLength(1);
-        const firstElementError = actualResult.data?.[0];
-        expect(firstElementError).toBeDefined();
-        if (firstElementError && typeof firstElementError === 'object' && 'status' in firstElementError) {
-          const elementError = firstElementError as any;
-          expect(elementError.status).toBe('error');
-          expect(typeof elementError.message).toBe('string');
-          expect(typeof elementError.data).toBe('object');
-          expect(elementError.data).not.toBeNull();
-        }
+        const objectErrorMessage = `${OBJECT_DEFAULT_ERROR_MESSAGE_HYPERNYM}`
+          + `${OBJECT_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}\nposition`
+          + `${OBJECT_DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`
+          + `${IS_ONLY_LATIN_LETTERS_STRING_ERROR_MESSAGE}`;
+        expect(actualResult).toEqual(
+          new ErrorResult(
+            `${TUPLE_DEFAULT_ERROR_MESSAGE_HYPERNYM}`
+            + `${TUPLE_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}\n0`
+            + `${TUPLE_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`
+            + `${objectErrorMessage}\n`,
+            [
+              new ErrorResult(
+                objectErrorMessage,
+                [
+                  [
+                    new ErrorResult(
+                      objectErrorMessage,
+                      {
+                        position: new ErrorResult(
+                          IS_ONLY_LATIN_LETTERS_STRING_ERROR_MESSAGE,
+                          [
+                            [
+                              new ErrorResult(IS_ONLY_LATIN_LETTERS_STRING_ERROR_MESSAGE, undefined),
+                            ],
+                          ],
+                        ),
+                      },
+                    ),
+                  ],
+                ],
+              ),
+            ],
+          ),
+        );
       }
     });
 
@@ -249,8 +273,8 @@ describe('createTupleValidationRule', () => {
         expect(actualResult.message).toContain(`${TUPLE_DEFAULT_ERROR_MESSAGE_HYPERNYM}${TUPLE_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
         expect(actualResult.message).toContain(`0${TUPLE_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
         expect(actualResult.message).toContain(`1${TUPLE_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
-        expect(actualResult?.data?.[0]).toBeDefined();
-        expect(actualResult?.data?.[1]).toBeDefined();
+        expect(actualResult?.errors?.[0]).toBeDefined();
+        expect(actualResult?.errors?.[1]).toBeDefined();
       }
     });
 
@@ -272,10 +296,10 @@ describe('createTupleValidationRule', () => {
         expect(actualResult.message).toContain(`1${TUPLE_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
         expect(actualResult.message).toContain(`2${TUPLE_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
         expect(actualResult.message).toContain(`3${TUPLE_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
-        expect(actualResult?.data?.[0]).toBeDefined();
-        expect(actualResult?.data?.[1]).toBeDefined();
-        expect(actualResult?.data?.[2]).toBeDefined();
-        expect(actualResult?.data?.[3]).toBeDefined();
+        expect(actualResult?.errors?.[0]).toBeDefined();
+        expect(actualResult?.errors?.[1]).toBeDefined();
+        expect(actualResult?.errors?.[2]).toBeDefined();
+        expect(actualResult?.errors?.[3]).toBeDefined();
       }
     });
   });
@@ -375,52 +399,6 @@ describe('createTupleValidationRule', () => {
         expect(actualResult.data).toHaveLength(1);
         expect(actualResult?.data?.[0]).toEqual({ position: 'Manager', company: 'TechCorp' });
       }
-    });
-
-    test('Should pass correct path to element validators without initial path', () => {
-      // Arrange
-      const capturedPaths: Array<string | undefined> = [];
-      const createCapturingValidator = (): TValidator =>
-        ((value: any, params?: TValidationParams) => {
-          capturedPaths.push(params?.path);
-          return new SuccessResult(value);
-        }) as TValidator;
-
-      const tupleRule = createTupleValidationRule([
-        createCapturingValidator(),
-        createCapturingValidator(),
-        createCapturingValidator(),
-      ]);
-
-      // Act
-      tupleRule(['Hello', 42, true] as const);
-
-      // Assert
-      expect(capturedPaths).toEqual(['[0]', '[1]', '[2]']);
-    });
-
-    test('Should prepend parent path to element paths for nested tuple', () => {
-      // Arrange
-      const capturedPaths: Array<string | undefined> = [];
-      const createCapturingValidator = (): TValidator =>
-        ((value: any, params?: TValidationParams) => {
-          capturedPaths.push(params?.path);
-          return new SuccessResult(value);
-        }) as TValidator;
-
-      const tupleRule = createTupleValidationRule([
-        createCapturingValidator(),
-        createCapturingValidator(),
-      ]);
-
-      // Act
-      tupleRule([40.7128, -74.006] as const, { path: 'location.coordinates' });
-
-      // Assert
-      expect(capturedPaths).toEqual([
-        'location.coordinates[0]',
-        'location.coordinates[1]',
-      ]);
     });
   });
 });

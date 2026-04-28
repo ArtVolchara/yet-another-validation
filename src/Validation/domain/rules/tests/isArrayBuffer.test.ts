@@ -1,7 +1,6 @@
 import { describe, test, expect } from 'vitest';
 import isArrayBuffer, { IS_ARRAY_BUFFER_ERROR_MESSAGE } from '../isArrayBuffer';
-import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
-import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
+import { SuccessResult, ErrorResult } from '../../../../_Root/domain/factories';
 
 describe('isArrayBuffer validation rule test', () => {
   describe('isArrayBuffer error cases', () => {

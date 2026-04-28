@@ -12,7 +12,7 @@ type TCustomErrorDecoratorResult<
     ? CustomError
     : TRetrieveSuccess<ReturnType<RuleOrValidator>> | CustomError;
 
-function customErrorDecorator<
+function decorateWithCustomError<
   const RuleOrValidator extends TValidationRule | TValidator,
   const CustomError extends IError<string, any>,
 >(
@@ -29,7 +29,7 @@ const ShouldReturnError extends [Params] extends [never]
   : Params extends TValidationParams ? Params['shouldReturnError'] : undefined,
 >(value: Parameters<RuleOrValidator>[0], params?: Params) => TCustomErrorDecoratorResult<RuleOrValidator, CustomError, ShouldReturnError>;
 
-function customErrorDecorator<
+function decorateWithCustomError<
   const RuleOrValidator extends TValidationRule | TValidator,
   const ErrorFactory extends (data: Extract<ReturnType<RuleOrValidator>, IError<string, any>>) => IError<string, any>,
 >(
@@ -45,7 +45,7 @@ const ShouldReturnError extends [Params] extends [never]
   : Params extends TValidationParams ? Params['shouldReturnError'] : undefined,
 >(value: Parameters<RuleOrValidator>[0], params?: Params) => TCustomErrorDecoratorResult<RuleOrValidator, ReturnType<ErrorFactory>, ShouldReturnError>;
 
-function customErrorDecorator<
+function decorateWithCustomError<
   const RuleOrValidator extends TValidationRule | TValidator,
   const ErrorOrFactory extends IError<string, any>
   | (
@@ -68,4 +68,4 @@ function customErrorDecorator<
   };
 }
 
-export default customErrorDecorator;
+export default decorateWithCustomError;

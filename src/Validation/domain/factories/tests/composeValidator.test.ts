@@ -4,12 +4,12 @@ import isOnlyLatinLettersString, { IS_ONLY_LATIN_LETTERS_STRING_ERROR_MESSAGE } 
 import isNumber, { IS_NUMBER_ERROR_MESSAGE } from '../../rules/isNumber';
 import isPositiveNumber, { IS_POSITIVE_NUMBER_ERROR_MESSAGE } from '../../rules/isPositiveNumber';
 import isArray, { IS_ARRAY_ERROR_MESSAGE } from '../../rules/isArray';
-import isArrayMinLength from '../../rules/isArrayMinLength';
+import { isArrayMinLength } from '../../rules';
 import isUndefined, { IS_UNDEFINED_ERROR_MESSAGE } from '../../rules/isUndefined';
 import isBoolean, { IS_BOOLEAN_ERROR_MESSAGE } from '../../rules/isBoolean';
 import composeValidator from '../composeValidator';
-import customErrorDecorator from '../../utils/customErrorDecorator';
-import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
+import decorateWithCustomError from '../../utils/decorateWithCustomError';
+import { ErrorResult } from '../../../../_Root/domain/factories';
 import { DEFAULT_AND_SEPARATOR } from '../../functions/validateValueFromRules';
 import { DEFAULT_OR_SEPARATOR } from '../../functions/validateValue';
 
@@ -29,9 +29,9 @@ describe('composeValidator', () => {
         expect(actualResult.status).toBe('error');
         if (actualResult.status === 'error') {
           expect(actualResult.message).toBe(expectedMessage);
-          expect(actualResult.data).toHaveLength(1);
-          expect(actualResult.data[0]).toHaveLength(1);
-          expect(actualResult.data[0][0]?.message).toBe(expectedMessage);
+          expect(actualResult.errors).toHaveLength(1);
+          expect(actualResult.errors[0]).toHaveLength(1);
+          expect(actualResult.errors[0][0]?.message).toBe(expectedMessage);
         }
       });
 
@@ -48,12 +48,12 @@ describe('composeValidator', () => {
         expect(actualResult.status).toBe('error');
         if (actualResult.status === 'error') {
           expect(actualResult.message).toBe(expectedMessage);
-          expect(actualResult.data).toHaveLength(1);
-          expect(actualResult.data[0]).toHaveLength(2);
+          expect(actualResult.errors).toHaveLength(1);
+          expect(actualResult.errors[0]).toHaveLength(2);
 
           // Проверяем конкретные сообщения об ошибках
-          expect(actualResult.data[0][0]?.message).toBe(IS_ARRAY_ERROR_MESSAGE);
-          expect(actualResult.data[0][1]?.message).toBe('Array should contain more than 2 elements');
+          expect(actualResult.errors[0][0]?.message).toBe(IS_ARRAY_ERROR_MESSAGE);
+          expect(actualResult.errors[0][1]?.message).toBe('Array should contain more than 2 elements');
         }
       });
 
@@ -70,9 +70,9 @@ describe('composeValidator', () => {
         expect(actualResult.status).toBe('error');
         if (actualResult.status === 'error') {
           expect(actualResult.message).toBe(expectedMessage);
-          expect(actualResult.data).toHaveLength(1);
-          expect(actualResult.data[0]).toHaveLength(1);
-          expect(actualResult.data[0][0]?.message).toBe(expectedMessage);
+          expect(actualResult.errors).toHaveLength(1);
+          expect(actualResult.errors[0]).toHaveLength(1);
+          expect(actualResult.errors[0][0]?.message).toBe(expectedMessage);
         }
       });
 
@@ -89,9 +89,9 @@ describe('composeValidator', () => {
         expect(actualResult.status).toBe('error');
         if (actualResult.status === 'error') {
           expect(actualResult.message).toBe(expectedMessage);
-          expect(actualResult.data).toHaveLength(1);
-          expect(actualResult.data[0]).toHaveLength(1);
-          expect(actualResult.data[0][0]?.message).toBe(expectedMessage);
+          expect(actualResult.errors).toHaveLength(1);
+          expect(actualResult.errors[0]).toHaveLength(1);
+          expect(actualResult.errors[0][0]?.message).toBe(expectedMessage);
         }
       });
     });
@@ -115,9 +115,9 @@ describe('composeValidator', () => {
         expect(actualResult.status).toBe('error');
         if (actualResult.status === 'error') {
           expect(actualResult.message).toBe(expectedMessage);
-          expect(actualResult.data).toHaveLength(2);
-          expect(actualResult.data[0]).toHaveLength(2); // First AND group
-          expect(actualResult.data[1]).toHaveLength(2); // Second AND group
+          expect(actualResult.errors).toHaveLength(2);
+          expect(actualResult.errors[0]).toHaveLength(2); // First AND group
+          expect(actualResult.errors[1]).toHaveLength(2); // Second AND group
         }
       });
 
@@ -139,15 +139,15 @@ describe('composeValidator', () => {
         expect(actualResult.status).toBe('error');
         if (actualResult.status === 'error') {
           expect(actualResult.message).toBe(expectedMessage);
-          expect(actualResult.data).toHaveLength(2);
-          expect(actualResult.data[0]).toHaveLength(2);
-          expect(actualResult.data[1]).toHaveLength(2);
+          expect(actualResult.errors).toHaveLength(2);
+          expect(actualResult.errors[0]).toHaveLength(2);
+          expect(actualResult.errors[1]).toHaveLength(2);
 
           // Проверяем конкретные сообщения об ошибках
-          expect(actualResult.data[0][0]?.message).toBe(IS_STRING_ERROR_MESSAGE);
-          expect(actualResult.data[0][1]?.message).toBe(IS_ONLY_LATIN_LETTERS_STRING_ERROR_MESSAGE);
-          expect(actualResult.data[1][0]?.message).toBe(IS_NUMBER_ERROR_MESSAGE);
-          expect(actualResult.data[1][1]?.message).toBe(IS_POSITIVE_NUMBER_ERROR_MESSAGE);
+          expect(actualResult.errors[0][0]?.message).toBe(IS_STRING_ERROR_MESSAGE);
+          expect(actualResult.errors[0][1]?.message).toBe(IS_ONLY_LATIN_LETTERS_STRING_ERROR_MESSAGE);
+          expect(actualResult.errors[1][0]?.message).toBe(IS_NUMBER_ERROR_MESSAGE);
+          expect(actualResult.errors[1][1]?.message).toBe(IS_POSITIVE_NUMBER_ERROR_MESSAGE);
         }
       });
 
@@ -174,16 +174,16 @@ describe('composeValidator', () => {
         expect(actualResult.status).toBe('error');
         if (actualResult.status === 'error') {
           expect(actualResult.message).toBe(expectedMessage);
-          expect(actualResult.data).toHaveLength(3);
-          expect(actualResult.data[0]).toHaveLength(2); // First array
-          expect(actualResult.data[1]).toHaveLength(2);
-          expect(actualResult.data[2]).toHaveLength(2);
+          expect(actualResult.errors).toHaveLength(3);
+          expect(actualResult.errors[0]).toHaveLength(2); // First array
+          expect(actualResult.errors[1]).toHaveLength(2);
+          expect(actualResult.errors[2]).toHaveLength(2);
 
           // Проверяем конкретные сообщения об ошибках
-          expect(actualResult.data[0][0]?.message).toBe(IS_STRING_ERROR_MESSAGE);
-          expect(actualResult.data[0][1]?.message).toBe(IS_ONLY_LATIN_LETTERS_STRING_ERROR_MESSAGE);
-          expect(actualResult.data[1][0]?.message).toBe(IS_NUMBER_ERROR_MESSAGE);
-          expect(actualResult.data[1][1]?.message).toBe(IS_POSITIVE_NUMBER_ERROR_MESSAGE);
+          expect(actualResult.errors[0][0]?.message).toBe(IS_STRING_ERROR_MESSAGE);
+          expect(actualResult.errors[0][1]?.message).toBe(IS_ONLY_LATIN_LETTERS_STRING_ERROR_MESSAGE);
+          expect(actualResult.errors[1][0]?.message).toBe(IS_NUMBER_ERROR_MESSAGE);
+          expect(actualResult.errors[1][1]?.message).toBe(IS_POSITIVE_NUMBER_ERROR_MESSAGE);
         }
       });
 
@@ -198,7 +198,7 @@ describe('composeValidator', () => {
             if (typeof value === 'string') {
               return { status: 'success' as const, data: value };
             }
-            return { status: 'error' as const, message: 'Custom error', data: [[{ status: 'error' as const, message: 'Custom error', data: undefined }]] };
+            return { status: 'error' as const, message: 'Custom error', errors: [[{ status: 'error' as const, message: 'Custom error', errors: undefined }]] };
           },
         ]);
 
@@ -209,7 +209,7 @@ describe('composeValidator', () => {
         expect(actualResult.status).toBe('error');
         if (actualResult.status === 'error') {
           expect(actualResult.message).toBe(expectedMessage);
-          expect(actualResult.data).toHaveLength(2);
+          expect(actualResult.errors).toHaveLength(2);
         }
       });
     });
@@ -219,7 +219,7 @@ describe('composeValidator', () => {
         // Arrange
         const inputValue = 123;
         const customError = new ErrorResult('Custom string error', undefined);
-        const decoratedValidator = customErrorDecorator(isString, customError);
+        const decoratedValidator = decorateWithCustomError(isString, customError);
         const validator = composeValidator([[decoratedValidator]]);
 
         // Act
@@ -229,9 +229,9 @@ describe('composeValidator', () => {
         expect(actualResult.status).toBe('error');
         if (actualResult.status === 'error') {
           expect(actualResult.message).toBe('Custom string error');
-          expect(actualResult.data).toHaveLength(1);
-          expect(actualResult.data[0]).toHaveLength(1);
-          expect(actualResult.data[0][0]?.message).toBe('Custom string error');
+          expect(actualResult.errors).toHaveLength(1);
+          expect(actualResult.errors[0]).toHaveLength(1);
+          expect(actualResult.errors[0][0]?.message).toBe('Custom string error');
         }
       });
 
@@ -239,7 +239,7 @@ describe('composeValidator', () => {
         // Arrange
         const inputValue = 'Hello123';
         const customStringError = new ErrorResult('Custom: not only letters', undefined);
-        const decoratedOnlyLetters = customErrorDecorator(isOnlyLatinLettersString, customStringError);
+        const decoratedOnlyLetters = decorateWithCustomError(isOnlyLatinLettersString, customStringError);
         const validator = composeValidator([[isString, decoratedOnlyLetters]]);
 
         // Act
@@ -249,8 +249,8 @@ describe('composeValidator', () => {
         expect(actualResult.status).toBe('error');
         if (actualResult.status === 'error') {
           expect(actualResult.message).toContain('Custom: not only letters');
-          expect(actualResult.data).toHaveLength(1);
-          expect(actualResult.data[0]).toHaveLength(1);
+          expect(actualResult.errors).toHaveLength(1);
+          expect(actualResult.errors[0]).toHaveLength(1);
         }
       });
 
@@ -259,8 +259,8 @@ describe('composeValidator', () => {
         const inputValue = true;
         const customStringError = new ErrorResult('Custom string error', undefined);
         const customNumberError = new ErrorResult('Custom number error', undefined);
-        const decoratedString = customErrorDecorator(isString, customStringError);
-        const decoratedNumber = customErrorDecorator(isNumber, customNumberError);
+        const decoratedString = decorateWithCustomError(isString, customStringError);
+        const decoratedNumber = decorateWithCustomError(isNumber, customNumberError);
         const validator = composeValidator([[decoratedString], [decoratedNumber]]);
 
         // Act
@@ -269,11 +269,11 @@ describe('composeValidator', () => {
         // Assert
         expect(actualResult.status).toBe('error');
         if (actualResult.status === 'error') {
-          expect(actualResult.data).toHaveLength(2);
-          expect(actualResult.data[0]).toHaveLength(1);
-          expect(actualResult.data[0][0]?.message).toBe('Custom string error');
-          expect(actualResult.data[1]).toHaveLength(1);
-          expect(actualResult.data[1][0]?.message).toBe('Custom number error');
+          expect(actualResult.errors).toHaveLength(2);
+          expect(actualResult.errors[0]).toHaveLength(1);
+          expect(actualResult.errors[0][0]?.message).toBe('Custom string error');
+          expect(actualResult.errors[1]).toHaveLength(1);
+          expect(actualResult.errors[1][0]?.message).toBe('Custom number error');
         }
       });
     });
@@ -436,7 +436,7 @@ describe('composeValidator', () => {
             if (typeof value === 'string') {
               return { status: 'success' as const, data: value };
             }
-            return { status: 'error' as const, message: 'Custom error', data: [[{ status: 'error' as const, message: 'Custom error', data: undefined }]] };
+            return { status: 'error' as const, message: 'Custom error', errors: [[{ status: 'error' as const, message: 'Custom error', errors: undefined }]] };
           },
         ]);
 
@@ -456,7 +456,7 @@ describe('composeValidator', () => {
           const inputValue = 'Hello';
           const expectedData = 'Hello';
           const customError = new ErrorResult('Custom string error', undefined);
-          const decoratedValidator = customErrorDecorator(isString, customError);
+          const decoratedValidator = decorateWithCustomError(isString, customError);
           const validator = composeValidator([[decoratedValidator]]);
 
           // Act
@@ -473,7 +473,7 @@ describe('composeValidator', () => {
           // Arrange
           const inputValue = 'Hello';
           const customNumberError = new ErrorResult('Custom number error', undefined);
-          const decoratedNumber = customErrorDecorator(isNumber, customNumberError);
+          const decoratedNumber = decorateWithCustomError(isNumber, customNumberError);
           const validator = composeValidator([[isString], [decoratedNumber]]);
 
           // Act

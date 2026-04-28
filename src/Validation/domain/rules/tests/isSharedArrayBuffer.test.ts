@@ -1,7 +1,6 @@
 import { describe, test, expect } from "vitest";
 import isSharedArrayBuffer, { IS_SHARED_ARRAY_BUFFER_ERROR_MESSAGE } from '../isSharedArrayBuffer';
-import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
-import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
+import { SuccessResult, ErrorResult } from '../../../../_Root/domain/factories';
 
 describe('isSharedArrayBuffer validation rule test', () => {
   describe('isSharedArrayBuffer error cases', () => {

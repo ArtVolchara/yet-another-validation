@@ -1,7 +1,6 @@
 import { describe, test, expect } from "vitest";
 import isSymbol, { IS_SYMBOL_ERROR_MESSAGE } from '../isSymbol';
-import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
-import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
+import { SuccessResult, ErrorResult } from '../../../../_Root/domain/factories';
 
 describe('isSymbol validation rule test', () => {
   describe('isSymbol error cases', () => {

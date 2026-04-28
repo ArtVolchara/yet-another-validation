@@ -34,4 +34,4 @@ export { default as isWeakMap } from './isWeakMap';
 export { default as isWeakSet } from './isWeakSet';
 export { default as isArrayExactLength } from './isArrayExactLength';
 export { default as isArrayMaxLength } from './isArrayMaxLength';
-export { default as isArrayMinLength } from './isArrayMinLength'; 
+export { default as isArrayMinLength } from './isArrayMinLength';

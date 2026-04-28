@@ -1,7 +1,6 @@
 import { describe, test, expect } from "vitest";
 import isUint8ClampedArray, { IS_UINT8_CLAMPED_ARRAY_ERROR_MESSAGE } from '../isUint8ClampedArray';
-import SuccessResult from '../../../../_Root/domain/factories/SuccessResult';
-import ErrorResult from '../../../../_Root/domain/factories/ErrorResult';
+import { SuccessResult, ErrorResult } from '../../../../_Root/domain/factories';
 
 describe('isUint8ClampedArray validation rule test', () => {
   describe('isUint8ClampedArray error cases', () => {
