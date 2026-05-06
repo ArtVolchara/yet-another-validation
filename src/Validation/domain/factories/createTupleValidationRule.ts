@@ -44,6 +44,8 @@ export type TErrorTupleValidationData<Validators extends Partial<TValidators>> =
     ? [TRetrieveValidationError<First> | undefined, ...TErrorTupleValidationData<Rest>]
     : [];
 
+type TTupleValidationErrorResult<Validators extends Partial<TValidators>> = IError<string, TErrorTupleValidationData<Validators>> & { valid: Partial<TSuccessTupleValidationData<Validators>> };
+
 type TValidationAccumulator<Validators extends TValidators> = {
   validResults: TSuccessTupleValidationData<Validators>;
   errors: TErrorTupleValidationData<Validators>;
@@ -65,9 +67,9 @@ type TTupleValidationRuleResult<
     ? ISuccess<TSuccessTupleValidationData<Validators>>
     | IError<string, TErrorTupleValidationData<Validators>>
     : [NonNullable<Params>['shouldReturnError']] extends [true]
-      ? IError<string, TErrorTupleValidationData<Validators>>
+      ? TTupleValidationErrorResult<Validators>
       : ISuccess<TSuccessTupleValidationData<Validators>>
-      | IError<string, TErrorTupleValidationData<Validators>>;
+      | TTupleValidationErrorResult<Validators>;
 
 export default function createTupleValidationRule<const Validators extends TValidators>(
   validators: Validators,
@@ -107,10 +109,12 @@ export default function createTupleValidationRule<const Validators extends TVali
       }
 
       if (result.isError) {
-        return new ErrorResult(
+        const errorResult = new ErrorResult(
           `${params?.errorMessageHypernym || TUPLE_DEFAULT_ERROR_MESSAGE_HYPERNYM}${params?.errorMessageHypernymSeparator || TUPLE_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}\n${result.errorMessage}`,
           result.errors,
-        ) as TTupleValidationRuleResult<Validators, Params>;
+        ) as unknown as TTupleValidationErrorResult<Validators>;
+        errorResult.valid = result.validResults;
+        return errorResult as TTupleValidationRuleResult<Validators, Params>;
       }
       return new SuccessResult(result.validResults) as TTupleValidationRuleResult<Validators, Params>;
     } catch (e) {

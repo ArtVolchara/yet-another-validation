@@ -131,10 +131,10 @@ describe('decorateWithDefaultValue', () => {
           lastName: decorateWithDefaultValue(composeValidator([[isString]]), 'Doe', true),
           age: decorateWithDefaultValue(composeValidator([[isNumber]]), 0, true),
         }),
-        (error, value) => ({
-          name: error.errors.name ? error.errors.name.data : value?.name,
-          lastName: error.errors.lastName ? error.errors.lastName.data : value?.lastName,
-          age: error.errors.age ? error.errors.age.data : value?.age,
+        (error) => ({
+          name: error.errors.name ? error.errors.name.data : error.valid.name!,
+          lastName: error.errors.lastName ? error.errors.lastName.data : error.valid.lastName!,
+          age: error.errors.age ? error.errors.age.data : error.valid.age!,
         }),
         true,
       );
@@ -157,10 +157,10 @@ describe('decorateWithDefaultValue', () => {
           decorateWithDefaultValue(composeValidator([[isNumber]]), 0, true),
           decorateWithDefaultValue(composeValidator([[isNumber]]), 0, true),
         ]),
-        (error, value) => [
-          error.errors[0] ? error.errors[0]?.data : value?.[0],
-          error.errors[1] ? error.errors[1]?.data : value?.[1],
-          error.errors[2] ? error.errors[2]?.data : value?.[2],
+        (error) => [
+          error.errors[0] ? error.errors[0].data : error.valid[0]!,
+          error.errors[1] ? error.errors[1].data : error.valid[1]!,
+          error.errors[2] ? error.errors[2].data : error.valid[2]!,
         ],
         true,
       );
@@ -181,7 +181,7 @@ describe('decorateWithDefaultValue', () => {
         createArrayValidationRule(
           decorateWithDefaultValue(composeValidator([[isNumber]]), 0, true),
         ),
-        (error, value) => error.errors.map((error, index) => (error ? error?.data : value?.[index] ?? 0)),
+        (error) => error.errors.map((elError, index) => (elError ? elError?.data : error.valid[index]!)),
         true,
       );
 

@@ -4,7 +4,7 @@ import { IError } from '../../../_Root/domain/types/Result/IError';
 
 export type TValidationRuleError = IError<
 string,
-undefined | Array<IError<string, any> | undefined> | Record<string | symbol, IError<string, any>>
+undefined | Array<IError<string, any> | undefined> | Record<string | symbol, IError<string, any> | undefined>
 >;
 
 export type TValidationParams = { shouldReturnError?: boolean, key?: string | number | symbol };

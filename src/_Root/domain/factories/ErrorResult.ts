@@ -1,14 +1,14 @@
 import { IError } from '../types/Result/IError';
 
-export default class ErrorResult<const Message extends string, const Data extends any = undefined> implements IError<Message, Data> {
-  status: IError<Message, Data>['status'] = 'error';
+export default class ErrorResult<const Message extends string, const Errors extends any = undefined> implements IError<Message, Errors> {
+  status: IError<Message, Errors>['status'] = 'error';
 
-  message: IError<Message, Data>['message'];
+  message: IError<Message, Errors>['message'];
 
-  errors: Data;
+  errors: Errors;
 
-  constructor(message: Message, data: Data) {
+  constructor(message: Message, errors: Errors) {
     this.message = message;
-    this.errors = data;
+    this.errors = errors;
   }
 }

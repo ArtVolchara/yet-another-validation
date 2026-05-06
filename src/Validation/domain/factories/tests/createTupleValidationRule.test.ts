@@ -227,7 +227,7 @@ describe('createTupleValidationRule', () => {
           + `${OBJECT_DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR}`
           + `${IS_ONLY_LATIN_LETTERS_STRING_ERROR_MESSAGE}`;
         expect(actualResult).toEqual(
-          new ErrorResult(
+          Object.assign(new ErrorResult(
             `${TUPLE_DEFAULT_ERROR_MESSAGE_HYPERNYM}`
             + `${TUPLE_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}\n0`
             + `${TUPLE_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`
@@ -237,7 +237,7 @@ describe('createTupleValidationRule', () => {
                 objectErrorMessage,
                 [
                   [
-                    new ErrorResult(
+                    Object.assign(new ErrorResult(
                       objectErrorMessage,
                       {
                         position: new ErrorResult(
@@ -249,12 +249,12 @@ describe('createTupleValidationRule', () => {
                           ],
                         ),
                       },
-                    ),
+                    ), { valid: { company: 'w' } }),
                   ],
                 ],
               ),
             ],
-          ),
+          ), { valid: [] }),
         );
       }
     });
