@@ -13,7 +13,7 @@ import { isArray } from '../rules';
 export const ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM = 'Array validation failed for the following elements';
 export const ARRAY_DEFAULT_ERROR_MESSAGE_EMPTY_HYPERNYM = 'Array does not consist of elements following next validation rules';
 export const ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR = ': ';
-export const DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR = ': ';
+export const ARRAY_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR = ': ';
 
 export type TValidationAccumulator<Validator extends TValidator> = {
   validResults: Array<TRetrieveValidationSuccess<Validator>['data'] | undefined>;
@@ -29,11 +29,8 @@ export type TCreateArrayRuleParams = {
   errorMessageIndexSeparator?: string,
 };
 
-type TArrayValidationErrorResult<Validator extends TValidator> =
-  [TRetrieveError<ReturnType<Validator>>] extends [never]
-    ? never
-    : IError<string, Array<TRetrieveError<ReturnType<Validator>> | undefined>>
-    & { valid: Array<TRetrieveValidationSuccess<Validator>['data'] | undefined> };
+type TArrayValidationErrorResult<Validator extends TValidator> = IError<string, Array<TRetrieveError<ReturnType<Validator>> | undefined>> 
+  & { valid: Array<TRetrieveValidationSuccess<Validator>['data'] | undefined> };
 
 type TArrayValidationRuleResult<
   Validator extends TValidator,
@@ -81,7 +78,6 @@ export default function createArrayValidationRule<
       }
       const result = value?.reduce((acc, item, index) => {
         const validationResult = validator(item, {
-          key: index,
           shouldReturnError: validationParams?.shouldReturnError,
         });
         if (validationResult.status === 'success') {
@@ -91,7 +87,7 @@ export default function createArrayValidationRule<
           acc.isError = true;
           acc.validResults[index] = undefined;
           acc.errors[index] = validationResult as TRetrieveError<ReturnType<Validator>>;
-          acc.errorMessage += `${index}${params?.errorMessageIndexSeparator || DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}${validationResult.message}\n`;
+          acc.errorMessage += `${index}${params?.errorMessageIndexSeparator || ARRAY_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}${validationResult.message}\n`;
         }
         return acc;
       }, initialAcc);

@@ -94,7 +94,6 @@ export default function createTupleValidationRule<const Validators extends TVali
         if (!validator) continue;
 
         const validationResult = validator(value?.[index], {
-          key: index,
           shouldReturnError: isArray(value).status === 'error' || validationParams?.shouldReturnError,
         });
 

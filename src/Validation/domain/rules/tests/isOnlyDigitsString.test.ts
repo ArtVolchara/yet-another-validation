@@ -1,5 +1,5 @@
 import { describe, test, expect } from "vitest";
-import isOnlyDigitsString, { IS_ONLY_DIGITS_STRING_DEFAULT_ERROR_MESSAGE } from '../isOnlyDigitsString';
+import isOnlyDigitsString, { IS_ONLY_DIGITS_STRING_ERROR_MESSAGE } from '../isOnlyDigitsString';
 import { SuccessResult, ErrorResult } from '../../../../_Root/domain/factories';
 
 describe('isOnlyDigitsString validation rule test', () => {
@@ -32,7 +32,7 @@ describe('isOnlyDigitsString validation rule test', () => {
       test(`Should return error result for ${description}`, () => {
         // Arrange
         const inputValue = input as unknown as string;
-        const expectedResult = new ErrorResult(IS_ONLY_DIGITS_STRING_DEFAULT_ERROR_MESSAGE, undefined);
+        const expectedResult = new ErrorResult(IS_ONLY_DIGITS_STRING_ERROR_MESSAGE, undefined);
 
         // Act
         const actualResult = isOnlyDigitsString(inputValue);
@@ -43,7 +43,7 @@ describe('isOnlyDigitsString validation rule test', () => {
     });
 
     test('Should return error when params.shouldReturnError is true even for valid value', () => {
-      const expectedResult = new ErrorResult(IS_ONLY_DIGITS_STRING_DEFAULT_ERROR_MESSAGE, undefined);
+      const expectedResult = new ErrorResult(IS_ONLY_DIGITS_STRING_ERROR_MESSAGE, undefined);
       const actualResult = isOnlyDigitsString('123', { shouldReturnError: true });
       expect(actualResult).toEqual(expectedResult);
     });

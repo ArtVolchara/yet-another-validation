@@ -6,7 +6,7 @@ import createArrayValidationRule, {
   ARRAY_DEFAULT_ERROR_MESSAGE_EMPTY_HYPERNYM,
   ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM,
   ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR,
-  DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR,
+  ARRAY_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR,
 } from '../createArrayValidationRule';
 import composeValidator from '../composeValidator';
 import { SuccessResult } from '../../../../_Root/domain/factories';
@@ -23,7 +23,7 @@ describe('createArrayValidationRule', () => {
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
         expect(actualResult.message).toContain(`${ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM}${ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
-        expect(actualResult.message).toContain(`1${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
+        expect(actualResult.message).toContain(`1${ARRAY_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
         expect(actualResult.message).toContain(IS_STRING_ERROR_MESSAGE);
         expect(actualResult.errors).toHaveLength(3);
         expect(actualResult?.errors?.[0]).toBeUndefined();
@@ -55,8 +55,8 @@ describe('createArrayValidationRule', () => {
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
         expect(actualResult.message).toContain(`${ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM}${ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
-        expect(actualResult.message).toContain(`1${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
-        expect(actualResult.message).toContain(`2${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
+        expect(actualResult.message).toContain(`1${ARRAY_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
+        expect(actualResult.message).toContain(`2${ARRAY_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
         expect(actualResult.message).toContain(IS_POSITIVE_NUMBER_ERROR_MESSAGE);
         expect(actualResult.errors).toHaveLength(4);
         expect(actualResult?.errors?.[0]).toBeUndefined();
@@ -75,8 +75,8 @@ describe('createArrayValidationRule', () => {
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
         expect(actualResult.message).toContain(`${ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM}${ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
-        expect(actualResult.message).toContain(`1${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
-        expect(actualResult.message).toContain(`2${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
+        expect(actualResult.message).toContain(`1${ARRAY_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
+        expect(actualResult.message).toContain(`2${ARRAY_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
         expect(actualResult.errors).toHaveLength(4);
         expect(actualResult?.errors?.[0]).toBeUndefined();
         expect(actualResult?.errors?.[1]).toBeDefined();
@@ -94,7 +94,7 @@ describe('createArrayValidationRule', () => {
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
         expect(actualResult.message).toContain(`${ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM}${ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
-        expect(actualResult.message).toContain(`1${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
+        expect(actualResult.message).toContain(`1${ARRAY_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
         expect(actualResult?.errors?.[1]).toBeDefined();
       }
     });
@@ -108,9 +108,9 @@ describe('createArrayValidationRule', () => {
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
         expect(actualResult.message).toContain(`${ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM}${ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
-        expect(actualResult.message).toContain(`0${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
-        expect(actualResult.message).toContain(`1${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
-        expect(actualResult.message).toContain(`2${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
+        expect(actualResult.message).toContain(`0${ARRAY_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
+        expect(actualResult.message).toContain(`1${ARRAY_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
+        expect(actualResult.message).toContain(`2${ARRAY_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
         expect(actualResult.errors).toHaveLength(3);
         expect(actualResult?.errors?.[0]).toBeDefined();
         expect(actualResult?.errors?.[1]).toBeDefined();
@@ -126,8 +126,8 @@ describe('createArrayValidationRule', () => {
 
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
-        expect(actualResult.message).toContain(`1${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
-        expect(actualResult.message).toContain(`3${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
+        expect(actualResult.message).toContain(`1${ARRAY_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
+        expect(actualResult.message).toContain(`3${ARRAY_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
         expect(actualResult.message).toContain(IS_STRING_ERROR_MESSAGE);
         expect(actualResult.message).toContain('\n');
       }
@@ -224,9 +224,9 @@ describe('createArrayValidationRule', () => {
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
         expect(actualResult.message).toContain(`${ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM}${ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}`);
-        expect(actualResult.message).toContain(`0${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
-        expect(actualResult.message).toContain(`1${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
-        expect(actualResult.message).toContain(`2${DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
+        expect(actualResult.message).toContain(`0${ARRAY_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
+        expect(actualResult.message).toContain(`1${ARRAY_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
+        expect(actualResult.message).toContain(`2${ARRAY_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR}`);
         expect(actualResult.errors).toHaveLength(3);
         expect(actualResult?.errors?.[0]).toBeDefined();
         expect(actualResult?.errors?.[1]).toBeDefined();

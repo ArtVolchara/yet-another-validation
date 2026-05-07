@@ -12,10 +12,7 @@ export const OBJECT_DEFAULT_ERROR_MESSAGE_HYPERNYM = 'Object validation failed f
 export const OBJECT_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR = ': ';
 export const OBJECT_DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR = ': ';
 
-export type TObjectValidationErrorResult<ValidatorsSchema extends TObjectValidatorsSchema> = 
-  [{ [Key in keyof ValidatorsSchema]: TRetrieveError<ReturnType<ValidatorsSchema[Key]>> }[keyof ValidatorsSchema]] extends [never]
-    ? never
-    : IError<string, { [Key in keyof ValidatorsSchema]?: TRetrieveError<ReturnType<ValidatorsSchema[Key]>> }> & { valid: { [Key in keyof ValidatorsSchema]?: TRetrieveSuccess<ReturnType<ValidatorsSchema[Key]>>['data'] } };
+export type TObjectValidationErrorResult<ValidatorsSchema extends TObjectValidatorsSchema> = IError<string, { [Key in keyof ValidatorsSchema]?: TRetrieveError<ReturnType<ValidatorsSchema[Key]>> }> & { valid: { [Key in keyof ValidatorsSchema]?: TRetrieveSuccess<ReturnType<ValidatorsSchema[Key]>>['data'] } };
 
 export type TCreateObjectRuleParams = {
   errorMessageHypernym?: string,
@@ -58,7 +55,6 @@ export default function createObjectValidationRule<
 
       const result = schemaEntries.reduce((acc, [field, fieldValidator]) => {
         const validationResult = fieldValidator(value?.[field as keyof typeof value], {
-          key: field,
           shouldReturnError: isObject(value).status === 'error' || validationParams?.shouldReturnError,
         });
         if (validationResult.status === 'success') {

@@ -4,9 +4,9 @@ import decorateWithCustomError from '../decorateWithCustomError';
 import isString, { IS_STRING_ERROR_MESSAGE } from '../../rules/isString';
 import isNumber, { IS_NUMBER_ERROR_MESSAGE } from '../../rules/isNumber';
 import isBoolean, { IS_BOOLEAN_ERROR_MESSAGE } from '../../rules/isBoolean';
-import { isUndefined } from '../../rules';
+import { isArray, isObject, isUndefined } from '../../rules';
 import isOnlyDigitsString, {
-  IS_ONLY_DIGITS_STRING_DEFAULT_ERROR_MESSAGE,
+  IS_ONLY_DIGITS_STRING_ERROR_MESSAGE,
   type TOnlyDigitsNominal,
 } from '../../rules/isOnlyDigitsString';
 import {
@@ -54,7 +54,7 @@ describe('decorateWithDefaultValue', () => {
       if (actualResult.status === 'error') {
         expect(actualResult.data).toBe(expectedDefaultValue);
         expect(actualResult.message).toContain(
-          IS_ONLY_DIGITS_STRING_DEFAULT_ERROR_MESSAGE,
+          IS_ONLY_DIGITS_STRING_ERROR_MESSAGE,
         );
       }
     });
@@ -125,73 +125,218 @@ describe('decorateWithDefaultValue', () => {
     });
 
     test('Should build object default data from decorated field validator errors', () => {
+      const expectedProfileDefaultValue = { nickname: 'anonymous' };
+      const expectedScoresDefaultValue = [0, 0];
+      const expectedCoordinatesDefaultValue: [number, string] = [0, 'zero'];
       const objectRule = decorateWithDefaultValue(
         createObjectValidationRule({
           name: decorateWithDefaultValue(composeValidator([[isString]]), 'john', true),
           lastName: decorateWithDefaultValue(composeValidator([[isString]]), 'Doe', true),
           age: decorateWithDefaultValue(composeValidator([[isNumber]]), 0, true),
+          profile: decorateWithDefaultValue(
+            composeValidator([[
+              isObject,
+              decorateWithDefaultValue(
+                createObjectValidationRule({
+                  nickname: composeValidator([[isString]]),
+                }),
+                expectedProfileDefaultValue,
+                true,
+              ),
+            ]]),
+            expectedProfileDefaultValue,
+            true,
+          ),
+          scores: decorateWithDefaultValue(
+            composeValidator([[
+              isArray,
+              decorateWithDefaultValue(
+                createArrayValidationRule(composeValidator([[isNumber]])),
+                expectedScoresDefaultValue,
+                true,
+              ),
+            ]]),
+            expectedScoresDefaultValue,
+            true,
+          ),
+          coordinates: decorateWithDefaultValue(
+            composeValidator([[
+              isArray,
+              decorateWithDefaultValue(
+                createTupleValidationRule([
+                  composeValidator([[isNumber]]),
+                  composeValidator([[isString]]),
+                ]),
+                expectedCoordinatesDefaultValue,
+                true,
+              ),
+            ]]),
+            expectedCoordinatesDefaultValue,
+            true,
+          ),
         }),
         (error) => ({
-          name: error.errors.name ? error.errors.name.data : error.valid.name!,
+          name: error.errors.name  ? error.errors.name.data : error.valid.name!,
           lastName: error.errors.lastName ? error.errors.lastName.data : error.valid.lastName!,
           age: error.errors.age ? error.errors.age.data : error.valid.age!,
+          profile: error.errors.profile ? error.errors.profile.data : error.valid.profile!,
+          scores: error.errors.scores ? error.errors.scores.data : error.valid.scores!,
+          coordinates: error.errors.coordinates ? error.errors.coordinates.data : error.valid.coordinates!,
         }),
         true,
       );
 
-      const actualResult = objectRule({ lastName: 'Doe' });
+      const actualResult = objectRule({
+        lastName: 'Doe',
+        profile: { nickname: 123 },
+        scores: [1, 'two'],
+        coordinates: ['x', 2],
+      });
 
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
-        expect(actualResult.data).toEqual({ name: 'john', age: 0, lastName: 'Doe' });
+        expect(actualResult.data).toEqual({
+          name: 'john',
+          age: 0,
+          lastName: 'Doe',
+          profile: expectedProfileDefaultValue,
+          scores: expectedScoresDefaultValue,
+          coordinates: expectedCoordinatesDefaultValue,
+        });
         expect(actualResult.errors.name?.data).toBe('john');
         expect(actualResult.errors.lastName).toBeUndefined();
         expect(actualResult.errors.age?.data).toBe(0);
+        expect(actualResult.errors.profile?.data).toEqual(expectedProfileDefaultValue);
+        expect(actualResult.errors.scores?.data).toEqual(expectedScoresDefaultValue);
+        expect(actualResult.errors.coordinates?.data).toEqual(expectedCoordinatesDefaultValue);
       }
     });
 
     test('Should build tuple default data from decorated element validator errors', () => {
+      const expectedProfileDefaultValue = { nickname: 'anonymous' };
+      const expectedScoresDefaultValue = [0, 0];
+      const expectedCoordinatesDefaultValue: [number, string] = [0, 'zero'];
       const tupleRule = decorateWithDefaultValue(
         createTupleValidationRule([
           decorateWithDefaultValue(composeValidator([[isString]]), 'john', true),
           decorateWithDefaultValue(composeValidator([[isNumber]]), 0, true),
           decorateWithDefaultValue(composeValidator([[isNumber]]), 0, true),
+          decorateWithDefaultValue(
+            composeValidator([[
+              isObject,
+              decorateWithDefaultValue(
+                createObjectValidationRule({
+                  nickname: composeValidator([[isString]]),
+                }),
+                expectedProfileDefaultValue,
+                true,
+              ),
+            ]]),
+            expectedProfileDefaultValue,
+            true,
+          ),
+          decorateWithDefaultValue(
+            composeValidator([[
+              isArray,
+              decorateWithDefaultValue(
+                createArrayValidationRule(composeValidator([[isNumber]])),
+                expectedScoresDefaultValue,
+                true,
+              ),
+            ]]),
+            expectedScoresDefaultValue,
+            true,
+          ),
+          decorateWithDefaultValue(
+            composeValidator([[
+              isArray,
+              decorateWithDefaultValue(
+                createTupleValidationRule([
+                  composeValidator([[isNumber]]),
+                  composeValidator([[isString]]),
+                ]),
+                expectedCoordinatesDefaultValue,
+                true,
+              ),
+            ]]),
+            expectedCoordinatesDefaultValue,
+            true,
+          ),
         ]),
         (error) => [
           error.errors[0] ? error.errors[0].data : error.valid[0]!,
           error.errors[1] ? error.errors[1].data : error.valid[1]!,
           error.errors[2] ? error.errors[2].data : error.valid[2]!,
+          error.errors[3] ? error.errors[3].data : error.valid[3]!,
+          error.errors[4] ? error.errors[4].data : error.valid[4]!,
+          error.errors[5] ? error.errors[5].data : error.valid[5]!,
         ],
         true,
       );
 
-      const actualResult = tupleRule([123, '42', 42]);
+      const actualResult = tupleRule([
+        123,
+        '42',
+        42,
+        { nickname: 123 },
+        [1, 'two'],
+        ['x', 2],
+      ]);
 
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
-        expect(actualResult.data).toEqual(['john', 0, 42]);
+        expect(actualResult.data).toEqual([
+          'john',
+          0,
+          42,
+          expectedProfileDefaultValue,
+          expectedScoresDefaultValue,
+          expectedCoordinatesDefaultValue,
+        ]);
         expect(actualResult.errors[0]?.data).toBe('john');
         expect(actualResult.errors[1]?.data).toBe(0);
         expect(actualResult.errors[2]).toBeUndefined();
+        expect(actualResult.errors[3]?.data).toEqual(expectedProfileDefaultValue);
+        expect(actualResult.errors[4]?.data).toEqual(expectedScoresDefaultValue);
+        expect(actualResult.errors[5]?.data).toEqual(expectedCoordinatesDefaultValue);
       }
     });
 
     test('Should build array default data from decorated element validator errors', () => {
+      const expectedCoordinatesDefaultValue: [number, string] = [0, 'zero'];
       const arrayRule = decorateWithDefaultValue(
         createArrayValidationRule(
-          decorateWithDefaultValue(composeValidator([[isNumber]]), 0, true),
+          decorateWithDefaultValue(
+            composeValidator([[
+              isArray,
+              decorateWithDefaultValue(
+                createTupleValidationRule([
+                  composeValidator([[isNumber]]),
+                  composeValidator([[isString]]),
+                ]),
+                expectedCoordinatesDefaultValue,
+                true,
+              ),
+            ]]),
+            expectedCoordinatesDefaultValue,
+            true,
+          ),
         ),
         (error) => error.errors.map((elError, index) => (elError ? elError?.data : error.valid[index]!)),
         true,
       );
 
-      const actualResult = arrayRule(['one', 'two', 2]);
+      const actualResult = arrayRule([[1, 'one'], ['two', 2], [2, 'two']]);
 
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
-        expect(actualResult.data).toEqual([0, 0, 2]);
-        expect(actualResult.errors[0]?.data).toBe(0);
-        expect(actualResult.errors[1]?.data).toBe(0);
+        expect(actualResult.data).toEqual([
+          [1, 'one'],
+          expectedCoordinatesDefaultValue,
+          [2, 'two'],
+        ]);
+        expect(actualResult.errors[0]).toBeUndefined();
+        expect(actualResult.errors[1]?.data).toEqual(expectedCoordinatesDefaultValue);
         expect(actualResult.errors[2]).toBeUndefined();
       }
     });

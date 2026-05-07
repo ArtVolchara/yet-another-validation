@@ -7,7 +7,7 @@ string,
 undefined | Array<IError<string, any> | undefined> | Record<string | symbol, IError<string, any> | undefined>
 >;
 
-export type TValidationParams = { shouldReturnError?: boolean, key?: string | number | symbol };
+export type TValidationParams = { shouldReturnError?: boolean };
 
 export type TValidationResult<
   Success extends ISuccess,

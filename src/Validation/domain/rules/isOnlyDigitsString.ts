@@ -6,9 +6,9 @@ import type { TValidationParams } from '../types/TValidator';
 declare const only_digits_brand: unique symbol;
 export type TOnlyDigitsNominal = { readonly [only_digits_brand]: 'OnlyDigits' };
 
-export const IS_ONLY_DIGITS_STRING_DEFAULT_ERROR_MESSAGE = 'Value should contain only digits' as const;
+export const IS_ONLY_DIGITS_STRING_ERROR_MESSAGE = 'Value should contain only digits' as const;
 
-export type TIsOnlyDigitsStringValidationDefaultError = IError<typeof IS_ONLY_DIGITS_STRING_DEFAULT_ERROR_MESSAGE, undefined>;
+export type TIsOnlyDigitsStringValidationDefaultError = IError<typeof IS_ONLY_DIGITS_STRING_ERROR_MESSAGE, undefined>;
 export type TIsOnlyDigitsStringValidationSuccess = ISuccess<TOnlyDigitsNominal>;
 
 type TIsOnlyDigitsStringValidationResult<Params extends TValidationParams | undefined = undefined> =
@@ -23,7 +23,7 @@ export default function isOnlyDigitsString<const Params extends TValidationParam
   params?: Params,
 ): TIsOnlyDigitsStringValidationResult<Params> {
   if (params?.shouldReturnError === true) {
-    return new ErrorResult(IS_ONLY_DIGITS_STRING_DEFAULT_ERROR_MESSAGE, undefined) as TIsOnlyDigitsStringValidationResult<Params>;
+    return new ErrorResult(IS_ONLY_DIGITS_STRING_ERROR_MESSAGE, undefined) as TIsOnlyDigitsStringValidationResult<Params>;
   }
   try {
     if (typeof value === 'string') {
@@ -31,9 +31,9 @@ export default function isOnlyDigitsString<const Params extends TValidationParam
         return new SuccessResult(value as unknown as TOnlyDigitsNominal) as TIsOnlyDigitsStringValidationResult<Params>;
       }
     }
-    return new ErrorResult(IS_ONLY_DIGITS_STRING_DEFAULT_ERROR_MESSAGE, undefined) as TIsOnlyDigitsStringValidationResult<Params>;
+    return new ErrorResult(IS_ONLY_DIGITS_STRING_ERROR_MESSAGE, undefined) as TIsOnlyDigitsStringValidationResult<Params>;
   } catch (e) {
     console.error(e);
-    return new ErrorResult(IS_ONLY_DIGITS_STRING_DEFAULT_ERROR_MESSAGE, undefined) as TIsOnlyDigitsStringValidationResult<Params>;
+    return new ErrorResult(IS_ONLY_DIGITS_STRING_ERROR_MESSAGE, undefined) as TIsOnlyDigitsStringValidationResult<Params>;
   }
 }
