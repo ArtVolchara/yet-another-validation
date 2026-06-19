@@ -82,27 +82,37 @@ Separator extends string | undefined = undefined,
         | `${TRetrieveError<ReturnType<First>>['message']}${TErrorValidationMessage<Tail>}`
       : '';
 
+// Ошибка правила пересобирается в IError<Message, Errors> заново: получается свежий тип
+// без alias-штампа, и ховер показывает литерал сообщения вместо имени алиаса правила
+// (IError<'Value should be number', undefined> вместо TIsNumberValidationError)
+export type TRebuildRuleError<Rule extends TValidationRule<any, any>> =
+  TRetrieveError<ReturnType<Rule>> extends IError<infer Message, infer Errors>
+    ? IError<Message, Errors>
+    : never;
+
 export type TErrorValidationRulesData<ValidationRules extends TValidationRules> =
   ValidationRules extends [infer First extends TValidationRule<any, any>]
-    ? [TRetrieveError<ReturnType<First>>]
+    ? [TRebuildRuleError<First>]
     : ValidationRules extends [
       infer First extends TValidationRule<any, any>,
       ...infer Tail extends TValidationRules,
     ]
-      ? TErrorValidationRulesData<Tail> | [TRetrieveError<ReturnType<First>>, ...TErrorValidationRulesData<Tail>]
+      ? TErrorValidationRulesData<Tail> | [TRebuildRuleError<First>, ...TErrorValidationRulesData<Tail>]
       : never;
 
+// «& string» заставляет TS редуцировать пересечение: с типа сообщения слетает
+// alias-штамп и ховер показывает вычисленный union литералов
 type TValidateValueFromRulesResult<
   Rules extends TValidationRules,
   Separator extends string | undefined = undefined,
   ShouldReturnError extends boolean | undefined = undefined,
 > = [ShouldReturnError] extends [never]
   ? ISuccess<TSuccessValidationRulesData<Rules>>
-  | IError<TErrorValidationMessage<Rules, Separator>, TErrorValidationRulesData<Rules>>
+  | IError<TErrorValidationMessage<Rules, Separator> & string, TErrorValidationRulesData<Rules>>
   : [ShouldReturnError] extends [true]
-    ? IError<TErrorValidationMessage<Rules, Separator>, TErrorValidationRulesData<Rules>>
+    ? IError<TErrorValidationMessage<Rules, Separator> & string, TErrorValidationRulesData<Rules>>
     : ISuccess<TSuccessValidationRulesData<Rules>>
-    | IError<TErrorValidationMessage<Rules, Separator>, TErrorValidationRulesData<Rules>>;
+    | IError<TErrorValidationMessage<Rules, Separator> & string, TErrorValidationRulesData<Rules>>;
 
 export default function validateValueFromRules<
   const Value,
@@ -122,7 +132,9 @@ export default function validateValueFromRules<
   const localErrors = [] as Array<IError<string, any>>;
   const result = rules.reduce((acc, rule) => {
     try {
-      const res = rule(acc, { shouldReturnError: params?.shouldReturnError });
+      // После первого падения весь хвост цепочки падает принудительно:
+      // сообщение ветки всегда ровно суффикс правил, как и в типовой модели
+      const res = rule(acc, { shouldReturnError: params?.shouldReturnError === true || localErrors.length > 0 });
       if (res.status === 'error') {
         localErrors.push(res);
         return acc;

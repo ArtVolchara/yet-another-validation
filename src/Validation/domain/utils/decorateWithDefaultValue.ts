@@ -1,7 +1,13 @@
 import { TRetrieveError, TRetrieveSuccess } from 'src/_Root/domain/types/Result/TResult';
 import { ISuccess } from '../../../_Root/domain/types/Result/ISuccess';
 import { IError } from '../../../_Root/domain/types/Result/IError';
-import { TValidationParams, TValidationResult, TValidationRule, TValidator } from '../types/TValidator';
+import {
+  TPreserveValidatorBrand,
+  TValidationParams,
+  TValidationResult,
+  TValidationRule,
+  TValidator,
+} from '../types/TValidator';
 
 type TDefaultValueDecoratorResult<
   RuleOrValidator extends TValidationRule | TValidator,
@@ -66,11 +72,17 @@ type TDefaultValueDecoratorReturn<
   ),
   IsEnabled extends boolean | undefined = undefined,
 > = [IsEnabled] extends [true]
-  ? TDecoratedRule<RuleOrValidator, TDefaultDataFromFactoryOrValue<RuleOrValidator, DefaultValueOrFactory>>
+  ? TPreserveValidatorBrand<
+  RuleOrValidator,
+  TDecoratedRule<RuleOrValidator, TDefaultDataFromFactoryOrValue<RuleOrValidator, DefaultValueOrFactory>>
+  >
   : [IsEnabled] extends [false] | [undefined]
-    ? TNonDecoratedRule<RuleOrValidator>
-    : TDecoratedRule<RuleOrValidator, TDefaultDataFromFactoryOrValue<RuleOrValidator, DefaultValueOrFactory>>
-    | TNonDecoratedRule<RuleOrValidator>;
+    ? TPreserveValidatorBrand<RuleOrValidator, TNonDecoratedRule<RuleOrValidator>>
+    : TPreserveValidatorBrand<
+    RuleOrValidator,
+    TDecoratedRule<RuleOrValidator, TDefaultDataFromFactoryOrValue<RuleOrValidator, DefaultValueOrFactory>>
+    >
+    | TPreserveValidatorBrand<RuleOrValidator, TNonDecoratedRule<RuleOrValidator>>;
 
 function decorateWithDefaultValue<
   const RuleOrValidator extends TValidationRule | TValidator,

@@ -1,7 +1,12 @@
 import validateValue, {
-  TConsistentORValidators, TORValidationFirstParameter, TORValidators,
+  TConsistentORValidators, TORValidationFirstParameter,
 } from '../functions/validateValue';
-import { TValidationParams } from '../types/TValidator';
+import {
+  TORValidators,
+  TValidationParams,
+  TValidatorMeta,
+  meta_brand,
+} from '../types/TValidator';
 
 type MergeComposeValidatorParams<
   ValidationParams extends TValidationParams | undefined,
@@ -24,7 +29,7 @@ export default function composeValidator<
   orValidators: TConsistentORValidators<ORValidators>,
   composerParams?: ComposerParams,
 ) {
-  return <
+  const validator = <
     const Value extends TORValidationFirstParameter<ORValidators>,
     const ValidationParams extends TValidationParams | undefined = undefined,
   >(
@@ -35,4 +40,7 @@ export default function composeValidator<
     orValidators,
     { ...(composerParams || {}), ...(validationParams || {}) } as MergeComposeValidatorParams<ValidationParams, ComposerParams>,
   );
+  // Бренд фантомный: метаданные исходных веток позволяют внешнему validateValue
+  // развернуть вложенный валидатор в типах так же, как это делает рантайм
+  return validator as typeof validator & { readonly [meta_brand]: TValidatorMeta<ORValidators> };
 }

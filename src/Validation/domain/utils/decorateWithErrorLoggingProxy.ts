@@ -1,10 +1,10 @@
 import { TRetrieveError, TRetrieveSuccess } from 'src/_Root/domain/types/Result/TResult';
 import {
+  TPreserveValidatorBrand,
   TValidationParams,
   TValidationRule,
   TValidator,
 } from '../types/TValidator';
-import { isString } from '@validation/rules';
 
 type TLoggingDecoratorResult<
   RuleOrValidator extends TValidationRule | TValidator,
@@ -27,14 +27,16 @@ type TDecoratedRule<
     : Params extends TValidationParams ? Params['shouldReturnError'] : undefined,
 >(value: Parameters<RuleOrValidator>[0], params?: Params) => TLoggingDecoratorResult<RuleOrValidator, ShouldReturnError>;
 
+// Логирование не меняет ни сообщения, ни success-типы, поэтому бренд
+// исходного валидатора сохраняется на декорированной функции как есть
 type TLoggingDecoratorReturn<
   RuleOrValidator extends TValidationRule | TValidator,
   IsEnabled extends boolean | undefined = undefined,
 > = [IsEnabled] extends [true]
-  ? TDecoratedRule<RuleOrValidator>
+  ? TPreserveValidatorBrand<RuleOrValidator, TDecoratedRule<RuleOrValidator>>
   : [IsEnabled] extends [false] | [undefined]
     ? RuleOrValidator
-    : TDecoratedRule<RuleOrValidator> | RuleOrValidator;
+    : TPreserveValidatorBrand<RuleOrValidator, TDecoratedRule<RuleOrValidator>> | RuleOrValidator;
 
 function decorateWithErrorLoggingProxy<
   const RuleOrValidator extends TValidationRule | TValidator,

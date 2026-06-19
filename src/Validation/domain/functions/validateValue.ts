@@ -2,34 +2,36 @@ import {
   TRetrieveValidationError,
   TRetrieveValidationInputData,
   TValidationParams,
+  TValidationRule,
   TValidationRules,
   TValidator,
   TRetrieveValidationSuccess,
+  TORValidators,
+  TValidatorMeta,
+  TOpaqueValidatorMeta,
+  TRetrieveValidatorBrandMeta,
 } from '../types/TValidator';
-import {
-  TConcatWithSeparator,
-  TRemoveReadonly,
-} from '../../../_Root/domain/types/utils';
+import { TRemoveReadonly } from '../../../_Root/domain/types/utils';
 import { ISuccess } from '../../../_Root/domain/types/Result/ISuccess';
 import { IError } from '../../../_Root/domain/types/Result/IError';
+import { TRetrieveError, TRetrieveSuccess } from '../../../_Root/domain/types/Result/TResult';
 import { ErrorResult } from '../../../_Root/domain/factories';
 import validateValueFromRules, {
   TConsistentValidationRules,
-  TErrorValidationRulesData,
+  TRebuildRuleError,
   TSuccessValidationRulesData,
-  TErrorValidationMessage,
   DEFAULT_AND_SEPARATOR,
 } from './validateValueFromRules';
 
 export const DEFAULT_OR_SEPARATOR = ' or ' as const;
+
+export type { TORValidators };
 
 export type TConsistentORValidators<ORValidators extends TORValidators> = {
   [Key in keyof ORValidators]: ORValidators[Key] extends TValidationRules
     ? TConsistentValidationRules<ORValidators[Key]>
     : ORValidators[Key]
 };
-
-export type TORValidators = Array<TValidationRules | TValidator> | Readonly<Array<TValidationRules | TValidator>>;
 
 export type TSuccessORValidationData<
     ORValidators extends TORValidators,
@@ -55,56 +57,208 @@ TRemoveReadonly<ORValidators> extends Array<infer Validators>
       : never
   : never;
 
-export type TORValidationErrorsMessages<
-  ORValidators extends TORValidators,
-  SeparatorAND extends string | undefined = undefined,
-  > = ORValidators extends [infer First extends TValidator | TValidationRules, ...infer Tail]
-    ? First extends TValidator
-      ? [
-        TRetrieveValidationError<First>['message'],
-        ...TORValidationErrorsMessages<Tail extends TORValidators ? Tail : []>,
-      ]
-      : First extends TValidationRules
-        ? [
-          TErrorValidationMessage<First, SeparatorAND>,
-          ...TORValidationErrorsMessages<Tail extends TORValidators ? Tail : [], SeparatorAND>,
-        ]
-        : []
+// «Отпечаток» правила для сравнения идентичности: литерал сообщения ошибки + success-тип.
+// Переживает decorateWithErrorLoggingProxy и decorateWithDefaultValue (они не меняют ни то, ни другое).
+type TRuleFingerprint<Rule extends TValidationRule> = [
+  TRetrieveError<ReturnType<Rule>>['message'],
+  TRetrieveSuccess<ReturnType<Rule>>['data'],
+];
+
+// Сравнение через поэлементный infer: сопоставление двух инстансов одного alias
+// напрямую (TRuleFingerprint<A> extends TRuleFingerprint<B>) TS срезает по variance
+// и даёт ложное true, поэтому кортежи разбираются на элементы перед сравнением
+type TIsSameRuleFingerprint<RuleA extends TValidationRule, RuleB extends TValidationRule> =
+  TRuleFingerprint<RuleA> extends [infer MessageA, infer DataA]
+    ? TRuleFingerprint<RuleB> extends [infer MessageB, infer DataB]
+      ? [MessageA, DataA] extends [MessageB, DataB]
+        ? [MessageB, DataB] extends [MessageA, DataA]
+          ? true
+          : false
+        : false
+      : false
+    : false;
+
+// Псевдо-ветка для «непрозрачного» валидатора: участвует только полным сообщением,
+// никогда не вычитается (одноэлементная ветка при вычитании опустела бы - never)
+type TOpaqueBranch<Message extends string> = [TValidationRule<[value: any], ISuccess, IError<Message, any>>];
+
+// Разворачивание веток так же, как это делает рантайм validateValue:
+// errors вложенного брендированного валидатора вливаются во внешний OR-список
+export type TFlattenORBranches<ORValidators> =
+  ORValidators extends readonly [infer First, ...infer Tail]
+    ? First extends TValidationRules | Readonly<TValidationRules>
+      ? [First, ...TFlattenORBranches<Tail>]
+      : TRetrieveValidatorBrandMeta<First> extends TValidatorMeta<infer Branches>
+        ? [...TFlattenORBranches<Branches>, ...TFlattenORBranches<Tail>]
+        : TRetrieveValidatorBrandMeta<First> extends TOpaqueValidatorMeta<infer Message>
+          ? [TOpaqueBranch<Message>, ...TFlattenORBranches<Tail>]
+          : First extends TValidator
+            ? [TOpaqueBranch<TRetrieveValidationError<First>['message']>, ...TFlattenORBranches<Tail>]
+            : TFlattenORBranches<Tail>
     : [];
+
+// Полное сообщение ветки: все правила упали, конкатенация без union
+export type TBranchFullErrorMessage<
+  Branch,
+  SeparatorAND extends string,
+> = Branch extends readonly [infer First extends TValidationRule]
+  ? TRetrieveError<ReturnType<First>>['message']
+  : Branch extends readonly [infer First extends TValidationRule, ...infer Tail]
+    ? `${TRetrieveError<ReturnType<First>>['message']}${SeparatorAND}${TBranchFullErrorMessage<Tail, SeparatorAND>}`
+    : never;
+
+// Join полных сообщений всех веток; опустевшая ветка даёт never и member исчезает
+type TJoinBranchesFullMessages<
+  Branches,
+  SeparatorAND extends string,
+  SeparatorOR extends string,
+> = Branches extends readonly [infer First]
+  ? TBranchFullErrorMessage<First, SeparatorAND>
+  : Branches extends readonly [infer First, ...infer Tail]
+    ? `${TBranchFullErrorMessage<First, SeparatorAND>}${SeparatorOR}${TJoinBranchesFullMessages<Tail, SeparatorAND, SeparatorOR>}`
+    : never;
+
+// Вычитание правила из головы ветки по отпечатку (обязательное: то же правило
+// на том же значении не может одновременно пройти и упасть); иначе ветка не меняется
+type TSubtractRuleFromBranchHead<Branch, Rule extends TValidationRule> =
+  Branch extends readonly [infer Head extends TValidationRule, ...infer Tail]
+    ? TIsSameRuleFingerprint<Head, Rule> extends true
+      ? Tail
+      : Branch
+    : Branch;
+
+type TSubtractRuleFromBranches<Branches, Rule extends TValidationRule> =
+  Branches extends readonly [infer First, ...infer Tail]
+    ? [TSubtractRuleFromBranchHead<First, Rule>, ...TSubtractRuleFromBranches<Tail, Rule>]
+    : [];
+
+// Цепочка отбрасываний ведущей ветки: правила префикса отбрасываются по одному,
+// каждое отброшенное вычитается из голов остальных веток. Хвост ведущей не может
+// опустеть (ветка целиком прошла бы - это success, а не error), поэтому паттерн
+// требует непустой LeadingTail. Результат - union «состояний»: кортежей веток-суффиксов.
+type TLeadingBranchDropStates<
+  LeadingBranch,
+  BranchesBefore,
+  BranchesAfter,
+> = LeadingBranch extends readonly [infer Head extends TValidationRule, ...infer LeadingTail extends TValidationRules]
+  ? [...TSubtractRuleFromBranches<BranchesBefore, Head>, LeadingTail, ...TSubtractRuleFromBranches<BranchesAfter, Head>]
+  | TLeadingBranchDropStates<
+  LeadingTail,
+  TSubtractRuleFromBranches<BranchesBefore, Head>,
+  TSubtractRuleFromBranches<BranchesAfter, Head>
+  >
+  : never;
+
+// Перебор веток в роли ведущей с сохранением исходного порядка веток
+type TORLeadingScenarioStates<
+  RemainingBranches,
+  BranchesBefore extends ReadonlyArray<unknown>,
+> = RemainingBranches extends readonly [infer Leading, ...infer Tail]
+  ? TLeadingBranchDropStates<Leading, BranchesBefore, Tail>
+  | TORLeadingScenarioStates<Tail, [...BranchesBefore, Leading]>
+  : never;
+
+// Модель «ведущая ветка + вычитание из голов»: состояние «все ветки полные» есть всегда,
+// остальные состояния порождаются цепочками отбрасываний каждой ведущей ветки.
+// Из union состояний потом строятся и сообщения, и кортежи ошибок.
+type TORScenarioStates<Branches> = Branches | TORLeadingScenarioStates<Branches, []>;
+
+export type TORScenarioMessages<
+  Branches,
+  SeparatorAND extends string,
+  SeparatorOR extends string,
+> = TORScenarioStates<Branches> extends infer State
+  ? State extends ReadonlyArray<unknown>
+    ? TJoinBranchesFullMessages<State, SeparatorAND, SeparatorOR>
+    : never
+  : never;
+
+// Полный набор ошибок ветки: кортеж пересобранных IError всех правил; пустая ветка - never
+type TBranchFullErrors<Branch> =
+  Branch extends readonly [infer First extends TValidationRule]
+    ? [TRebuildRuleError<First>]
+    : Branch extends readonly [infer First extends TValidationRule, ...infer Tail]
+      ? TBranchFullErrors<Tail> extends infer TailErrors extends Array<IError<string, any>>
+        ? [TRebuildRuleError<First>, ...TailErrors]
+        : never
+      : never;
+
+// Кортеж «ошибки по веткам» для одного состояния; опустевшая ветка делает состояние
+// недостижимым - never (аналог never от пустого шаблонного литерала в сообщениях)
+type TJoinBranchesFullErrors<Branches> =
+  Branches extends readonly [infer First]
+    ? [TBranchFullErrors<First>] extends [never]
+      ? never
+      : [TBranchFullErrors<First>]
+    : Branches extends readonly [infer First, ...infer Tail]
+      ? [TBranchFullErrors<First>] extends [never]
+        ? never
+        : [TJoinBranchesFullErrors<Tail>] extends [never]
+          ? never
+          : TJoinBranchesFullErrors<Tail> extends infer TailBranches extends Array<Array<IError<string, any>>>
+            ? [TBranchFullErrors<First>, ...TailBranches]
+            : never
+      : never;
+
+// Данные ошибок по той же сценарной модели, что и сообщения: union кортежей,
+// согласованных между ветками, вместо декартова произведения независимых union
+export type TORScenarioErrors<Branches> =
+  TORScenarioStates<Branches> extends infer State
+    ? State extends ReadonlyArray<unknown>
+      ? TJoinBranchesFullErrors<State>
+      : never
+    : never;
+
+type TResolvedSeparatorAND<SeparatorAND extends string | undefined> =
+  [SeparatorAND] extends [never | undefined]
+    ? typeof DEFAULT_AND_SEPARATOR
+    : string extends SeparatorAND
+      ? typeof DEFAULT_AND_SEPARATOR
+      : SeparatorAND extends string
+        ? SeparatorAND
+        : typeof DEFAULT_AND_SEPARATOR;
+
+type TResolvedSeparatorOR<SeparatorOR extends string | undefined> =
+  [SeparatorOR] extends [never | undefined]
+    ? typeof DEFAULT_OR_SEPARATOR
+    : string extends SeparatorOR
+      ? typeof DEFAULT_OR_SEPARATOR
+      : SeparatorOR extends string
+        ? SeparatorOR
+        : typeof DEFAULT_OR_SEPARATOR;
 
 export type TErrorORValidationErrorMessage<
 ORValidators extends TORValidators,
 SeparatorOR extends string | undefined = undefined,
 SeparatorAND extends string | undefined = undefined,
-> = TConcatWithSeparator<
-TORValidationErrorsMessages<
-ORValidators,
-[SeparatorAND] extends [never | undefined]
-  ? typeof DEFAULT_AND_SEPARATOR
-  : string extends SeparatorAND
-    ? typeof DEFAULT_AND_SEPARATOR
-    : SeparatorAND
->,
-[SeparatorOR] extends [never | undefined]
-  ? typeof DEFAULT_OR_SEPARATOR
-  : string extends SeparatorOR
-    ? typeof DEFAULT_OR_SEPARATOR
-    : SeparatorOR extends string
-      ? SeparatorOR
-      : typeof DEFAULT_OR_SEPARATOR
+> = TORScenarioMessages<
+TFlattenORBranches<TRemoveReadonly<ORValidators>>,
+TResolvedSeparatorAND<SeparatorAND>,
+TResolvedSeparatorOR<SeparatorOR>
+>;
+
+// При shouldReturnError: true рантайм безусловно возвращает ошибки всех правил всех веток,
+// поэтому сообщение - единственный «полный» член без сценарного union
+export type TErrorORValidationFullErrorMessage<
+ORValidators extends TORValidators,
+SeparatorOR extends string | undefined = undefined,
+SeparatorAND extends string | undefined = undefined,
+> = TJoinBranchesFullMessages<
+TFlattenORBranches<TRemoveReadonly<ORValidators>>,
+TResolvedSeparatorAND<SeparatorAND>,
+TResolvedSeparatorOR<SeparatorOR>
 >;
 export type TErrorORValidationErrorData<ORValidators extends TORValidators> =
-TRemoveReadonly<ORValidators> extends [
-  infer First extends TValidator | TValidationRules,
-  ...infer Tail extends TORValidators,
-]
-  ? First extends TValidator
-    ? [...TRetrieveValidationError<First>['errors'], ...TErrorORValidationErrorData<Tail>]
-    : First extends TValidationRules | Readonly<TValidationRules>
-      ? [TErrorValidationRulesData<First>, ...TErrorORValidationErrorData<Tail>]
-      : []
-  : [];
+TORScenarioErrors<TFlattenORBranches<TRemoveReadonly<ORValidators>>>;
 
+// При shouldReturnError: true рантайм собирает ошибки всех правил всех веток -
+// единственный «полный» кортеж без сценарного union
+export type TErrorORValidationFullErrorData<ORValidators extends TORValidators> =
+TJoinBranchesFullErrors<TFlattenORBranches<TRemoveReadonly<ORValidators>>>;
+
+// «& string» в позициях сообщения не меняет тип (там и так строки), но заставляет TS
+// редуцировать пересечение: с результата слетает alias-штамп и ховер показывает
+// вычисленный union литералов вместо нечитаемого TErrorORValidationErrorMessage<...>
   type TValidateValueResult<
   ORValidators extends TORValidators,
   SeparatorOR extends string | undefined = undefined,
@@ -113,17 +267,17 @@ TRemoveReadonly<ORValidators> extends [
 > = [ShouldReturnError] extends [never]
   ? ISuccess<TSuccessORValidationData<ORValidators>>
   | IError<
-  TErrorORValidationErrorMessage<ORValidators, SeparatorOR, SeparatorAND>,
+  TErrorORValidationErrorMessage<ORValidators, SeparatorOR, SeparatorAND> & string,
   TErrorORValidationErrorData<ORValidators>
   >
   : [ShouldReturnError] extends [true]
     ? IError<
-    TErrorORValidationErrorMessage<ORValidators, SeparatorOR, SeparatorAND>,
-    TErrorORValidationErrorData<ORValidators>
+    TErrorORValidationFullErrorMessage<ORValidators, SeparatorOR, SeparatorAND> & string,
+    TErrorORValidationFullErrorData<ORValidators>
     >
     : ISuccess<TSuccessORValidationData<ORValidators>>
     | IError<
-    TErrorORValidationErrorMessage<ORValidators, SeparatorOR, SeparatorAND>,
+    TErrorORValidationErrorMessage<ORValidators, SeparatorOR, SeparatorAND> & string,
     TErrorORValidationErrorData<ORValidators>
     >;
 
