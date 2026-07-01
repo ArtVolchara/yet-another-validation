@@ -193,6 +193,8 @@ describe('decorateWithDefaultValue', () => {
         coordinates: ['x', 2],
       });
 
+      const res = composeValidator([[isObject, objectRule]])(123)
+
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
         expect(actualResult.data).toEqual({

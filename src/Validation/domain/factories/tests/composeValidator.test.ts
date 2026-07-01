@@ -2,21 +2,19 @@ import { describe, it, expect } from 'vitest';
 import isString, { IS_STRING_ERROR_MESSAGE } from '../../rules/isString';
 import isOnlyLatinLettersString, { IS_ONLY_LATIN_LETTERS_STRING_ERROR_MESSAGE } from '../../rules/isOnlyLatinLettersString';
 import isNumber, { IS_NUMBER_ERROR_MESSAGE } from '../../rules/isNumber';
-import isPositiveNumber, { IS_POSITIVE_NUMBER_ERROR_MESSAGE } from '../../rules/isPositiveNumber';
+import isPositiveNumber, { IS_POSITIVE_NUMBER_ERROR_MESSAGE, TPositiveNumberNominal } from '../../rules/isPositiveNumber';
 import isArray, { IS_ARRAY_ERROR_MESSAGE } from '../../rules/isArray';
 import { isArrayMinLength } from '../../rules';
 import isUndefined, { IS_UNDEFINED_ERROR_MESSAGE } from '../../rules/isUndefined';
 import isBoolean, { IS_BOOLEAN_ERROR_MESSAGE } from '../../rules/isBoolean';
 import composeValidator from '../composeValidator';
-// TODO(decorateWithCustomError + validator): вернуть импорты вместе с закомментированными
-// кейсами декорирования валидаторов (см. заметку в decorateWithCustomError.ts)
-// import createArrayValidationRule from '../createArrayValidationRule';
-// import createObjectValidationRule from '../createObjectValidationRule';
-// import createTupleValidationRule from '../createTupleValidationRule';
+import createArrayValidationRule from '../createArrayValidationRule';
+import createObjectValidationRule from '../createObjectValidationRule';
+import createTupleValidationRule from '../createTupleValidationRule';
 import decorateWithCustomError from '../../utils/decorateWithCustomError';
-// import decorateWithDefaultValue from '../../utils/decorateWithDefaultValue';
-// import decorateWithErrorLoggingProxy from '../../utils/decorateWithErrorLoggingProxy';
-// import isObject from '../../rules/isObject';
+import decorateWithDefaultValue from '../../utils/decorateWithDefaultValue';
+import decorateWithErrorLoggingProxy from '../../utils/decorateWithErrorLoggingProxy';
+import isObject from '../../rules/isObject';
 import { ErrorResult } from '../../../../_Root/domain/factories';
 import { DEFAULT_AND_SEPARATOR } from '../../functions/validateValueFromRules';
 import { DEFAULT_OR_SEPARATOR } from '../../functions/validateValue';
@@ -195,21 +193,14 @@ describe('composeValidator', () => {
         }
       });
 
-      /* TODO(decorateWithCustomError + validator): вернуть после рефакторинга поддержки
-         валидаторов в decorateWithCustomError (см. заметку в decorateWithCustomError.ts).
-         Кастомный валидатор-ветка собирается из composeValidator + decorateWithCustomError,
-         а декоратор временно работает только с TValidationRule.
       it('should handle custom validator errors correctly', () => {
         // Arrange
         const inputValue = 123;
         const expectedMessage = `${IS_STRING_ERROR_MESSAGE}${DEFAULT_AND_SEPARATOR}`
           + `${IS_ONLY_LATIN_LETTERS_STRING_ERROR_MESSAGE}${DEFAULT_OR_SEPARATOR}Custom error`;
-        // Небрендированную функцию веткой вставить нельзя - кастомный валидатор
-        // собирается из composeValidator и decorateWithCustomError
-        const customValidator = decorateWithCustomError(
-          composeValidator([[isString]]),
-          new ErrorResult('Custom error', [[new ErrorResult('Custom error', undefined)]]),
-        );
+        const customValidator = composeValidator([
+          [decorateWithCustomError(isString, new ErrorResult('Custom error', undefined))],
+        ]);
         const validator = composeValidator([
           [isString, isOnlyLatinLettersString],
           customValidator,
@@ -225,7 +216,6 @@ describe('composeValidator', () => {
           expect(actualResult.errors).toHaveLength(2);
         }
       });
-      */
     });
 
     describe('With customErrorDecorator', () => {
@@ -440,15 +430,13 @@ describe('composeValidator', () => {
         }
       });
 
-      /* TODO(decorateWithCustomError + validator): вернуть после рефакторинга, см. заметку в decorateWithCustomError.ts
       it('should return success with validation rules and custom validator', () => {
-      // Arrange
+        // Arrange
         const inputValue = 'Hello';
         const expectedData = 'Hello';
-        const customValidator = decorateWithCustomError(
-          composeValidator([[isString]]),
-          new ErrorResult('Custom error', [[new ErrorResult('Custom error', undefined)]]),
-        );
+        const customValidator = composeValidator([
+          [decorateWithCustomError(isString, new ErrorResult('Custom error', undefined))],
+        ]);
         const validator = composeValidator([
           [isString, isOnlyLatinLettersString],
           customValidator,
@@ -463,7 +451,6 @@ describe('composeValidator', () => {
           expect(actualResult.data).toBe(expectedData);
         }
       });
-      */
 
       describe('With customErrorDecorator', () => {
         it('should return success when validation passes with decorated rule', () => {
@@ -504,22 +491,29 @@ describe('composeValidator', () => {
     });
   });
 
-  /* TODO(decorateWithCustomError + validator): вернуть после рефакторинга поддержки
-     валидаторов в decorateWithCustomError (см. заметку в decorateWithCustomError.ts).
-     Suite целиком закомментирован, т.к. единственный тест глубокой вложенности использует
-     decorateWithCustomError над composeValidator ('Coordinate should be positive number'
-     и 'Value should be boolean flag'), что временно не проходит проверку типов.
-     После рефакторинга восстановить suite целиком.
   describe('composeValidator type-level cases', () => {
-    it.skip('should compile deeply nested validators with factories and decorators', () => {
-      // Arrange: вложенность собрана inline из фабрик (object/array/tuple)
-      // и декораторов (custom error, default value, error logging) над правилами и валидаторами
+    it('should compile deeply nested validators with factories and decorators', () => {
+      // Arrange: ~15 уровней composeValidator (object → … → contact → поля с array/tuple)
       const inputValue = {
-        profile: {
-          nickname: 'Bob',
-          score: 42,
-          aliases: ['bobby'],
-          coordinates: ['x', 7],
+        account: {
+          org: {
+            department: {
+              team: {
+                member: {
+                  profile: {
+                    identity: {
+                      contact: {
+                        nickname: 'Bob',
+                        score: 42,
+                        aliases: ['bobby'],
+                        coordinates: ['x', 7],
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
       };
 
@@ -527,40 +521,109 @@ describe('composeValidator', () => {
         [
           isObject,
           createObjectValidationRule({
-            profile: composeValidator([
+            account: composeValidator([
               [
                 isObject,
                 createObjectValidationRule({
-                  nickname: composeValidator([
-                    [decorateWithErrorLoggingProxy(isString, true, 'profile.nickname'), isOnlyLatinLettersString],
-                  ]),
-                  score: decorateWithErrorLoggingProxy(
-                    composeValidator([[isNumber, isPositiveNumber]]),
-                    true,
-                    'profile.score',
-                  ),
-                  aliases: composeValidator([
+                  org: composeValidator([
                     [
-                      isArray,
-                      createArrayValidationRule(
-                        decorateWithDefaultValue(composeValidator([[isString]]), 'anonymous', true),
-                      ),
-                    ],
-                    [isUndefined],
-                  ]),
-                  coordinates: composeValidator([
-                    [
-                      isArray,
-                      createTupleValidationRule([
-                        decorateWithDefaultValue(composeValidator([[isString]]), 'defaultAxis', true),
-                        decorateWithCustomError(
-                          composeValidator([[isNumber, isPositiveNumber]]),
-                          new ErrorResult(
-                            'Coordinate should be positive number',
-                            [[new ErrorResult('Coordinate should be positive number', undefined)]],
-                          ),
-                        ),
-                      ]),
+                      isObject,
+                      createObjectValidationRule({
+                        department: composeValidator([
+                          [
+                            isObject,
+                            createObjectValidationRule({
+                              team: composeValidator([
+                                [
+                                  isObject,
+                                  createObjectValidationRule({
+                                    member: composeValidator([
+                                      [
+                                        isObject,
+                                        createObjectValidationRule({
+                                          profile: composeValidator([
+                                            [
+                                              isObject,
+                                              createObjectValidationRule({
+                                                identity: composeValidator([
+                                                  [
+                                                    isObject,
+                                                    createObjectValidationRule({
+                                                      contact: composeValidator([
+                                                        [
+                                                          isObject,
+                                                          createObjectValidationRule({
+                                                            nickname: composeValidator([
+                                                              [
+                                                                decorateWithErrorLoggingProxy(
+                                                                  isString,
+                                                                  true,
+                                                                  'account.org.department.team.member.profile.identity.contact.nickname',
+                                                                ),
+                                                                isOnlyLatinLettersString,
+                                                              ],
+                                                            ]),
+                                                            score: decorateWithErrorLoggingProxy(
+                                                              composeValidator([[isNumber, isPositiveNumber]]),
+                                                              true,
+                                                              'account.org.department.team.member.profile.identity.contact.score',
+                                                            ),
+                                                            aliases: composeValidator([
+                                                              [
+                                                                isArray,
+                                                                createArrayValidationRule(
+                                                                  decorateWithDefaultValue(
+                                                                    composeValidator([[isString]]),
+                                                                    'anonymous',
+                                                                    true,
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                              [isUndefined],
+                                                            ]),
+                                                            coordinates: composeValidator([
+                                                              [
+                                                                isArray,
+                                                                createTupleValidationRule([
+                                                                  decorateWithDefaultValue(
+                                                                    composeValidator([[isString]]),
+                                                                    'defaultAxis',
+                                                                    true,
+                                                                  ),
+                                                                  composeValidator([
+                                                                    [
+                                                                      decorateWithCustomError(
+                                                                        isNumber,
+                                                                        new ErrorResult(
+                                                                          'Coordinate should be positive number',
+                                                                          undefined,
+                                                                        ),
+                                                                      ),
+                                                                      isPositiveNumber,
+                                                                    ],
+                                                                  ]),
+                                                                ]),
+                                                              ],
+                                                            ]),
+                                                          }),
+                                                        ],
+                                                      ]),
+                                                    }),
+                                                  ],
+                                                ]),
+                                              }),
+                                            ],
+                                          ]),
+                                        }),
+                                      ],
+                                    ]),
+                                  }),
+                                ],
+                              ]),
+                            }),
+                          ],
+                        ]),
+                      }),
                     ],
                   ]),
                 }),
@@ -569,10 +632,9 @@ describe('composeValidator', () => {
           }),
         ],
         [isUndefined],
-        decorateWithCustomError(
-          composeValidator([[isBoolean]]),
-          new ErrorResult('Value should be boolean flag', [[new ErrorResult('Value should be boolean flag', undefined)]]),
-        ),
+        composeValidator([
+          [decorateWithCustomError(isBoolean, new ErrorResult('Value should be boolean flag', undefined))],
+        ]),
       ]);
 
       // Act
@@ -585,5 +647,4 @@ describe('composeValidator', () => {
       }
     });
   });
-  */
 });
