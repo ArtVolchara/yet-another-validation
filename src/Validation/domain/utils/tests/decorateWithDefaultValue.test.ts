@@ -1,6 +1,5 @@
 import { describe, test, expect } from 'vitest';
 import { SuccessResult, ErrorResult } from '../../../../_Root/domain/factories';
-import decorateWithCustomError from '../decorateWithCustomError';
 import isString, { IS_STRING_ERROR_MESSAGE } from '../../rules/isString';
 import isNumber, { IS_NUMBER_ERROR_MESSAGE } from '../../rules/isNumber';
 import isBoolean, { IS_BOOLEAN_ERROR_MESSAGE } from '../../rules/isBoolean';
@@ -78,7 +77,7 @@ describe('decorateWithDefaultValue', () => {
         name: composeValidator([[isString]]),
         age: composeValidator([[isNumber]]),
       });
-      const expectedDefaultValue = { name: 'unknown', age: 0 };
+      const expectedDefaultValue = { name: 'unknown', age: 0 } as const;
       const decoratedRule = decorateWithDefaultValue(objectRule, expectedDefaultValue, true);
 
       const actualResult = decoratedRule({ name: 123, age: '42' });
@@ -96,7 +95,7 @@ describe('decorateWithDefaultValue', () => {
         composeValidator([[isString]]),
         composeValidator([[isNumber]]),
       ]);
-      const expectedDefaultValue: [string, number] = ['unknown', 0];
+      const expectedDefaultValue: ['unknown', 0] = ['unknown', 0];
       const decoratedRule = decorateWithDefaultValue(tupleRule, expectedDefaultValue, true);
 
       const actualResult = decoratedRule([123, '42']);
@@ -192,8 +191,6 @@ describe('decorateWithDefaultValue', () => {
         scores: [1, 'two'],
         coordinates: ['x', 2],
       });
-
-      const res = composeValidator([[isObject, objectRule]])(123)
 
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {

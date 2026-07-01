@@ -40,16 +40,49 @@ type TLoggingDecoratorReturn<
 
 function decorateWithErrorLoggingProxy<
   const RuleOrValidator extends TValidationRule | TValidator,
-  const IsEnabled extends boolean | undefined = undefined,
 >(
   ruleOrValidator: RuleOrValidator,
-  isEnabled?: IsEnabled,
+  isEnabled: true,
   logPrefix?: string,
-): TLoggingDecoratorReturn<RuleOrValidator, IsEnabled> {
+): TLoggingDecoratorReturn<RuleOrValidator, true>;
+
+function decorateWithErrorLoggingProxy<
+  const RuleOrValidator extends TValidationRule | TValidator,
+>(
+  ruleOrValidator: RuleOrValidator,
+  isEnabled: false,
+  logPrefix?: string,
+): TLoggingDecoratorReturn<RuleOrValidator, false>;
+
+function decorateWithErrorLoggingProxy<
+  const RuleOrValidator extends TValidationRule | TValidator,
+>(
+  ruleOrValidator: RuleOrValidator,
+  isEnabled?: undefined,
+  logPrefix?: string,
+): TLoggingDecoratorReturn<RuleOrValidator, undefined>;
+
+// Широкий boolean-флаг (включая generic WithLogging | undefined): в типе — как boolean,
+// иначе неразрешённый generic «застревает» во вложенных composeValidator-цепочках.
+function decorateWithErrorLoggingProxy<
+  const RuleOrValidator extends TValidationRule | TValidator,
+>(
+  ruleOrValidator: RuleOrValidator,
+  isEnabled?: boolean,
+  logPrefix?: string,
+): TLoggingDecoratorReturn<RuleOrValidator, boolean>;
+
+function decorateWithErrorLoggingProxy<
+  const RuleOrValidator extends TValidationRule | TValidator,
+>(
+  ruleOrValidator: RuleOrValidator,
+  isEnabled?: boolean,
+  logPrefix?: string,
+): TLoggingDecoratorReturn<RuleOrValidator, boolean | undefined> {
   if (!isEnabled) {
     return ruleOrValidator as unknown as TLoggingDecoratorReturn<
     RuleOrValidator,
-    IsEnabled
+    boolean | undefined
     >;
   }
 
@@ -67,7 +100,7 @@ function decorateWithErrorLoggingProxy<
 
   return decorated as unknown as TLoggingDecoratorReturn<
   RuleOrValidator,
-  IsEnabled
+  boolean | undefined
   >;
 }
 
