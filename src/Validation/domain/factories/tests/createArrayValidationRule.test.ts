@@ -9,8 +9,6 @@ import createArrayValidationRule, {
   ARRAY_DEFAULT_ERROR_MESSAGE_INDEX_SEPARATOR,
 } from '../createArrayValidationRule';
 import composeValidator from '../composeValidator';
-import { SuccessResult } from '../../../../_Root/domain/factories';
-import { TValidationParams, TValidator } from '../../types/TValidator';
 
 describe('createArrayValidationRule', () => {
   describe('createArrayValidationRule error cases', () => {

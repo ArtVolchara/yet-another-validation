@@ -12,8 +12,6 @@ export const OBJECT_DEFAULT_ERROR_MESSAGE_HYPERNYM = 'Object validation failed f
 export const OBJECT_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR = ': ';
 export const OBJECT_DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR = ': ';
 
-export type TObjectValidationErrorResult<ValidatorsSchema extends TObjectValidatorsSchema> = IError<string, { [Key in keyof ValidatorsSchema]?: TRetrieveError<ReturnType<ValidatorsSchema[Key]>> }> & { valid: { [Key in keyof ValidatorsSchema]?: TRetrieveSuccess<ReturnType<ValidatorsSchema[Key]>>['data'] } };
-
 export type TCreateObjectRuleParams = {
   errorMessageHypernym?: string,
   errorMessageHypernymSeparator?: string,
@@ -25,13 +23,21 @@ type TObjectValidationRuleResult<
   Params extends TValidationParams | undefined = undefined,
 > = [NonNullable<Params>['shouldReturnError']] extends [never]
   ? ISuccess<{ [Key in keyof ValidatorsSchema]: TRetrieveSuccess<ReturnType<ValidatorsSchema[Key]>>['data'] }>
-  | TObjectValidationErrorResult<ValidatorsSchema>
+  // если вынести в отдельный тип - тайпскрипт будет выводить нечитаемый type alias 
+  | IError<string, { [Key in keyof ValidatorsSchema]?: TRetrieveError<ReturnType<ValidatorsSchema[Key]>> }>
+  & { valid: { [Key in keyof ValidatorsSchema]?: TRetrieveSuccess<ReturnType<ValidatorsSchema[Key]>>['data'] } }
   : [NonNullable<Params>['shouldReturnError']] extends [true]
-    ? [TObjectValidationErrorResult<ValidatorsSchema>] extends [never]
+    // если вынести в отдельный тип - тайпскрипт будет выводить нечитаемый type alias
+    ? [IError<string, { [Key in keyof ValidatorsSchema]?: TRetrieveError<ReturnType<ValidatorsSchema[Key]>> }>
+    & { valid: { [Key in keyof ValidatorsSchema]?: TRetrieveSuccess<ReturnType<ValidatorsSchema[Key]>>['data'] } }] extends [never]
       ? ISuccess<{ [Key in keyof ValidatorsSchema]: TRetrieveSuccess<ReturnType<ValidatorsSchema[Key]>>['data'] }>
-      : TObjectValidationErrorResult<ValidatorsSchema>
+        // если вынести в отдельный тип - тайпскрипт будет выводить нечитаемый type alias
+      : IError<string, { [Key in keyof ValidatorsSchema]?: TRetrieveError<ReturnType<ValidatorsSchema[Key]>> }>
+      & { valid: { [Key in keyof ValidatorsSchema]?: TRetrieveSuccess<ReturnType<ValidatorsSchema[Key]>>['data'] } }
     : ISuccess<{ [Key in keyof ValidatorsSchema]: TRetrieveSuccess<ReturnType<ValidatorsSchema[Key]>>['data'] }>
-    | TObjectValidationErrorResult<ValidatorsSchema>;
+      // если вынести в отдельный тип - тайпскрипт будет выводить нечитаемый type alias
+    | IError<string, { [Key in keyof ValidatorsSchema]?: TRetrieveError<ReturnType<ValidatorsSchema[Key]>> }>
+    & { valid: { [Key in keyof ValidatorsSchema]?: TRetrieveSuccess<ReturnType<ValidatorsSchema[Key]>>['data'] } };
 
 export default function createObjectValidationRule<
   const Schema extends TObjectValidatorsSchema,
@@ -71,7 +77,8 @@ export default function createObjectValidationRule<
         const errorResult = new ErrorResult(
           `${params?.errorMessageHypernym || OBJECT_DEFAULT_ERROR_MESSAGE_HYPERNYM}${params?.errorMessageHypernymSeparator || OBJECT_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}${result.errorMessage}`,
           result.errors,
-        ) as TObjectValidationErrorResult<ValidatorsSchema>;
+        ) as IError<string, { [Key in keyof ValidatorsSchema]?: TRetrieveError<ReturnType<ValidatorsSchema[Key]>> }>
+        & { valid: { [Key in keyof ValidatorsSchema]?: TRetrieveSuccess<ReturnType<ValidatorsSchema[Key]>>['data'] } };
         errorResult.valid = result.validResults;
         return errorResult as TObjectValidationRuleResult<ValidatorsSchema, Params>;
       }

@@ -44,8 +44,6 @@ export type TErrorTupleValidationData<Validators extends Partial<TValidators>> =
     ? [TRetrieveValidationError<First> | undefined, ...TErrorTupleValidationData<Rest>]
     : [];
 
-type TTupleValidationErrorResult<Validators extends Partial<TValidators>> = IError<string, TErrorTupleValidationData<Validators>> & { valid: Partial<TSuccessTupleValidationData<Validators>> };
-
 type TValidationAccumulator<Validators extends TValidators> = {
   validResults: TSuccessTupleValidationData<Validators>;
   errors: TErrorTupleValidationData<Validators>;
@@ -65,11 +63,15 @@ type TTupleValidationRuleResult<
 > =
   [NonNullable<Params>['shouldReturnError']] extends [never]
     ? ISuccess<TSuccessTupleValidationData<Validators>>
+    // если вынести в отдельный тип - тайпскрипт будет выводить нечитаемый type alias
     | IError<string, TErrorTupleValidationData<Validators>>
+    & { valid: Partial<TSuccessTupleValidationData<Validators>> }
     : [NonNullable<Params>['shouldReturnError']] extends [true]
-      ? TTupleValidationErrorResult<Validators>
+      // если вынести в отдельный тип - тайпскрипт будет выводить нечитаемый type alias
+      ? IError<string, TErrorTupleValidationData<Validators>> & { valid: Partial<TSuccessTupleValidationData<Validators>> }
       : ISuccess<TSuccessTupleValidationData<Validators>>
-      | TTupleValidationErrorResult<Validators>;
+      // если вынести в отдельный тип - тайпскрипт будет выводить нечитаемый type alias
+      | IError<string, TErrorTupleValidationData<Validators>> & { valid: Partial<TSuccessTupleValidationData<Validators>> };
 
 export default function createTupleValidationRule<const Validators extends TValidators>(
   validators: Validators,
@@ -111,7 +113,8 @@ export default function createTupleValidationRule<const Validators extends TVali
         const errorResult = new ErrorResult(
           `${params?.errorMessageHypernym || TUPLE_DEFAULT_ERROR_MESSAGE_HYPERNYM}${params?.errorMessageHypernymSeparator || TUPLE_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}\n${result.errorMessage}`,
           result.errors,
-        ) as unknown as TTupleValidationErrorResult<Validators>;
+          // если вынести в отдельный тип - тайпскрипт будет выводить нечитаемый type alias
+        ) as unknown as IError<string, TErrorTupleValidationData<Validators>> & { valid: Partial<TSuccessTupleValidationData<Validators>> };
         errorResult.valid = result.validResults;
         return errorResult as TTupleValidationRuleResult<Validators, Params>;
       }

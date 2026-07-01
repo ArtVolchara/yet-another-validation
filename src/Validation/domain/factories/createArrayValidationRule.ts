@@ -29,22 +29,27 @@ export type TCreateArrayRuleParams = {
   errorMessageIndexSeparator?: string,
 };
 
-type TArrayValidationErrorResult<Validator extends TValidator> = IError<string, Array<TRetrieveError<ReturnType<Validator>> | undefined>> 
-  & { valid: Array<TRetrieveValidationSuccess<Validator>['data'] | undefined> };
-
 type TArrayValidationRuleResult<
   Validator extends TValidator,
   Params extends TValidationParams | undefined = undefined,
 > =
   [NonNullable<Params>['shouldReturnError']] extends [never]
     ? ISuccess<Array<TRetrieveValidationSuccess<Validator>['data']>>
-    | TArrayValidationErrorResult<Validator>
+    // если вынести в отдельный тип - тайпскрипт будет выводить нечитаемый type alias
+    | IError<string, Array<TRetrieveError<ReturnType<Validator>> | undefined>>
+    & { valid: Array<TRetrieveValidationSuccess<Validator>['data'] | undefined> }
     : [NonNullable<Params>['shouldReturnError']] extends [true]
-      ? [TArrayValidationErrorResult<Validator>] extends [never]
+      // если вынести в отдельный тип - тайпскрипт будет выводить нечитаемый type alias
+      ? [IError<string, Array<TRetrieveError<ReturnType<Validator>> | undefined>>
+      & { valid: Array<TRetrieveValidationSuccess<Validator>['data'] | undefined> }] extends [never]
         ? ISuccess<Array<TRetrieveValidationSuccess<Validator>['data']>>
-        : TArrayValidationErrorResult<Validator>
+        // если вынести в отдельный тип - тайпскрипт будет выводить нечитаемый type alias
+        : IError<string, Array<TRetrieveError<ReturnType<Validator>> | undefined>>
+        & { valid: Array<TRetrieveValidationSuccess<Validator>['data'] | undefined> }
       : ISuccess<Array<TRetrieveValidationSuccess<Validator>['data']>>
-      | TArrayValidationErrorResult<Validator>;
+      // если вынести в отдельный тип - тайпскрипт будет выводить нечитаемый type alias
+      | IError<string, Array<TRetrieveError<ReturnType<Validator>> | undefined>>
+      & { valid: Array<TRetrieveValidationSuccess<Validator>['data'] | undefined> };
 
 export default function createArrayValidationRule<
   const Validator extends TValidator,
@@ -71,7 +76,9 @@ export default function createArrayValidationRule<
           const errorResult = new ErrorResult(
             `${params?.errorMessageEmptyHypernym || ARRAY_DEFAULT_ERROR_MESSAGE_EMPTY_HYPERNYM}${params?.errorMessageHypernymSeparator || ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}\n${validationResult.message}`,
             [],
-          ) as unknown as TArrayValidationErrorResult<Validator>;
+            // если вынести в отдельный тип - тайпскрипт будет выводить нечитаемый type alias
+          ) as unknown as IError<string, Array<TRetrieveError<ReturnType<Validator>> | undefined>>
+          & { valid: Array<TRetrieveValidationSuccess<Validator>['data'] | undefined> };
           errorResult.valid = [];
           return errorResult as TArrayValidationRuleResult<Validator, Params>;
         }
@@ -95,7 +102,9 @@ export default function createArrayValidationRule<
         const errorResult = new ErrorResult(
           `${params?.errorMessageHypernym || ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM}${params?.errorMessageHypernymSeparator || ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}\n${result.errorMessage}`,
           result.errors,
-        ) as unknown as TArrayValidationErrorResult<Validator>;
+          // если вынести в отдельный тип - тайпскрипт будет выводить нечитаемый type alias
+        ) as unknown as IError<string, Array<TRetrieveError<ReturnType<Validator>> | undefined>>
+        & { valid: Array<TRetrieveValidationSuccess<Validator>['data'] | undefined> };
         errorResult.valid = result.validResults;
         return errorResult as TArrayValidationRuleResult<Validator, Params>;
       }
