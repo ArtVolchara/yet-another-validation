@@ -14,41 +14,41 @@ export const DEFAULT_AND_SEPARATOR = '. ' as const;
 
 export type TConsistentValidationRules<
   ValidationRules extends Partial<TValidationRules>,
-> = ValidationRules extends [infer First extends TValidationRule]
+> = ValidationRules extends readonly [infer First extends TValidationRule]
   ? First extends TValidationRule<[infer InputData]>
     ? IsAnyOrUnknown<InputData> extends true
-      ? [First]
-      : [TValidationRule<any>]
-    : [TValidationRule<any>]
-  : ValidationRules extends [infer First extends TValidationRule, ...infer Tail extends Partial<TValidationRules>]
+      ? Readonly<[First]>
+      : Readonly<[TValidationRule<any>]>
+    : Readonly<[TValidationRule<any>]>
+  : ValidationRules extends readonly [infer First extends TValidationRule, ...infer Tail extends Partial<TValidationRules>]
     ? First extends TValidationRule<[infer InputData], ISuccess<infer RuleSuccessData>>
       ? IsAnyOrUnknown<InputData> extends true
-        ? [First, ...TConsistentValidationRulesWithoutAnyAndUnknown<Tail, RuleSuccessData>]
-        : [TValidationRule<any>, ...Tail]
-      : [TValidationRule<any>, ...Tail]
+        ? Readonly<[First, ...TConsistentValidationRulesWithoutAnyAndUnknown<Tail, RuleSuccessData>]>
+        : Readonly<[TValidationRule<any>, ...Tail]>
+      : Readonly<[TValidationRule<any>, ...Tail]>
     : ValidationRules;
 
 type TConsistentValidationRulesWithoutAnyAndUnknown<
 ValidationRules extends Partial<TValidationRules>,
 PrevRulesSuccessDataIntersection = unknown,
-> = ValidationRules extends [TValidationRule<[infer InputData]>]
+> = ValidationRules extends readonly [TValidationRule<[infer InputData]>]
   ? IsAnyOrUnknown<InputData> extends false
     ? PrevRulesSuccessDataIntersection extends InputData
       ? ValidationRules
-      : [TValidationRule<[PrevRulesSuccessDataIntersection]>]
+      : Readonly<[TValidationRule<[PrevRulesSuccessDataIntersection]>]>
       // если оставить следующую строку вместо never, то желанной ошибки не будет
       // (value: any) => TResult<ISuccess<any>, IError<string, undefined>> принимается,
       // даже не смотря что требуется TValidationRule<например string>
-      // : [TValidationRule<[PrevRulesSuccessDataIntersection]>]
+      // : Readonly<[TValidationRule<[PrevRulesSuccessDataIntersection]>]>
     : never
-  : ValidationRules extends [infer First extends TValidationRule, ...infer Tail extends Partial<TValidationRules>]
+  : ValidationRules extends readonly [infer First extends TValidationRule, ...infer Tail extends Partial<TValidationRules>]
     ? First extends TValidationRule<[infer InputData], ISuccess<infer RuleSuccessData>>
       ? IsAnyOrUnknown<InputData> extends false
         ? PrevRulesSuccessDataIntersection extends InputData
-          ? [First, ...TConsistentValidationRulesWithoutAnyAndUnknown<Tail, PrevRulesSuccessDataIntersection & RuleSuccessData>]
-          : [TValidationRule<[PrevRulesSuccessDataIntersection]>, ...Tail]
-        : [TValidationRule<[unknown]>, ...Tail]
-      : [TValidationRule<[PrevRulesSuccessDataIntersection]>, ...Tail]
+          ? Readonly<[First, ...TConsistentValidationRulesWithoutAnyAndUnknown<Tail, PrevRulesSuccessDataIntersection & RuleSuccessData>]>
+          : Readonly<[TValidationRule<[PrevRulesSuccessDataIntersection]>, ...Tail]>
+        : Readonly<[TValidationRule<[unknown]>, ...Tail]>
+      : Readonly<[TValidationRule<[PrevRulesSuccessDataIntersection]>, ...Tail]>
     : ValidationRules;
 
 export type TSuccessValidationRulesData<
@@ -56,9 +56,9 @@ export type TSuccessValidationRulesData<
     InputData = ValidationRules[0] extends TValidationRule
       ? TRetrieveValidationInputData<ValidationRules[0]>
       : ValidationRules[0],
-> = ValidationRules extends [TValidationRule<[InputData], ISuccess<infer SuccessValidationRulesData>>]
+> = ValidationRules extends readonly [TValidationRule<[InputData], ISuccess<infer SuccessValidationRulesData>>]
   ? SuccessValidationRulesData
-  : ValidationRules extends [infer First extends TValidationRule<[InputData]>, ...infer Tail extends TValidationRules]
+  : ValidationRules extends readonly [infer First extends TValidationRule<[InputData]>, ...infer Tail extends TValidationRules]
     ? TRetrieveValidationSuccess<First>['data'] & TSuccessValidationRulesData<Tail, InputData>
     : TUnionToIntersection<ValidationRules extends Array<TValidationRule<any, ISuccess<infer DesiredType>>>
       ? DesiredType
@@ -69,9 +69,9 @@ export type TErrorValidationMessage<
 ValidationRules extends TValidationRules,
 Separator extends string | undefined = undefined,
 > =
-  ValidationRules extends [infer First extends TValidationRule<any, any>]
+  ValidationRules extends readonly [infer First extends TValidationRule<any, any>]
     ? TRetrieveError<ReturnType<First>>['message']
-    : ValidationRules extends [
+    : ValidationRules extends readonly [
       infer First extends TValidationRule<any, any>,
       ...infer Tail extends TValidationRules,
     ]
@@ -91,9 +91,9 @@ export type TRebuildRuleError<Rule extends TValidationRule<any, any>> =
     : never;
 
 export type TErrorValidationRulesData<ValidationRules extends TValidationRules> =
-  ValidationRules extends [infer First extends TValidationRule<any, any>]
+  ValidationRules extends readonly [infer First extends TValidationRule<any, any>]
     ? [TRebuildRuleError<First>]
-    : ValidationRules extends [
+    : ValidationRules extends readonly [
       infer First extends TValidationRule<any, any>,
       ...infer Tail extends TValidationRules,
     ]

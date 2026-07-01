@@ -33,13 +33,13 @@ export default function composeValidator<
     const Value extends TORValidationFirstParameter<ORValidators>,
     const ValidationParams extends TValidationParams | undefined = undefined,
   >(
-    value: Value,
-    validationParams?: ValidationParams,
-  ) => validateValue<Value, ORValidators, MergeComposeValidatorParams<ValidationParams, ComposerParams>>(
-    value,
-    orValidators,
-    { ...(composerParams || {}), ...(validationParams || {}) } as MergeComposeValidatorParams<ValidationParams, ComposerParams>,
-  );
+      value: Value,
+      validationParams?: ValidationParams,
+    ) => validateValue<Value, ORValidators, MergeComposeValidatorParams<ValidationParams, ComposerParams>>(
+      value,
+      orValidators,
+      { ...(composerParams || {}), ...(validationParams || {}) } as MergeComposeValidatorParams<ValidationParams, ComposerParams>,
+    );
   // Бренд фантомный: метаданные исходных веток позволяют внешнему validateValue
   // развернуть вложенный валидатор в типах так же, как это делает рантайм
   return validator as typeof validator & { readonly [meta_brand]: TValidatorMeta<ORValidators> };
