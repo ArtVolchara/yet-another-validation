@@ -37,7 +37,7 @@ export type TSuccessORValidationData<
     ORValidators extends TORValidators,
     InputData = ORValidators extends TValidator
       ? TRetrieveValidationInputData<ORValidators>
-      : ORValidators extends TValidationRules | Readonly<TValidationRules>
+      : ORValidators extends TValidationRules
         ? TRetrieveValidationInputData<ORValidators[0]>
         : never,
 > = TRemoveReadonly<ORValidators> extends Array<infer Validators extends TValidator | TValidationRules>
@@ -86,7 +86,7 @@ type TOpaqueBranch<Message extends string> = [TValidationRule<[value: any], ISuc
 // errors вложенного брендированного валидатора вливаются во внешний OR-список
 export type TFlattenORBranches<ORValidators> =
   ORValidators extends readonly [infer First, ...infer Tail]
-    ? First extends TValidationRules | Readonly<TValidationRules>
+    ? First extends TValidationRules
       ? [First, ...TFlattenORBranches<Tail>]
       : TRetrieveValidatorBrandMeta<First> extends TValidatorMeta<infer Branches>
         ? [...TFlattenORBranches<Branches>, ...TFlattenORBranches<Tail>]
