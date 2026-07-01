@@ -7,7 +7,7 @@ import {
   TValidationRule,
   // TValidator,
   // meta_brand,
-} from '../types/TValidator';
+} from '../entities/TValidator';
 
 // ВНИМАНИЕ (на будущее, перед рефакторингом):
 // Раньше этот декоратор поддерживал и валидаторы (результат composeValidator), помечая

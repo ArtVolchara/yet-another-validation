@@ -7,7 +7,7 @@ import {
   TValidationResult,
   TValidationRule,
   TValidator,
-} from '../types/TValidator';
+} from '../entities/TValidator';
 
 type TDefaultValueDecoratorResult<
   RuleOrValidator extends TValidationRule | TValidator,

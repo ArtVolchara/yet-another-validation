@@ -11,7 +11,7 @@ import createObjectValidationRule, {
 import createArrayValidationRule from '../createArrayValidationRule';
 import composeValidator from '../composeValidator';
 import { SuccessResult } from '../../../../_Root/domain/factories';
-import { TValidationParams, TValidator } from '../../types/TValidator';
+import { TValidationParams, TValidator } from '../../entities/TValidator';
 
 describe('createObjectValidationRule', () => {
   describe('createObjectValidationRule error cases', () => {

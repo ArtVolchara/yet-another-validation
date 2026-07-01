@@ -1,7 +1,7 @@
 import { SuccessResult, ErrorResult } from '../../../_Root/domain/factories';
 import { ISuccess } from '../../../_Root/domain/types/Result/ISuccess';
 import { IError } from '../../../_Root/domain/types/Result/IError';
-import type { TValidationParams } from '../types/TValidator';
+import type { TValidationParams } from '../entities/TValidator';
 
 export const IS_DATA_VIEW_ERROR_MESSAGE = 'Value should be a DataView' as const;
 

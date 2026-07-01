@@ -3,7 +3,7 @@ import {
   TRetrieveValidationSuccess,
   TValidationParams,
   TValidator,
-} from '../types/TValidator';
+} from '../entities/TValidator';
 import { TRetrieveError } from '../../../_Root/domain/types/Result/TResult';
 import { ISuccess } from '../../../_Root/domain/types/Result/ISuccess';
 import { IError } from '../../../_Root/domain/types/Result/IError';

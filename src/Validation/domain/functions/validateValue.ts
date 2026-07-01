@@ -10,7 +10,7 @@ import {
   TValidatorMeta,
   TOpaqueValidatorMeta,
   TRetrieveValidatorBrandMeta,
-} from '../types/TValidator';
+} from '../entities/TValidator';
 import { TRemoveReadonly } from '../../../_Root/domain/types/utils';
 import { ISuccess } from '../../../_Root/domain/types/Result/ISuccess';
 import { IError } from '../../../_Root/domain/types/Result/IError';

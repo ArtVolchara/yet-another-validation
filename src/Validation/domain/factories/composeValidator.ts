@@ -6,7 +6,7 @@ import {
   TValidationParams,
   TValidatorMeta,
   meta_brand,
-} from '../types/TValidator';
+} from '../entities/TValidator';
 
 type MergeComposeValidatorParams<
   ValidationParams extends TValidationParams | undefined,

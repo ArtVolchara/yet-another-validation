@@ -16,7 +16,7 @@ import createObjectValidationRule, {
 } from '../createObjectValidationRule';
 import composeValidator from '../composeValidator';
 import { SuccessResult, ErrorResult } from '../../../../_Root/domain/factories';
-import { TValidationParams, TValidator } from '../../types/TValidator';
+import { TValidationParams, TValidator } from '../../entities/TValidator';
 
 describe('createTupleValidationRule', () => {
   describe('createTupleValidationRule error cases', () => {

@@ -2,7 +2,7 @@ import { TObjectEntries, TRemoveReadonly } from '../../../_Root/domain/types/uti
 import { IError } from '../../../_Root/domain/types/Result/IError';
 import { ErrorResult, SuccessResult } from '../../../_Root/domain/factories';
 import { ISuccess } from '../../../_Root/domain/types/Result/ISuccess';
-import { TValidationParams, TValidator } from '../types/TValidator';
+import { TValidationParams, TValidator } from '../entities/TValidator';
 import { TRetrieveError, TRetrieveSuccess } from '../../../_Root/domain/types/Result/TResult';
 import { isObject } from '../rules';
 

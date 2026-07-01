@@ -1,7 +1,7 @@
 import { ISuccess } from '../../../_Root/domain/types/Result/ISuccess';
 import { IError } from '../../../_Root/domain/types/Result/IError';
 import { ErrorResult, SuccessResult } from '../../../_Root/domain/factories';
-import type { TValidationParams } from '../types/TValidator';
+import type { TValidationParams } from '../entities/TValidator';
 
 export const IS_OBJECT_ERROR_MESSAGE = 'Value should be object' as const;
 

@@ -1,7 +1,7 @@
 import { SuccessResult, ErrorResult } from '../../../_Root/domain/factories';
 import { ISuccess } from '../../../_Root/domain/types/Result/ISuccess';
 import { IError } from '../../../_Root/domain/types/Result/IError';
-import type { TValidationParams } from '../types/TValidator';
+import type { TValidationParams } from '../entities/TValidator';
 
 declare const ArrayExactLengthBrand: unique symbol;
 export type TIsArrayExactLengthNominal<Number extends number> = { readonly [ArrayExactLengthBrand]: `isArrayExactLength${Number}`, length: Number };

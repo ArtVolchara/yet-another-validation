@@ -1,7 +1,7 @@
 import { SuccessResult, ErrorResult } from '../../../_Root/domain/factories';
 import { ISuccess } from '../../../_Root/domain/types/Result/ISuccess';
 import { IError } from '../../../_Root/domain/types/Result/IError';
-import type { TValidationParams } from '../types/TValidator';
+import type { TValidationParams } from '../entities/TValidator';
 
 declare const only_digits_brand: unique symbol;
 export type TOnlyDigitsNominal = { readonly [only_digits_brand]: 'OnlyDigits' };

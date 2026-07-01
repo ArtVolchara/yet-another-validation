@@ -1,7 +1,7 @@
 import { SuccessResult, ErrorResult } from '../../../_Root/domain/factories';
 import { ISuccess } from '../../../_Root/domain/types/Result/ISuccess';
 import { IError } from '../../../_Root/domain/types/Result/IError';
-import type { TValidationParams } from '../types/TValidator';
+import type { TValidationParams } from '../entities/TValidator';
 
 export const IS_UINT16_ARRAY_ERROR_MESSAGE = 'Value should be Uint16Array' as const;
 

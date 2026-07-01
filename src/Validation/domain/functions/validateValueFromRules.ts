@@ -3,7 +3,7 @@ import {
   TRetrieveValidationSuccess,
   TValidationRule,
   TValidationRules,
-} from '../types/TValidator';
+} from '../entities/TValidator';
 import { ISuccess } from '../../../_Root/domain/types/Result/ISuccess';
 import { IsAnyOrUnknown, TUnionToIntersection } from '../../../_Root/domain/types/utils';
 import { TRetrieveError } from '../../../_Root/domain/types/Result/TResult';

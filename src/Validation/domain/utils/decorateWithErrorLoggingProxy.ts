@@ -4,7 +4,7 @@ import {
   TValidationParams,
   TValidationRule,
   TValidator,
-} from '../types/TValidator';
+} from '../entities/TValidator';
 
 type TLoggingDecoratorResult<
   RuleOrValidator extends TValidationRule | TValidator,

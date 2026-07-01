@@ -6,7 +6,7 @@ import {
   TValidationParams,
   TValidator,
   TValidators,
-} from '../types/TValidator';
+} from '../entities/TValidator';
 import { ISuccess } from '../../../_Root/domain/types/Result/ISuccess';
 import { IError } from '../../../_Root/domain/types/Result/IError';
 import { ErrorResult, SuccessResult } from '../../../_Root/domain/factories';
