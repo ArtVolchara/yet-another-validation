@@ -60,7 +60,7 @@ type TDefaultDataFromFactoryOrValue<
   ? Data
   : DefaultValueOrFactory;
 
-type TDefaultValueDecoratorReturn<
+type TDefaultValueDecoratorReturnByFlag<
   RuleOrValidator extends TValidationRule | TValidator,
   DefaultValueOrFactory extends
   | Extract<ReturnType<RuleOrValidator>, ISuccess>['data']
@@ -83,6 +83,69 @@ type TDefaultValueDecoratorReturn<
     TDecoratedRule<RuleOrValidator, TDefaultDataFromFactoryOrValue<RuleOrValidator, DefaultValueOrFactory>>
     >
     | TPreserveValidatorBrand<RuleOrValidator, TNonDecoratedRule<RuleOrValidator>>;
+
+type TDefaultValueDecoratorReturn<
+  RuleOrValidator extends TValidationRule | TValidator,
+  DefaultValueOrFactory extends
+  | Extract<ReturnType<RuleOrValidator>, ISuccess>['data']
+  | (
+    (
+      error: Extract<ReturnType<RuleOrValidator>, IError<string, any>>,
+      value: Parameters<RuleOrValidator>[0]
+    ) => Extract<ReturnType<RuleOrValidator>, ISuccess>['data']
+  ),
+  IsEnabled extends boolean | undefined = undefined,
+> = [IsEnabled] extends [true]
+  ? TDefaultValueDecoratorReturnByFlag<RuleOrValidator, DefaultValueOrFactory, true>
+  : [IsEnabled] extends [false]
+    ? TDefaultValueDecoratorReturnByFlag<RuleOrValidator, DefaultValueOrFactory, false>
+    : [IsEnabled] extends [undefined]
+      ? TDefaultValueDecoratorReturnByFlag<RuleOrValidator, DefaultValueOrFactory, undefined>
+      : TDefaultValueDecoratorReturnByFlag<RuleOrValidator, DefaultValueOrFactory, boolean>;
+
+type TDefaultValueDecoratorReturnForIsEnabled<
+  RuleOrValidator extends TValidationRule | TValidator,
+  DefaultValueOrFactory extends
+  | Extract<ReturnType<RuleOrValidator>, ISuccess>['data']
+  | (
+    (
+      error: Extract<ReturnType<RuleOrValidator>, IError<string, any>>,
+      value: Parameters<RuleOrValidator>[0]
+    ) => Extract<ReturnType<RuleOrValidator>, ISuccess>['data']
+  ),
+  IsEnabled extends boolean | undefined = undefined,
+> = (
+  [IsEnabled] extends [true]
+    ? TDefaultValueDecoratorReturn<RuleOrValidator, DefaultValueOrFactory, true>
+    : [IsEnabled] extends [false]
+      ? TDefaultValueDecoratorReturn<RuleOrValidator, DefaultValueOrFactory, false>
+      : [IsEnabled] extends [undefined]
+        ? TDefaultValueDecoratorReturn<RuleOrValidator, DefaultValueOrFactory, undefined>
+        : TDefaultValueDecoratorReturn<RuleOrValidator, DefaultValueOrFactory, boolean>
+) & RuleOrValidator;
+
+type TIsObjectValidationRule<
+  RuleOrValidator extends TValidationRule | TValidator,
+> = RuleOrValidator extends TValidationRule<[infer InputData], ISuccess<any>>
+  ? Record<string | symbol, any> & { length?: undefined } extends InputData
+    ? true
+    : false
+  : false;
+
+type TDefaultValueDecoratorResolvedReturn<
+  RuleOrValidator extends TValidationRule | TValidator,
+  DefaultValueOrFactory extends
+  | Extract<ReturnType<RuleOrValidator>, ISuccess>['data']
+  | (
+    (
+      error: Extract<ReturnType<RuleOrValidator>, IError<string, any>>,
+      value: Parameters<RuleOrValidator>[0]
+    ) => Extract<ReturnType<RuleOrValidator>, ISuccess>['data']
+  ),
+  IsEnabled extends boolean | undefined = undefined,
+> = TIsObjectValidationRule<RuleOrValidator> extends true
+  ? TDefaultValueDecoratorReturnForIsEnabled<RuleOrValidator, DefaultValueOrFactory, IsEnabled>
+  : TDefaultValueDecoratorReturn<RuleOrValidator, DefaultValueOrFactory, boolean>;
 
 function decorateWithDefaultValue<
   const RuleOrValidator extends TValidationRule | TValidator,
@@ -132,8 +195,6 @@ function decorateWithDefaultValue<
   isEnabled?: undefined,
 ): TDefaultValueDecoratorReturn<RuleOrValidator, DefaultValueOrFactory, undefined>;
 
-// Широкий boolean-флаг (включая generic WithDefaults | undefined): в типе — как boolean,
-// иначе неразрешённый generic «застревает» во вложенных composeValidator-цепочках.
 function decorateWithDefaultValue<
   const RuleOrValidator extends TValidationRule | TValidator,
   const DefaultValueOrFactory extends
@@ -144,11 +205,12 @@ function decorateWithDefaultValue<
       value: Parameters<RuleOrValidator>[0]
     ) => Extract<ReturnType<RuleOrValidator>, ISuccess>['data']
   ),
+  const IsEnabled extends boolean | undefined = undefined,
 >(
   ruleOrValidator: RuleOrValidator,
   defaultValueOrFactory: DefaultValueOrFactory,
-  isEnabled?: boolean,
-): TDefaultValueDecoratorReturn<RuleOrValidator, DefaultValueOrFactory, boolean>;
+  isEnabled?: IsEnabled,
+): TDefaultValueDecoratorResolvedReturn<RuleOrValidator, DefaultValueOrFactory, IsEnabled>;
 
 function decorateWithDefaultValue<
   const RuleOrValidator extends TValidationRule | TValidator,
@@ -160,16 +222,17 @@ function decorateWithDefaultValue<
       value: Parameters<RuleOrValidator>[0]
     ) => Extract<ReturnType<RuleOrValidator>, ISuccess>['data']
   ),
+  const IsEnabled extends boolean | undefined = undefined,
 >(
   ruleOrValidator: RuleOrValidator,
   defaultValueOrFactory: DefaultValueOrFactory,
-  isEnabled?: boolean,
-): TDefaultValueDecoratorReturn<RuleOrValidator, DefaultValueOrFactory, boolean | undefined> {
+  isEnabled?: IsEnabled,
+): TDefaultValueDecoratorReturn<RuleOrValidator, DefaultValueOrFactory, boolean> {
   if (!isEnabled) {
     return ruleOrValidator as unknown as TDefaultValueDecoratorReturn<
     RuleOrValidator,
     DefaultValueOrFactory,
-    boolean | undefined
+    boolean
     >;
   }
   const decorated = (
@@ -188,8 +251,9 @@ function decorateWithDefaultValue<
   return decorated as unknown as TDefaultValueDecoratorReturn<
   RuleOrValidator,
   DefaultValueOrFactory,
-  boolean | undefined
+  boolean
   >;
 }
 
+export type { TDefaultValueDecoratorReturn };
 export default decorateWithDefaultValue;

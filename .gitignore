@@ -44,3 +44,4 @@ temp/
 .prettiercache
 jest-cache/
 jest-coverage/
+src/Validation/domain/utils/tests/test-file.ts

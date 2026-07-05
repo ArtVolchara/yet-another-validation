@@ -6,7 +6,7 @@ import type { TValidationParams } from '../entities/TValidator';
 export const IS_OBJECT_ERROR_MESSAGE = 'Value should be object' as const;
 
 export type TIsObjectValidationError = IError<typeof IS_OBJECT_ERROR_MESSAGE, undefined>;
-export type TIsObjectValidationSuccess = ISuccess<Record<string | symbol, any>>;
+export type TIsObjectValidationSuccess = ISuccess<Record<string | symbol, any> & { length?: never }>;
 
 type TIsObjectValidationResult<Params extends TValidationParams | undefined = undefined> = 
 [NonNullable<Params>['shouldReturnError']] extends [never]
@@ -30,7 +30,7 @@ export default function isObject<const Params extends TValidationParams | undefi
       Object.prototype.toString.call(value) === '[object Object]' &&
       !Array.isArray(value)
     ) {
-      return new SuccessResult(value as Record<string, any>) as TIsObjectValidationResult<Params>;
+      return new SuccessResult(value as Record<string, any> & { length?: never }) as TIsObjectValidationResult<Params>;
     }
     return new ErrorResult(IS_OBJECT_ERROR_MESSAGE, undefined) as TIsObjectValidationResult<Params>;
   } catch (e) {

@@ -17,7 +17,7 @@ describe('decorateWithDefaultValue', () => {
   describe('decorateWithDefaultValue error cases', () => {
     test('Should enrich rule error with static default data', () => {
       const expectedDefaultValue = 'fallback';
-      const decoratedRule = decorateWithDefaultValue(isString, expectedDefaultValue, true);
+      const decoratedRule = decorateWithDefaultValue(isString, expectedDefaultValue, true as boolean);
 
       const actualResult = decoratedRule(123);
 
@@ -283,7 +283,7 @@ describe('decorateWithDefaultValue', () => {
       ]);
 
       expect(actualResult.status).toBe('error');
-      if (actualResult.status === 'error') {
+      if (actualResult.status === 'error' && 'data' in actualResult) {
         expect(actualResult.data).toEqual([
           'john',
           0,
