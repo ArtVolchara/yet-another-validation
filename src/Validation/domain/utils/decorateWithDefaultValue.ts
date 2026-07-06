@@ -160,7 +160,7 @@ type TDefaultValueDecoratorResolvedReturn<
   IsEnabled extends boolean | undefined = undefined,
 > = TIsObjectValidationRule<RuleOrValidator> extends true
   ? TDefaultValueDecoratorReturnForIsEnabled<RuleOrValidator, DefaultValueOrFactory, IsEnabled>
-  : TDefaultValueDecoratorReturn<RuleOrValidator, DefaultValueOrFactory, boolean>;
+  : TDefaultValueDecoratorReturn<RuleOrValidator, DefaultValueOrFactory, IsEnabled>;
 
 function decorateWithDefaultValue<
   const RuleOrValidator extends TValidationRule | TValidator,
