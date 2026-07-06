@@ -1,3 +1,4 @@
+import { IsAnyOrUnknown } from 'src/_Root/domain/types/utils';
 import { TRetrieveError, TRetrieveSuccess } from 'src/_Root/domain/types/Result/TResult';
 import { ISuccess } from '../../../_Root/domain/types/Result/ISuccess';
 import { IError } from '../../../_Root/domain/types/Result/IError';
@@ -59,6 +60,18 @@ type TDefaultDataFromFactoryOrValue<
 ) => infer Data
   ? Data
   : DefaultValueOrFactory;
+
+// Выводит флаг из типа аргумента: литерал сохраняется, широкий boolean → union.
+type TEffectiveIsEnabledFlag<IsEnabledArg extends boolean | undefined> =
+  boolean extends IsEnabledArg
+    ? boolean
+    : [IsEnabledArg] extends [true]
+      ? true
+      : [IsEnabledArg] extends [false]
+        ? false
+        : [IsEnabledArg] extends [undefined]
+          ? undefined
+          : boolean;
 
 type TDefaultValueDecoratorReturnByFlag<
   RuleOrValidator extends TValidationRule | TValidator,
@@ -127,9 +140,11 @@ type TDefaultValueDecoratorReturnForIsEnabled<
 type TIsObjectValidationRule<
   RuleOrValidator extends TValidationRule | TValidator,
 > = RuleOrValidator extends TValidationRule<[infer InputData], ISuccess<any>>
-  ? Record<string | symbol, any> & { length?: undefined } extends InputData
-    ? true
-    : false
+  ? IsAnyOrUnknown<InputData> extends true
+    ? false
+    : Record<string | symbol, any> & { length?: undefined } extends InputData
+      ? true
+      : false
   : false;
 
 type TDefaultValueDecoratorResolvedReturn<
@@ -205,12 +220,16 @@ function decorateWithDefaultValue<
       value: Parameters<RuleOrValidator>[0]
     ) => Extract<ReturnType<RuleOrValidator>, ISuccess>['data']
   ),
-  const IsEnabled extends boolean | undefined = undefined,
+  IsEnabledArg extends boolean | undefined = undefined,
 >(
   ruleOrValidator: RuleOrValidator,
   defaultValueOrFactory: DefaultValueOrFactory,
-  isEnabled?: IsEnabled,
-): TDefaultValueDecoratorResolvedReturn<RuleOrValidator, DefaultValueOrFactory, IsEnabled>;
+  isEnabled?: IsEnabledArg,
+): TDefaultValueDecoratorResolvedReturn<
+  RuleOrValidator,
+  DefaultValueOrFactory,
+  TEffectiveIsEnabledFlag<IsEnabledArg>
+>;
 
 function decorateWithDefaultValue<
   const RuleOrValidator extends TValidationRule | TValidator,
@@ -255,5 +274,4 @@ function decorateWithDefaultValue<
   >;
 }
 
-export type { TDefaultValueDecoratorReturn };
 export default decorateWithDefaultValue;

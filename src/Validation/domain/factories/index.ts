@@ -4,4 +4,4 @@ export { default as createArrayValidationRule } from './createArrayValidationRul
 export { default as createObjectValidationRule } from './createObjectValidationRule';
 export { default as createTupleValidationRule } from './createTupleValidationRule';
 export { default as decorateWithCustomError } from '../utils/decorateWithCustomError';
-export { default as decorateWithDefaultValue, type TDefaultValueDecoratorReturn } from '../utils/decorateWithDefaultValue';
+export { default as decorateWithDefaultValue } from '../utils/decorateWithDefaultValue';

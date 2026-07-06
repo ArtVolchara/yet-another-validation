@@ -17,7 +17,7 @@ describe('decorateWithDefaultValue', () => {
   describe('decorateWithDefaultValue error cases', () => {
     test('Should enrich rule error with static default data', () => {
       const expectedDefaultValue = 'fallback';
-      const decoratedRule = decorateWithDefaultValue(isString, expectedDefaultValue, true as boolean);
+      const decoratedRule = decorateWithDefaultValue(isString, expectedDefaultValue, true);
 
       const actualResult = decoratedRule(123);
 
