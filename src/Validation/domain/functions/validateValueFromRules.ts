@@ -85,9 +85,15 @@ Separator extends string | undefined = undefined,
 // Ошибка правила пересобирается в IError<Message, Errors> заново: получается свежий тип
 // без alias-штампа, и ховер показывает литерал сообщения вместо имени алиаса правила
 // (IError<'Value should be number', undefined> вместо TIsNumberValidationError)
+// ReturnType<Rule> на сложных Rule (в т.ч. TDefaultValueDecoratorReturnForIsEnabled) деградирует в any;
+// infer Result из call signature сохраняет фактический union success | error (см. return-type-intersection-probe.ts).
 export type TRebuildRuleError<Rule extends TValidationRule<any, any>> =
-  TRetrieveError<ReturnType<Rule>> extends IError<infer Message, infer Errors>
-    ? IError<Message, Errors>
+  Rule extends (...args: never) => infer Result
+    ? Extract<Result, IError<string, any>> extends infer RuleError
+      ? RuleError extends IError<infer Message, infer Errors>
+        ? IError<Message, Errors> & Omit<RuleError, 'message' | 'errors'>
+        : never
+      : never
     : never;
 
 export type TErrorValidationRulesData<ValidationRules extends TValidationRules> =

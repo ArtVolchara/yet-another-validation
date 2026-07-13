@@ -17,10 +17,10 @@ import { IError } from '../../../_Root/domain/types/Result/IError';
 import { TRetrieveError, TRetrieveSuccess } from '../../../_Root/domain/types/Result/TResult';
 import { ErrorResult } from '../../../_Root/domain/factories';
 import validateValueFromRules, {
-  TConsistentValidationRules,
   TRebuildRuleError,
   TSuccessValidationRulesData,
   DEFAULT_AND_SEPARATOR,
+  TConsistentValidationRules,
 } from './validateValueFromRules';
 
 export const DEFAULT_OR_SEPARATOR = ' or ' as const;

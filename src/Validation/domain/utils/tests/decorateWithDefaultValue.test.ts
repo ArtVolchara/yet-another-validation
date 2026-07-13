@@ -48,7 +48,7 @@ describe('decorateWithDefaultValue', () => {
       const decoratedValidator = decorateWithDefaultValue(validator, expectedDefaultValue, true);
 
       const actualResult = decoratedValidator('abc');
-
+      
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
         expect(actualResult.data).toBe(expectedDefaultValue);
