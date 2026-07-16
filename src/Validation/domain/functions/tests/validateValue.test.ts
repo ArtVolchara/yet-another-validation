@@ -685,7 +685,6 @@ describe('validateValue', () => {
                                                               [
                                                                 decorateWithErrorLoggingProxy(
                                                                   isString,
-                                                                  true,
                                                                   'user.organization.division.unit.member.record.persona.details.name',
                                                                 ),
                                                                 isOnlyLatinLettersString,
@@ -693,7 +692,6 @@ describe('validateValue', () => {
                                                             ]),
                                                             age: decorateWithErrorLoggingProxy(
                                                               composeValidator([[isNumber, isPositiveNumber]]),
-                                                              true,
                                                               'user.organization.division.unit.member.record.persona.details.age',
                                                             ),
                                                             tags: composeValidator([
@@ -703,7 +701,6 @@ describe('validateValue', () => {
                                                                   decorateWithDefaultValue(
                                                                     composeValidator([[isString]]),
                                                                     'unknown',
-                                                                    true,
                                                                   ),
                                                                 ),
                                                               ],
@@ -716,7 +713,6 @@ describe('validateValue', () => {
                                                                   decorateWithDefaultValue(
                                                                     composeValidator([[isString]]),
                                                                     'defaultKey',
-                                                                    true,
                                                                   ),
                                                                   composeValidator([
                                                                     [

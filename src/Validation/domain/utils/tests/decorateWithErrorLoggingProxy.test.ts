@@ -26,7 +26,7 @@ describe('decorateWithErrorLoggingProxy', () => {
   describe('decorateWithErrorLoggingProxy error cases', () => {
     test('Should log rule error message and return original error result', () => {
       const consoleErrorMock = vi.spyOn(console, 'error').mockImplementation(() => undefined);
-      const decoratedRule = decorateWithErrorLoggingProxy(isString, true);
+      const decoratedRule = decorateWithErrorLoggingProxy(isString);
 
       const actualResult = decoratedRule(123);
 
@@ -42,7 +42,7 @@ describe('decorateWithErrorLoggingProxy', () => {
     test('Should log rule error message with prefix', () => {
       const consoleErrorMock = vi.spyOn(console, 'error').mockImplementation(() => undefined);
       const logPrefix = 'Validation error';
-      const decoratedRule = decorateWithErrorLoggingProxy(isNumber, true, logPrefix);
+      const decoratedRule = decorateWithErrorLoggingProxy(isNumber, logPrefix);
 
       const actualResult = decoratedRule('text');
 
@@ -58,7 +58,7 @@ describe('decorateWithErrorLoggingProxy', () => {
     test('Should log composed AND-validator error message', () => {
       const consoleErrorMock = vi.spyOn(console, 'error').mockImplementation(() => undefined);
       const validator = composeValidator([[isString, isOnlyDigitsString]]);
-      const decoratedValidator = decorateWithErrorLoggingProxy(validator, true);
+      const decoratedValidator = decorateWithErrorLoggingProxy(validator);
 
       const actualResult = decoratedValidator(123);
 
@@ -73,7 +73,7 @@ describe('decorateWithErrorLoggingProxy', () => {
     test('Should log composed OR-validator error message', () => {
       const consoleErrorMock = vi.spyOn(console, 'error').mockImplementation(() => undefined);
       const validator = composeValidator([[isString], [isUndefined]]);
-      const decoratedValidator = decorateWithErrorLoggingProxy(validator, true);
+      const decoratedValidator = decorateWithErrorLoggingProxy(validator);
 
       const actualResult = decoratedValidator(123);
 
@@ -91,7 +91,7 @@ describe('decorateWithErrorLoggingProxy', () => {
         name: composeValidator([[isString]]),
         age: composeValidator([[isNumber]]),
       });
-      const decoratedRule = decorateWithErrorLoggingProxy(objectRule, true);
+      const decoratedRule = decorateWithErrorLoggingProxy(objectRule);
 
       const actualResult = decoratedRule({ name: 123, age: '42' });
 
@@ -110,7 +110,7 @@ describe('decorateWithErrorLoggingProxy', () => {
         composeValidator([[isString]]),
         composeValidator([[isNumber]]),
       ]);
-      const decoratedRule = decorateWithErrorLoggingProxy(tupleRule, true);
+      const decoratedRule = decorateWithErrorLoggingProxy(tupleRule);
 
       const actualResult = decoratedRule([123, '42']);
 
@@ -126,7 +126,7 @@ describe('decorateWithErrorLoggingProxy', () => {
     test('Should log array validation rule error message', () => {
       const consoleErrorMock = vi.spyOn(console, 'error').mockImplementation(() => undefined);
       const arrayRule = createArrayValidationRule(composeValidator([[isNumber]]));
-      const decoratedRule = decorateWithErrorLoggingProxy(arrayRule, true);
+      const decoratedRule = decorateWithErrorLoggingProxy(arrayRule);
 
       const actualResult = decoratedRule([1, 'wrong', 3]);
 
@@ -140,7 +140,7 @@ describe('decorateWithErrorLoggingProxy', () => {
 
     test('Should log forced error when shouldReturnError is true', () => {
       const consoleErrorMock = vi.spyOn(console, 'error').mockImplementation(() => undefined);
-      const decoratedRule = decorateWithErrorLoggingProxy(isBoolean, true);
+      const decoratedRule = decorateWithErrorLoggingProxy(isBoolean);
 
       const actualResult = decoratedRule(true, { shouldReturnError: true });
 
@@ -153,11 +153,11 @@ describe('decorateWithErrorLoggingProxy', () => {
       expect(consoleErrorMock).toHaveBeenCalledWith(IS_BOOLEAN_ERROR_MESSAGE);
     });
 
-    test('Should return original error without logging when decorator is disabled', () => {
+    test('Should not log when decorator is not applied to the rule', () => {
       const consoleErrorMock = vi.spyOn(console, 'error').mockImplementation(() => undefined);
-      const decoratedRule = decorateWithErrorLoggingProxy(isString, false);
+      const rule = isString;
 
-      const actualResult = decoratedRule(123);
+      const actualResult = rule(123);
 
       expect(actualResult).toEqual({
         status: 'error',
@@ -171,7 +171,7 @@ describe('decorateWithErrorLoggingProxy', () => {
   describe('decorateWithErrorLoggingProxy success cases', () => {
     test('Should pass through rule success without logging', () => {
       const consoleErrorMock = vi.spyOn(console, 'error').mockImplementation(() => undefined);
-      const decoratedRule = decorateWithErrorLoggingProxy(isString, true);
+      const decoratedRule = decorateWithErrorLoggingProxy(isString);
 
       const actualResult = decoratedRule('hello');
 
@@ -182,7 +182,7 @@ describe('decorateWithErrorLoggingProxy', () => {
     test('Should pass through composed validator success without logging', () => {
       const consoleErrorMock = vi.spyOn(console, 'error').mockImplementation(() => undefined);
       const validator = composeValidator([[isString], [isUndefined]]);
-      const decoratedValidator = decorateWithErrorLoggingProxy(validator, true);
+      const decoratedValidator = decorateWithErrorLoggingProxy(validator);
 
       const actualResult = decoratedValidator(undefined);
 
@@ -196,7 +196,7 @@ describe('decorateWithErrorLoggingProxy', () => {
         name: composeValidator([[isString]]),
         age: composeValidator([[isNumber]]),
       });
-      const decoratedRule = decorateWithErrorLoggingProxy(objectRule, true);
+      const decoratedRule = decorateWithErrorLoggingProxy(objectRule);
 
       const actualResult = decoratedRule({ name: 'Alice', age: 42 });
 
@@ -210,7 +210,7 @@ describe('decorateWithErrorLoggingProxy', () => {
         composeValidator([[isString]]),
         composeValidator([[isNumber]]),
       ]);
-      const decoratedRule = decorateWithErrorLoggingProxy(tupleRule, true);
+      const decoratedRule = decorateWithErrorLoggingProxy(tupleRule);
 
       const actualResult = decoratedRule(['Alice', 42]);
 
@@ -221,7 +221,7 @@ describe('decorateWithErrorLoggingProxy', () => {
     test('Should pass through array validation rule success without logging', () => {
       const consoleErrorMock = vi.spyOn(console, 'error').mockImplementation(() => undefined);
       const arrayRule = createArrayValidationRule(composeValidator([[isNumber]]));
-      const decoratedRule = decorateWithErrorLoggingProxy(arrayRule, true);
+      const decoratedRule = decorateWithErrorLoggingProxy(arrayRule);
 
       const actualResult = decoratedRule([1, 2, 3]);
 

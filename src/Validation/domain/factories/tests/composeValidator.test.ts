@@ -557,7 +557,6 @@ describe('composeValidator', () => {
                                                               [
                                                                 decorateWithErrorLoggingProxy(
                                                                   isString,
-                                                                  true,
                                                                   'account.org.department.team.member.profile.identity.contact.nickname',
                                                                 ),
                                                                 isOnlyLatinLettersString,
@@ -565,7 +564,6 @@ describe('composeValidator', () => {
                                                             ]),
                                                             score: decorateWithErrorLoggingProxy(
                                                               composeValidator([[isNumber, isPositiveNumber]]),
-                                                              true,
                                                               'account.org.department.team.member.profile.identity.contact.score',
                                                             ),
                                                             aliases: composeValidator([
@@ -575,7 +573,6 @@ describe('composeValidator', () => {
                                                                   decorateWithDefaultValue(
                                                                     composeValidator([[isString]]),
                                                                     'anonymous',
-                                                                    true,
                                                                   ),
                                                                 ),
                                                               ],
@@ -588,7 +585,6 @@ describe('composeValidator', () => {
                                                                   decorateWithDefaultValue(
                                                                     composeValidator([[isString]]),
                                                                     'defaultAxis',
-                                                                    true,
                                                                   ),
                                                                   composeValidator([
                                                                     [

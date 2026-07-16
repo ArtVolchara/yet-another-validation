@@ -31,67 +31,49 @@ type TCustomErrorDecoratorResult<
     ? CustomError
     : TRetrieveSuccess<ReturnType<Rule>> | CustomError;
 
-type TCustomErrorDecoratedRule<
+type TDecoratedRule<
   Rule extends TValidationRule, // | TValidator - временно убрано, см. заметку выше
   CustomError extends IError<string, any>,
 > = <
-const Params extends Parameters<Rule>[1] = undefined,
-const ShouldReturnError extends [Params] extends [never]
-  ? undefined
-  : Params extends TValidationParams ? Params['shouldReturnError'] : undefined
-= [Params] extends [never]
-  ? undefined
-  : Params extends TValidationParams ? Params['shouldReturnError'] : undefined,
+  const Params extends Parameters<Rule>[1] = undefined,
+  const ShouldReturnError extends [Params] extends [never]
+    ? undefined
+    : Params extends TValidationParams ? Params['shouldReturnError'] : undefined
+  = [Params] extends [never]
+    ? undefined
+    : Params extends TValidationParams ? Params['shouldReturnError'] : undefined,
 >(value: Parameters<Rule>[0], params?: Params) => TCustomErrorDecoratorResult<Rule, CustomError, ShouldReturnError>;
 
-// Декоратор подменяет сообщение валидационного правила на кастомное.
-// Ветка для валидаторов (opaque-мета) временно отключена, см. заметку выше.
-type TCustomErrorDecoratorReturn<
+type TCustomErrorFromFactoryOrValue<
   Rule extends TValidationRule, // | TValidator - временно убрано, см. заметку выше
-  CustomError extends IError<string, any>,
-> = TCustomErrorDecoratedRule<Rule, CustomError>;
-// > = Rule extends { readonly [meta_brand]: unknown }
-//   ? TCustomErrorDecoratedRule<Rule, CustomError>
-//   & { readonly [meta_brand]: TOpaqueValidatorMeta<CustomError['message']> }
-//   : TCustomErrorDecoratedRule<Rule, CustomError>;
-
-function decorateWithCustomError<
-  const Rule extends TValidationRule, // | TValidator - временно убрано, см. заметку выше
-  const CustomError extends IError<string, any>,
->(
-  validationRule: Rule,
-  error: CustomError,
-): TCustomErrorDecoratorReturn<Rule, CustomError>;
-
-function decorateWithCustomError<
-  const Rule extends TValidationRule, // | TValidator - временно убрано, см. заметку выше
-  const ErrorFactory extends (data: Extract<ReturnType<Rule>, IError<string, any>>) => IError<string, any>,
->(
-  validationRule: Rule,
-  factory: ErrorFactory,
-): TCustomErrorDecoratorReturn<Rule, ReturnType<ErrorFactory>>;
+  ErrorOrFactory extends IError<string, any>
+  | ((error: Extract<ReturnType<Rule>, IError<string, any>>) => IError<string, any>),
+> = ErrorOrFactory extends (error: Extract<ReturnType<Rule>, IError<string, any>>) => infer CustomError
+  ? CustomError
+  : ErrorOrFactory;
 
 function decorateWithCustomError<
   const Rule extends TValidationRule, // | TValidator - временно убрано, см. заметку выше
   const ErrorOrFactory extends IError<string, any>
-  | (
-    (data: Extract<ReturnType<Rule>, IError<string, any>>) => IError<string, any>),
+  | ((error: Extract<ReturnType<Rule>, IError<string, any>>) => IError<string, any>),
 >(
   rule: Rule,
   errorOrFactory: ErrorOrFactory,
-) {
-  return <
-  const Params extends Parameters<Rule>[1] = undefined,
-  >(value: Parameters<Rule>[0], params?: Params) => {
-    const res = rule(value, params);
-    if (res.status === 'error') {
+): TDecoratedRule<Rule, TCustomErrorFromFactoryOrValue<Rule, ErrorOrFactory>> {
+  const decorated = (
+    value: Parameters<typeof rule>[0],
+    params?: Parameters<typeof rule>[1],
+  ) => {
+    const result = rule(value, params);
+    if (result.status === 'error') {
       const error = typeof errorOrFactory === 'function'
-        ? errorOrFactory(res as Extract<ReturnType<Rule>, IError<string, any>>)
+        ? errorOrFactory(result as Extract<ReturnType<Rule>, IError<string, any>>)
         : errorOrFactory;
       return error;
     }
-    return res;
+    return result;
   };
+  return decorated as unknown as TDecoratedRule<Rule, TCustomErrorFromFactoryOrValue<Rule, ErrorOrFactory>>;
 }
 
 export default decorateWithCustomError;

@@ -84,15 +84,18 @@ Separator extends string | undefined = undefined,
 
 // Ошибка правила пересобирается в IError<Message, Errors> заново: получается свежий тип
 // без alias-штампа, и ховер показывает литерал сообщения вместо имени алиаса правила
-// (IError<'Value should be number', undefined> вместо TIsNumberValidationError)
-// ReturnType<Rule> на сложных Rule (в т.ч. TDefaultValueDecoratorReturnForIsEnabled) деградирует в any;
-// infer Result из call signature сохраняет фактический union success | error (см. return-type-intersection-probe.ts).
+// (IError<'Value should be number', undefined> вместо TIsNumberValidationError).
+// Остальные поля (valid, data и т.п.) собираются mapped-типом по RuleError, а не через
+// Omit<RuleError, 'message' | 'errors'>: Omit ховером показывает исходный RuleError
+// целиком нераскрытым (дублирование и нечитаемость), а mapped-тип вычисляет и
+// показывает каждое поле развёрнутым.
 export type TRebuildRuleError<Rule extends TValidationRule<any, any>> =
-  Rule extends (...args: never) => infer Result
-    ? Extract<Result, IError<string, any>> extends infer RuleError
-      ? RuleError extends IError<infer Message, infer Errors>
-        ? IError<Message, Errors> & Omit<RuleError, 'message' | 'errors'>
-        : never
+  TRetrieveError<ReturnType<Rule>> extends infer RuleError extends IError<string, any>
+    ? RuleError extends IError<infer Message, infer Errors>
+      // status исключён из "остальных" полей: IError<Message, Errors> уже даёт его
+      // чистым литералом TErrorStatus, а у RuleError (ErrorResult) он объявлен как
+      // IError<Message, Errors>['status'] и не сворачивается в ховере
+      ? IError<Message, Errors> & { [Key in keyof RuleError as Exclude<Key, 'message' | 'errors' | 'status'>]: RuleError[Key] }
       : never
     : never;
 

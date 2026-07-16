@@ -17,9 +17,12 @@ describe('decorateWithDefaultValue', () => {
   describe('decorateWithDefaultValue error cases', () => {
     test('Should enrich rule error with static default data', () => {
       const expectedDefaultValue = 'fallback';
-      const decoratedRule = decorateWithDefaultValue(isString, expectedDefaultValue, true);
+      const decoratedRule = decorateWithDefaultValue(isString, expectedDefaultValue);
 
       const actualResult = decoratedRule(123);
+      if (actualResult.status === 'error') {
+        console.log(actualResult.data);
+      }
 
       expect(actualResult).toEqual({
         status: 'error',
@@ -30,7 +33,7 @@ describe('decorateWithDefaultValue', () => {
     });
 
     test('Should enrich rule error with data from default factory', () => {
-      const decoratedRule = decorateWithDefaultValue(isNumber, (error) => error.message.length, true);
+      const decoratedRule = decorateWithDefaultValue(isNumber, (error) => error.message.length);
 
       const actualResult = decoratedRule('text');
 
@@ -45,10 +48,10 @@ describe('decorateWithDefaultValue', () => {
     test('Should enrich composed AND-validator error with default data', () => {
       const validator = composeValidator([[isString, isOnlyDigitsString]]);
       const expectedDefaultValue = '000' as unknown as string & TOnlyDigitsNominal;
-      const decoratedValidator = decorateWithDefaultValue(validator, expectedDefaultValue, true);
+      const decoratedValidator = decorateWithDefaultValue(validator, expectedDefaultValue);
 
       const actualResult = decoratedValidator('abc');
-      
+
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
         expect(actualResult.data).toBe(expectedDefaultValue);
@@ -61,7 +64,7 @@ describe('decorateWithDefaultValue', () => {
     test('Should enrich composed OR-validator error with default data', () => {
       const validator = composeValidator([[isString], [isUndefined]]);
       const expectedDefaultValue = 'empty';
-      const decoratedValidator = decorateWithDefaultValue(validator, expectedDefaultValue, true);
+      const decoratedValidator = decorateWithDefaultValue(validator, expectedDefaultValue);
 
       const actualResult = decoratedValidator(123);
 
@@ -78,7 +81,7 @@ describe('decorateWithDefaultValue', () => {
         age: composeValidator([[isNumber]]),
       });
       const expectedDefaultValue = { name: 'unknown', age: 0 } as const;
-      const decoratedRule = decorateWithDefaultValue(objectRule, expectedDefaultValue, true);
+      const decoratedRule = decorateWithDefaultValue(objectRule, expectedDefaultValue);
 
       const actualResult = decoratedRule({ name: 123, age: '42' });
 
@@ -96,7 +99,7 @@ describe('decorateWithDefaultValue', () => {
         composeValidator([[isNumber]]),
       ]);
       const expectedDefaultValue: ['unknown', 0] = ['unknown', 0];
-      const decoratedRule = decorateWithDefaultValue(tupleRule, expectedDefaultValue, true);
+      const decoratedRule = decorateWithDefaultValue(tupleRule, expectedDefaultValue);
 
       const actualResult = decoratedRule([123, '42']);
 
@@ -112,7 +115,7 @@ describe('decorateWithDefaultValue', () => {
       const numberValidator = composeValidator([[isNumber]]);
       const arrayRule = createArrayValidationRule(numberValidator);
       const expectedDefaultValue = [0];
-      const decoratedRule = decorateWithDefaultValue(arrayRule, expectedDefaultValue, true);
+      const decoratedRule = decorateWithDefaultValue(arrayRule, expectedDefaultValue);
 
       const actualResult = decoratedRule([1, 'wrong', 3]);
 
@@ -129,9 +132,9 @@ describe('decorateWithDefaultValue', () => {
       const expectedCoordinatesDefaultValue: [number, string] = [0, 'zero'];
       const objectRule = decorateWithDefaultValue(
         createObjectValidationRule({
-          name: decorateWithDefaultValue(composeValidator([[isString]]), 'john', true),
-          lastName: decorateWithDefaultValue(composeValidator([[isString]]), 'Doe', true),
-          age: decorateWithDefaultValue(composeValidator([[isNumber]]), 0, true),
+          name: decorateWithDefaultValue(composeValidator([[isString]]), 'john'),
+          lastName: decorateWithDefaultValue(composeValidator([[isString]]), 'Doe'),
+          age: decorateWithDefaultValue(composeValidator([[isNumber]]), 0),
           profile: decorateWithDefaultValue(
             composeValidator([[
               isObject,
@@ -140,11 +143,9 @@ describe('decorateWithDefaultValue', () => {
                   nickname: composeValidator([[isString]]),
                 }),
                 expectedProfileDefaultValue,
-                true,
               ),
             ]]),
             expectedProfileDefaultValue,
-            true,
           ),
           scores: decorateWithDefaultValue(
             composeValidator([[
@@ -152,11 +153,9 @@ describe('decorateWithDefaultValue', () => {
               decorateWithDefaultValue(
                 createArrayValidationRule(composeValidator([[isNumber]])),
                 expectedScoresDefaultValue,
-                true,
               ),
             ]]),
             expectedScoresDefaultValue,
-            true,
           ),
           coordinates: decorateWithDefaultValue(
             composeValidator([[
@@ -167,22 +166,19 @@ describe('decorateWithDefaultValue', () => {
                   composeValidator([[isString]]),
                 ]),
                 expectedCoordinatesDefaultValue,
-                true,
               ),
             ]]),
             expectedCoordinatesDefaultValue,
-            true,
           ),
         }),
         (error) => ({
-          name: error.errors.name  ? error.errors.name.data : error.valid.name!,
+          name: error.errors.name ? error.errors.name.data : error.valid.name!,
           lastName: error.errors.lastName ? error.errors.lastName.data : error.valid.lastName!,
           age: error.errors.age ? error.errors.age.data : error.valid.age!,
           profile: error.errors.profile ? error.errors.profile.data : error.valid.profile!,
           scores: error.errors.scores ? error.errors.scores.data : error.valid.scores!,
           coordinates: error.errors.coordinates ? error.errors.coordinates.data : error.valid.coordinates!,
         }),
-        true,
       );
 
       const actualResult = objectRule({
@@ -217,9 +213,9 @@ describe('decorateWithDefaultValue', () => {
       const expectedCoordinatesDefaultValue: [number, string] = [0, 'zero'];
       const tupleRule = decorateWithDefaultValue(
         createTupleValidationRule([
-          decorateWithDefaultValue(composeValidator([[isString]]), 'john', true),
-          decorateWithDefaultValue(composeValidator([[isNumber]]), 0, true),
-          decorateWithDefaultValue(composeValidator([[isNumber]]), 0, true),
+          decorateWithDefaultValue(composeValidator([[isString]]), 'john'),
+          decorateWithDefaultValue(composeValidator([[isNumber]]), 0),
+          decorateWithDefaultValue(composeValidator([[isNumber]]), 0),
           decorateWithDefaultValue(
             composeValidator([[
               isObject,
@@ -228,11 +224,9 @@ describe('decorateWithDefaultValue', () => {
                   nickname: composeValidator([[isString]]),
                 }),
                 expectedProfileDefaultValue,
-                true,
               ),
             ]]),
             expectedProfileDefaultValue,
-            true,
           ),
           decorateWithDefaultValue(
             composeValidator([[
@@ -240,11 +234,9 @@ describe('decorateWithDefaultValue', () => {
               decorateWithDefaultValue(
                 createArrayValidationRule(composeValidator([[isNumber]])),
                 expectedScoresDefaultValue,
-                true,
               ),
             ]]),
             expectedScoresDefaultValue,
-            true,
           ),
           decorateWithDefaultValue(
             composeValidator([[
@@ -255,11 +247,9 @@ describe('decorateWithDefaultValue', () => {
                   composeValidator([[isString]]),
                 ]),
                 expectedCoordinatesDefaultValue,
-                true,
               ),
             ]]),
             expectedCoordinatesDefaultValue,
-            true,
           ),
         ]),
         (error) => [
@@ -270,7 +260,6 @@ describe('decorateWithDefaultValue', () => {
           error.errors[4] ? error.errors[4].data : error.valid[4]!,
           error.errors[5] ? error.errors[5].data : error.valid[5]!,
         ],
-        true,
       );
 
       const actualResult = tupleRule([
@@ -314,15 +303,12 @@ describe('decorateWithDefaultValue', () => {
                   composeValidator([[isString]]),
                 ]),
                 expectedCoordinatesDefaultValue,
-                true,
               ),
             ]]),
             expectedCoordinatesDefaultValue,
-            true,
           ),
         ),
         (error) => error.errors.map((elError, index) => (elError ? elError?.data : error.valid[index]!)),
-        true,
       );
 
       const actualResult = arrayRule([[1, 'one'], ['two', 2], [2, 'two']]);
@@ -350,7 +336,7 @@ describe('decorateWithDefaultValue', () => {
         composeValidator([[isString]]),
         customError,
       );
-      const decoratedValidator = decorateWithDefaultValue(customValidator, 'fallback', true);
+      const decoratedValidator = decorateWithDefaultValue(customValidator, 'fallback');
 
       const actualResult = decoratedValidator(123);
 
@@ -364,7 +350,7 @@ describe('decorateWithDefaultValue', () => {
     */
 
     test('Should enrich forced rule error with default data', () => {
-      const decoratedRule = decorateWithDefaultValue(isBoolean, false, true);
+      const decoratedRule = decorateWithDefaultValue(isBoolean, false);
 
       const actualResult = decoratedRule(true, { shouldReturnError: true });
 
@@ -377,19 +363,19 @@ describe('decorateWithDefaultValue', () => {
     });
 
     test('Should return original error without data when decorator is disabled', () => {
-      const decoratedRule = decorateWithDefaultValue(isString, 'fallback', false);
+      const decoratedRule = decorateWithDefaultValue(isString, 'fallback');
 
       const actualResult = decoratedRule(123);
 
       expect(actualResult).toEqual(
-        new ErrorResult(IS_STRING_ERROR_MESSAGE, undefined),
+        {...new ErrorResult(IS_STRING_ERROR_MESSAGE, undefined), data: 'fallback'},
       );
     });
   });
 
   describe('decorateWithDefaultValue success cases', () => {
     test('Should pass through success from rule without default data', () => {
-      const decorated = decorateWithDefaultValue(isString, 'fallback', true);
+      const decorated = decorateWithDefaultValue(isString, 'fallback');
 
       const actualResult = decorated('hello');
 
@@ -399,7 +385,7 @@ describe('decorateWithDefaultValue', () => {
     test('Should pass through success from composed AND-validator', () => {
       const validator = composeValidator([[isString, isOnlyDigitsString]]);
       const expectedDefaultValue = '000' as unknown as string & TOnlyDigitsNominal;
-      const decorated = decorateWithDefaultValue(validator, expectedDefaultValue, true);
+      const decorated = decorateWithDefaultValue(validator, expectedDefaultValue);
 
       const actualResult = decorated('123');
 
@@ -408,7 +394,7 @@ describe('decorateWithDefaultValue', () => {
 
     test('Should pass through success from composed OR-validator', () => {
       const validator = composeValidator([[isString], [isUndefined]]);
-      const decorated = decorateWithDefaultValue(validator, 'default', true);
+      const decorated = decorateWithDefaultValue(validator, 'default');
 
       const actualResult = decorated(undefined);
 
@@ -423,7 +409,6 @@ describe('decorateWithDefaultValue', () => {
           isFactoryCalled = true;
           return error.message.length;
         },
-        true,
       );
 
       const actualResult = decorated(42);
@@ -440,7 +425,6 @@ describe('decorateWithDefaultValue', () => {
       const decorated = decorateWithDefaultValue(
         objectRule,
         { name: 'unknown', age: 0 },
-        true,
       );
 
       const actualResult = decorated({ name: 'Alice', age: 42 });
@@ -458,7 +442,6 @@ describe('decorateWithDefaultValue', () => {
       const decorated = decorateWithDefaultValue(
         tupleRule,
         ['unknown', 0] as [string, number],
-        true,
       );
 
       const actualResult = decorated(['Alice', 42]);
@@ -469,7 +452,7 @@ describe('decorateWithDefaultValue', () => {
     test('Should pass through success from array validation rule', () => {
       const numberValidator = composeValidator([[isNumber]]);
       const arrayRule = createArrayValidationRule(numberValidator);
-      const decorated = decorateWithDefaultValue(arrayRule, [0], true);
+      const decorated = decorateWithDefaultValue(arrayRule, [0]);
 
       const actualResult = decorated([1, 2, 3]);
 
