@@ -248,6 +248,77 @@ describe('createArrayValidationRule', () => {
       }
     });
 
+    test('Should keep undefined in valid at invalid indexes by default', () => {
+      const inputValue = ['Hello', 123, 'World'];
+      const arrayValidationRule = createArrayValidationRule(composeValidator([[isString]]));
+
+      const actualResult = arrayValidationRule(inputValue);
+
+      expect(actualResult.status).toBe('error');
+      if (actualResult.status === 'error') {
+        const validResults = actualResult.valid;
+        expect(validResults).toEqual(['Hello', undefined, 'World']);
+      }
+    });
+
+    test('Should omit invalid indexes from valid when doNotPreserveInvalidIndex is true', () => {
+      const inputValue = ['Hello', 123, 'World', false];
+      const arrayValidationRule = createArrayValidationRule(composeValidator([[isString]]));
+
+      const actualResult = arrayValidationRule(inputValue, { doNotPreserveInvalidIndex: true });
+
+      expect(actualResult.status).toBe('error');
+      if (actualResult.status === 'error') {
+        const validResults = actualResult.valid;
+        expect(validResults).toEqual(['Hello', 'World']);
+        expect(actualResult.errors).toHaveLength(4);
+        expect(actualResult.errors?.[0]).toBeUndefined();
+        expect(actualResult.errors?.[1]).toBeDefined();
+        expect(actualResult.errors?.[2]).toBeUndefined();
+        expect(actualResult.errors?.[3]).toBeDefined();
+      }
+    });
+
+    test('Should keep undefined in valid type when doNotPreserveInvalidIndex is a widened boolean', () => {
+      const inputValue = ['Hello', 123, 'World'];
+      const validationParams: { doNotPreserveInvalidIndex: boolean } = { doNotPreserveInvalidIndex: true };
+      const arrayValidationRule = createArrayValidationRule(composeValidator([[isString]]));
+
+      const actualResult = arrayValidationRule(inputValue, validationParams);
+
+      expect(actualResult.status).toBe('error');
+      if (actualResult.status === 'error') {
+        const validResults = actualResult.valid;
+        expect(validResults).toEqual(['Hello', 'World']);
+      }
+    });
+
+    test('Should keep undefined in valid when doNotPreserveInvalidIndex is false', () => {
+      const inputValue = ['Hello', 123, 'World'];
+      const arrayValidationRule = createArrayValidationRule(composeValidator([[isString]]));
+
+      const actualResult = arrayValidationRule(inputValue, { doNotPreserveInvalidIndex: false });
+
+      expect(actualResult.status).toBe('error');
+      if (actualResult.status === 'error') {
+        expect(actualResult.valid).toEqual(['Hello', undefined, 'World']);
+      }
+    });
+
+    test('Should return empty valid when every element is invalid and doNotPreserveInvalidIndex is true', () => {
+      const inputValue = [1, false, null];
+      const arrayValidationRule = createArrayValidationRule(composeValidator([[isString]]));
+
+      const actualResult = arrayValidationRule(inputValue, { doNotPreserveInvalidIndex: true });
+
+      expect(actualResult.status).toBe('error');
+      if (actualResult.status === 'error') {
+        const validResults = actualResult.valid;
+        expect(validResults).toEqual([]);
+        expect(actualResult.errors).toHaveLength(3);
+      }
+    });
+
     test('Should return error when shouldReturnError is true for empty array', () => {
       const inputValue: string[] = [];
       const arrayValidationRule = createArrayValidationRule(composeValidator([[isString]]));
