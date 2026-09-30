@@ -1,356 +1,567 @@
-# Yеt-Another-Validation
+# Yet-Another-Validation
 
-## 📋 Содержание
+Декларативная валидация на TypeScript. Библиотека задумана как копируемая директория доменного слоя, а не как внешняя зависимость: в проектах с чистой архитектурой и DDD валидация нужна внутри домена, а чужие пакеты туда тащить нельзя. Идея близка к [declarative rule-based validation](https://bespoyasov.ru/blog/declarative-rule-based-validation/).
 
-1. [🧭 Обзор](#-обзор)
-2. [🧩 Основные концепции и понятия](#-основные-концепции-и-понятия)
-3. [📦 Импорт](#-импорт)
+Правило — чистая функция. Несколько правил соединяются в цепочку «все должны пройти» (AND). Несколько таких цепочек соединяются как «достаточно одной» (OR). TypeScript выводит и успешные данные, и текст ошибки.
 
----
+## Содержание
 
-## 🧭 Обзор
+1. [Импорт](#импорт)
+2. [Результат](#результат)
+3. [Валидационное правило](#валидационное-правило)
+4. [Цепочка AND](#цепочка-and)
+5. [Ветки OR и валидатор](#ветки-or-и-валидатор)
+6. [Параметр shouldReturnError](#параметр-shouldreturnerror)
+7. [Объект](#объект)
+8. [Массив](#массив)
+9. [Кортеж](#кортеж)
+10. [Декораторы](#декораторы)
+11. [Готовые правила](#готовые-правила)
 
-Yеt-Another-Validation - пример декларативной валидации в функциональном стиле на Typescript. Зачем нужна ещё одна библиотека валидации, когда есть масса прекрасных библиотек типа yup, joi и т.д.? Yеt-Another-Validation задумывалась не как библиотека или npm-пакет, а как копируемая и контролируемая директория в доменный слой проектов, воплощающих идеи Чистой Архитектуры и Domain Driven Design. Проектов, где использование внешних библиотек в доменном слое недопустимо, а необходимость валидации именно там присутствует. Вдохновлено https://bespoyasov.ru/blog/declarative-rule-based-validation/  
+## Импорт
 
-Тесты и документация написаны с помощью Cursor AI
+В `tsconfig` проекта настроены алиасы на исходники:
 
-Основные особенности:
-- **Декларативность** - Опиши желаемый результат<br/>
-- **Функциональный подход** - Чистые функции в качестве валидационных правил <br/>
-- **Композируемость** - Pipe-утилита для композирования валидаторов и валидационных правил<br/>
-- **AND/OR** - Используйте операцию AND для проверки всех критериев одновременно и OR для проверки хотя бы одного<br/>
-- **Типобезопасность** - Подробный вывод типов удачной и неудачной валидации. Использование номинальных типов<br/>
-- **Гибкость** - Используйте готовые или создавайте собственные валидационные правила<br/>
-
-## 🧩 Основные концепции и понятия
-
-### Result-Pattern
-В Yet-Another-Validation используется Result-паттерн как тип возвращаемого значения любого валидатора или валидационного правила:
 ```typescript
+import {
+  isString,
+  isNumber,
+  composeValidator,
+  validateValue,
+  validateValueFromRules,
+  createObjectValidationRule,
+  SuccessResult,
+  ErrorResult,
+} from '@validation';
 
-// Успешный результат
-interface ISuccess<Data extends any = any> {
+import { isString } from '@validation/rules';
+import { composeValidator, createObjectValidationRule } from '@validation/factories';
+import { validateValue, validateValueFromRules } from '@validation/functions';
+import { SuccessResult, ErrorResult } from '@validation/utils';
+```
+
+`@validation/utils` — это конструкторы `SuccessResult` и `ErrorResult`. Декораторы лежат в `@validation/factories`.
+
+## Результат
+
+Любое правило и любой валидатор возвращают одно из двух значений. Исключение наружу не бросается.
+
+```typescript
+interface ISuccess<Data = any> {
   status: 'success';
-  data: T;
-}
-
-// Ошибка валидации
-interface IError<Message extends string = string, Data extends any = undefined> {
-  status: 'error';
-  message: Message;
   data: Data;
 }
+
+interface IError<Message extends string = string, Errors = undefined> {
+  status: 'error';
+  message: Message;
+  errors: Errors;
+}
 ```
 
-### Валидационное правило (Validation Rule)
-Валидационное правило (validation rule) - атомарная функция, валидирующая переданное значение и обязательно должна возвращать только ISuccess<ожидаемый тип> | IError<'текст ошибки', undefined>. 
+`SuccessResult` и `ErrorResult` — конструкторы этих объектов.
+
 ```typescript
-type TValidationRule<
-    InputData extends any = any,
-    Success extends ISuccess = ISuccess,
-    Error extends IError<string, any> = IError<string, any>,
-> = <Input extends InputData = InputData>(value: Input) => TResult<Success, Error>
+const success = new SuccessResult(42);
+// { status: 'success', data: 42 }
+
+const error = new ErrorResult('Value should be number', undefined);
+// { status: 'error', message: 'Value should be number', errors: undefined }
 ```
-Вот к примеру валидационное правило, проверяющее является ли переданное значение числом:
+
+Дальше по коду результат читается через `status`:
+
 ```typescript
-function isNumber(value: any): ISuccess<number> | IError<'Value should be number', undefined> {
+const result = isString('hello');
+
+if (result.status === 'success') {
+  result.data; // string
+} else {
+  result.message; // 'Value should be string'
+  result.errors; // undefined у атомарного правила
+}
+```
+
+Текст ошибки у готовых правил — строковый литерал. После склейки AND/OR TypeScript показывает объединение возможных сообщений, а не просто `string`.
+
+## Валидационное правило
+
+Правило — функция одного значения. На успехе в `data` лежит проверенное значение, часто суженное или помеченное номинальным типом. На ошибке `errors` у атомарного правила равен `undefined`.
+
+```typescript
+import isNumber from '@validation/rules/isNumber';
+
+const ok = isNumber(42);
+// ISuccess<number> | IError<'Value should be number', undefined>
+
+const failed = isNumber('42');
+// status: 'error', message: 'Value should be number'
+```
+
+Второе правило в цепочке может требовать уже суженный вход. `isPositiveNumber` принимает `number`, поэтому перед ним стоит `isNumber`. Если успех предыдущего правила не является `number`, TypeScript цепочку не примет.
+
+```typescript
+import {
+  isNumber,
+  isPositiveNumber,
+  isString,
+  validateValueFromRules,
+} from '@validation';
+
+validateValueFromRules(25, [isNumber, isPositiveNumber]);
+
+validateValueFromRules('25', [isString, isPositiveNumber]);
+// Ошибка типа: Type 'string' is not assignable to type 'number'.
+// isString на успехе даёт string, а isPositiveNumber ждёт number.
+```
+
+Часть правил при успехе добавляет номинальный тип. В рантайме это то же самое значение, бренд существует только в типе:
+
+```typescript
+import isPositiveNumber from '@validation/rules/isPositiveNumber';
+
+isPositiveNumber(5);
+// ISuccess<TPositiveNumberNominal>
+// data в рантайме — число 5
+```
+
+### Своё правило
+
+Правило обязано вернуть `SuccessResult` или `ErrorResult` на любом входе, включая мусор из рантайма. Ошибку нужно вернуть, а не бросить. Если `shouldReturnError` равен `true`, правило сразу возвращает свою ошибку и не смотрит на значение: так цепочка AND добирает сообщения следующих правил после первого падения.
+
+```typescript
+import { ErrorResult, SuccessResult } from '@validation/utils';
+
+type TValidationParams = { shouldReturnError?: boolean };
+
+export const IS_NON_EMPTY_STRING_ERROR_MESSAGE = 'Value should be a non-empty string' as const;
+
+export default function isNonEmptyString<
+  const Params extends TValidationParams | undefined = undefined,
+>(value: string, params?: Params) {
+  if (params?.shouldReturnError === true) {
+    return new ErrorResult(IS_NON_EMPTY_STRING_ERROR_MESSAGE, undefined);
+  }
   try {
-    if (typeof value === 'number' && !Number.isNaN(value)) {
-      return new SuccessResult(value) // SuccessResult - класс-конструктор для ISuccess;
+    if (value.length > 0) {
+      return new SuccessResult(value);
     }
-    return new ErrorResult(IS_NUMBER_ERROR_MESSAGE, undefined)  // ErrorResult - класс-конструктор для  IError;
+    return new ErrorResult(IS_NON_EMPTY_STRING_ERROR_MESSAGE, undefined);
   } catch (error) {
     console.error(error);
-    return new ErrorResult(IS_NUMBER_ERROR_MESSAGE, undefined);
+    return new ErrorResult(IS_NON_EMPTY_STRING_ERROR_MESSAGE, undefined);
   }
 }
 ```
-Такие атомарные валидационные правила подразумевается использовать в:
 
-### `validateValueFromRules(value, ...rules)`
-Функция, валидирующая переданное value по списку атомарных валидационных правил rules.
-Проверяет, что валидируемое значение соответствует правилу 1 И правилу 2. Работает по примеру pipe-оператора - в процессе исполнения каждое последующее валидационное правило в качестве параметра будет принимать результат предыдущего правила для проверки.
-Успешный результат валидации цепочки, например из двух правил, будет иметь пересечение (&) типов успеха всех правил цепочки.
-В свою очередь результирующая ошибка валидации будет иметь либо только сообщение последнего валидационного правила, либо обоих, разделённых точкой и пробелом. В data будет лежать соответствующий массив ошибок валидационных правил.
+Вход `string` означает: в цепочке перед этим правилом уже стоит проверка на строку. Само правило при этом всё равно ловит исключение, потому что после чужой ошибки в него может приехать любое значение.
+
+## Цепочка AND
+
+`validateValueFromRules` прогоняет значение через список правил слева направо. Каждое следующее правило получает `data` предыдущего успеха.
+
+Успех цепочки — пересечение успехов всех правил. Ошибка — сообщения упавших правил, склеенные через `. ` (разделитель по умолчанию). В `errors` лежит массив ошибок этих правил, в том порядке, в котором они упали.
+
+Цепочка не останавливается на первой ошибке. После неё остальные правила вызываются с `shouldReturnError: true` и добавляют свои сообщения. Поэтому каждое правило должно уметь вернуть ошибку в нужном формате.
+
 ```typescript
-type TValidationRule<
-    InputData extends any = any,
-    Success extends ISuccess = ISuccess,
-    Error extends IError<string, any> = IError<string, any>,
-> = <Input extends InputData = InputData>(value: Input) => TResult<Success, Error>;
-```
-**Параметры:**
-| Параметр | Описание |
-|----------|----------|
-| value    | Валидируемое значение |
-| rules    | Валидационные правила |
+import {
+  isNumber,
+  isPositiveNumber,
+  validateValueFromRules,
+} from '@validation';
 
-**Возвращает:**
-TResult<Success, Error> - результат валидации
+const age = validateValueFromRules(25, [isNumber, isPositiveNumber]);
+// ISuccess<number & TPositiveNumberNominal>
 
-**Пример:**
-```typescript
-const actualResult = validateValueFromRules('abc', isString, isOnlyEnglishLettersString);
-/*const actualResult: ISuccess<string & TOnlyEnglishLettersNominal> | IError<"Value should contain only English letters" | "Value should be string. Value should contain only English letters", [TIsOnlyEnglishLettersStringValidationError] | [TIsStringValidationError, TIsOnlyEnglishLettersStringValidationError]>*/
+const notAge = validateValueFromRules('25', [isNumber, isPositiveNumber]);
+// status: 'error'
+// message: 'Value should be number. Value should be positive number'
+// errors: [ошибка isNumber, ошибка isPositiveNumber]
 ```
 
-> **💡 Совет:**<br/>
-Не следует каждый раз при создании новых частных правил валидации, например строки, включать проверку на string. Лучше укажите тип параметра как string. При композицировании typescript потребует, чтобы перед этим правилом в цепочку правил было вставлено правило, проверяющее на string.
+Если число есть, но оно не положительное, в сообщении останется только второе правило: первое прошло и в список ошибок не попало.
 
-> **🟡 Важно:**<br/>
-Валидационные правила будут вызываться последовательно все, даже если в первом из них была обнаружена ошибка валидации. Поэтому каждое правило должно быть готово вне зависимости от типа аргумента обработать любое значение из рантайма и для этого иметь catch внутри себя, в котором возвращается (не выбрасывается) IError c нужным сообщением об ошибке.
+Свой разделитель передаётся третьим аргументом:
 
-Также валидационные правила можно использовать в 
-### `validateValue(value, ...validators)`
-Функция, проверяет значение value по принципу "ИЛИ". То есть соответствует ли value списку правил 1 (или валидатору) ИЛИ списку правил 2 (или валидатору).
-Успешный результат валидации будет иметь вид объединения (union, ||) пересечений валидационных правил (или валидатора/ов).
-Ошибка валидации будет иметь сообщение из сообщений валидационных правил (или валидатора/ов), разделённых союзом OR, а в data будет лежать список, элементами которого будет data из валидаторов и списки ошибок на каждую цепочку валидационных правил.<br/>
-**Параметры:**<br/>
-| Параметр | Описание |
-|---|---|
-| value | Значение для валидации |
-| validators | Валидаторы или списки валидационных правил |
-
-**Возвращает:**
-TResult<Success, Error> - результат валидации
-
-**Пример:**<br/>
 ```typescript
-import isString from '@validation/rules/isString';
-import isOnlyEnglishLettersString from '@validation/rules/isOnlyEnglishLettersString';
-import isNumber from '@validation/rules/isNumber';
-import isPositiveNumber from '@validation/rules/isPositiveNumber';
-import validateValue from '@validation/functions/validateValue';
-
-const actualResult = validateValue(
-  inputValue,
-  [isString, isOnlyEnglishLettersString], // AND группа 1
-  [isNumber, isPositiveNumber], // Валидатор 1
-);
-//const actualResult: ISuccess<(string & TOnlyEnglishLettersNominal) | (number & TPositiveNumberNominal)> | 
-//  IError<
-//    "Value should contain only English letters OR Value should be positive number" | 
-//    "Value should contain only English letters OR Value should be number. Value should be positive number" | 
-//    "Value should be string. Value should contain only English letters OR Value should be positive number" | 
-//    "Value should be string. Value should contain only English letters OR Value should be number. Value should be positive number", 
-//    [
-//      [TIsOnlyEnglishLettersStringValidationError] | [TIsStringValidationError, TIsOnlyEnglishLettersStringValidationError], 
-//      [TIsPositiveNumberValidationError] | [TIsNumberValidationError, TIsPositiveNumberValidationError]
-//    ]
-//  >
-```или
-```typescript
-import isString from '@validation/rules/isString';
-import isOnlyEnglishLettersString from '@validation/rules/isOnlyEnglishLettersString';
-import isNumber from '@validation/rules/isNumber';
-import isPositiveNumber from '@validation/rules/isPositiveNumber';
-import composeValidator from '@validation/factories/composeValidator';
-import validateValue from '@validation/functions/validateValue';
-
-const actualResult = validateValue(
-  inputValue,
-  [isString, isOnlyEnglishLettersString], // AND группа 1
-  composeValidator([isNumber, isPositiveNumber]) // Валидатор 1
-);
-//const actualResult: ISuccess<(string & TOnlyEnglishLettersNominal) | (number & TPositiveNumberNominal)> | 
-//  IError<
-//    "Value should contain only English letters OR Value should be positive number" | 
-//    "Value should contain only English letters OR Value should be number. Value should be positive number" | 
-//    "Value should be string. Value should contain only English letters OR Value should be positive number" | 
-//    "Value should be string. Value should contain only English letters OR Value should be number. Value should be positive number", 
-//    [
-//      [TIsOnlyEnglishLettersStringValidationError] | [TIsStringValidationError, TIsOnlyEnglishLettersStringValidationError], 
-//      [TIsPositiveNumberValidationError] | [TIsNumberValidationError, TIsPositiveNumberValidationError]
-//    ]
-//  >
-```
-### `composeValidator(...validators)`
-Фабрика для создания функции-валидатора. Принимает список валидаторов или валидационных правил и возвращает функцию-валидатор, которая при передаче значения value валидирует его с помощью validateValue:
-```typescript
-type TValidator<
-    InputData extends any = any,
-    Success extends ISuccess = ISuccess,
-    Error extends IError<string, Array<Array<IError<string, any>>>
-    > = IError<string, Array<Array<IError<string, any>>>>,
-> = <Input extends InputData = InputData>(value: Input) => TResult<Success, Error>
-```
-Для валидации использует validateValue<br/>
-**Параметры:**<br/>
-| Параметр | Описание |
-|----------|----------|
-| validators | Валидаторы или списки валидационных правил |
-
-**Возвращает:**
-TValidator<InputData, Success, Error>
-
-**Пример:**<br/>
-```typescript
-import isString from '@validation/rules/isString';
-import isOnlyEnglishLettersString from '@validation/rules/isOnlyEnglishLettersString';
-import isNumber from '@validation/rules/isNumber';
-import isPositiveNumber from '@validation/rules/isPositiveNumber';
-import composeValidator from '@validation/factories/composeValidator';
-
-const validator = composeValidator(
-  [isString, isOnlyEnglishLettersString], // AND группа 1
-  [isNumber, isPositiveNumber]           // AND группа 2
-);
-//<const Value extends any>(value: Value) => 
-//  ISuccess<(string & TOnlyEnglishLettersNominal) | (number & TPositiveNumberNominal)> | 
-//  IError<
-//    "Value should contain only English letters OR Value should be positive number" | 
-//    "Value should contain only English letters OR Value should be number. Value should be positive number" | 
-//    "Value should be string. Value should contain only English letters OR Value should be positive number" | 
-//    "Value should be string. Value should contain only English letters OR Value should be number. Value should be positive number",
-//    [
-//      [TIsOnlyEnglishLettersStringValidationError] | [TIsStringValidationError, TIsOnlyEnglishLettersStringValidationError], 
-//      [TIsPositiveNumberValidationError] | [TIsNumberValidationError, TIsPositiveNumberValidationError]
-//    ]
-//  >
-```
-или
-```typescript
-import isString from '@validation/rules/isString';
-import isOnlyEnglishLettersString from '@validation/rules/isOnlyEnglishLettersString';
-import isNumber from '@validation/rules/isNumber';
-import isPositiveNumber from '@validation/rules/isPositiveNumber';
-import composeValidator from '@validation/factories/composeValidator';
-
-const validator = composeValidator(
-  [isString, isOnlyEnglishLettersString], // AND группа 1
-  composeValidator([isNumber, isPositiveNumber]) // Валидатор 1
-);
-//const validator: <const Value extends any>(value: Value) => 
-//  ISuccess<(string & TOnlyEnglishLettersNominal) | (number & TPositiveNumberNominal)> | 
-//  IError<
-//    "Value should contain only English letters OR Value should be positive number" | 
-//    "Value should contain only English letters OR Value should be number. Value should be positive number" | 
-//    "Value should be string. Value should contain only English letters OR Value should be positive number" | 
-//    "Value should be string. Value should contain only English letters OR Value should be number. Value should be positive number", 
-//    [
-//      [TIsOnlyEnglishLettersStringValidationError] | [TIsStringValidationError, TIsOnlyEnglishLettersStringValidationError],
-//      [TIsPositiveNumberValidationError] | [TIsNumberValidationError, TIsPositiveNumberValidationError]
-//    ]
-//  >
-```
-### `createObjectValidationRule(schema)`
-Фабрика для создания правила валидации объекта. Принимает схему объекта с валидаторами для каждого поля и возвращает функцию-валидатор, которая проверяет соответствие переданного объекта заданной схеме.<br/>
-**Параметры:**<br/>
-| Параметр | Описание |
-|----------|----------|
-| schema | Объект с валидаторами для каждого поля объекта |
-
-**Возвращает:**
-TValidator<object, object, ErrorResult> - функция-валидатор для объекта
-
-**Пример:**<br/>
-```typescript
-import isString from '@validation/rules/isString';
-import isOnlyEnglishLettersString from '@validation/rules/isOnlyEnglishLettersString';
-import isNumber from '@validation/rules/isNumber';
-import isPositiveNumber from '@validation/rules/isPositiveNumber';
-import composeValidator from '@validation/factories/composeValidator';
-import createObjectValidationRule from '@validation/factories/createObjectValidationRule';
-
-const userSchema = {
-  name: composeValidator([isString, isOnlyEnglishLettersString]),
-  age: composeValidator([isNumber, isPositiveNumber]),
-};
-
-const userValidationRule = createObjectValidationRule(userSchema);
-const result = objectValidationRule({ name: 'John', age: 25 });
-//const result: ISuccess<{ name: string, age: number }> | 
-// IError<string, {
-//   name: IError<"Value should be string", [[TIsStringValidationError]]>;
-//   age: IError<"Value should be number", [[TIsNumberValidationError]]>;
-// }> |
-//  TIsObjectValidationError
-```
-Если поле опциональное , то вы можете передать в composeValidator соответствующее правило
-```typescript
-const optionalFiledSchema = {
-  optionalField: composeValidator([isString], [isUndefined]),
-};
-const objectValidationRule = createObjectValidationRule(optionalFiledSchema);
-const result = objectValidationRule({ optionalField: undefined });
-//const result: ISuccess<{ optionalField: string | undefined }> | 
-// IError<
-//   string, 
-// {
-//   optionalField: IError<
-//     "Value should be string OR Value should be undefined", 
-//     [[TIsStringValidationError], [TIsUndefinedValidationError]]
-//   >;
-// }>
-```
-### `createArrayValidationRule(validator)`
-Фабрика для создания правила валидации массива. Принимает валидатор для элементов массива и возвращает функцию-валидатор, которая проверяет, что переданное значение является массивом и все его элементы соответствуют заданному валидатору.<br/>
-**Параметры:**<br/>
-| Параметр | Описание |
-|----------|----------|
-| validator | Валидатор для элементов массива |
-
-**Возвращает:**
-TValidator<Array<any>, Array<any>, ErrorResult> - функция-валидатор для массива
-
-**Пример:**<br/>
-```typescript
-import isString from '@validation/rules/isString';
-import composeValidator from '@validation/factories/composeValidator';
-import createArrayValidationRule from '@validation/factories/createArrayValidationRule';
-
-const stringArrayValidationRule = createArrayValidationRule(
-  composeValidator([isString])
-);
-const result = stringArrayValidationRule(['Hello', 'World', 'Test'])
-//const result:  ISuccess<ISuccess<string>[]> | 
-// IError<string, (IError<"Value should be string", [[TIsStringValidationError]]> | undefined)[]> |
-// TIsArrayValidationError
+validateValueFromRules('25', [isNumber, isPositiveNumber], {
+  separator: ' и ',
+});
+// message: 'Value should be number и Value should be positive number'
 ```
 
-### `createTupleValidationRule(validators)`
-Фабрика для создания правила валидации кортежа (tuple). Принимает массив валидаторов для каждого элемента кортежа и возвращает функцию-валидатор, которая проверяет, что переданное значение является массивом с фиксированной длиной и каждый элемент соответствует своему валидатору.<br/>
-**Параметры:**<br/>
-| Параметр | Описание |
-|----------|----------|
-| validators | Массив валидаторов для каждого элемента кортежа |
+## Ветки OR и валидатор
 
-**Возвращает:**
-TValidator<Tuple, Tuple, ErrorResult> - функция-валидатор для кортежа, где Tuple — кортеж с конкретными типами элементов
+OR — это список веток. Ветка бывает двух видов:
 
-**Пример:**<br/>
+- массив правил: одна AND-цепочка;
+- уже собранный валидатор: вложенный `composeValidator`.
+
+В каждую ветку передаётся одно и то же валидируемое значение, слева направо. Если ветка вернула успех, вызов на этом заканчивается: в `data` лежит это значение, следующие ветки не вызываются. Если ветка вернула ошибку, ошибка запоминается и вызывается следующая ветка. Если ошиблись все, результат — ошибка: `message` склеивает сообщения веток через ` or `, `errors` — массив веток, внутри каждой ветки — массив ошибок её правил.
+
+`validateValue` делает это один раз. `composeValidator` возвращает функцию с тем же поведением, её можно класть в объект, массив и кортеж.
+
 ```typescript
-import isString from '@validation/rules/isString';
-import isNumber from '@validation/rules/isNumber';
-import composeValidator from '@validation/factories/composeValidator';
-import createTupleValidationRule from '@validation/factories/createTupleValidationRule';
+import {
+  composeValidator,
+  isNumber,
+  isPositiveNumber,
+  isString,
+  isUndefined,
+  validateValue,
+} from '@validation';
 
-const tupleValidationRule = createTupleValidationRule([
-  composeValidator([isString]),
-  composeValidator([isNumber])
+const asString = validateValue('abc', [
+  [isString],
+  [isNumber, isPositiveNumber],
 ]);
-// Использование
-const result = tupleValidationRule(['hello', 42]);
-//const result: ISuccess<[string, number]> | 
-//  IError<
-//    string, 
-//    [
-//      IError<"Value should be string", [[TIsStringValidationError]]> | undefined, 
-//      IError<"Value should be number", [[TIsNumberValidationError]]> | undefined
-//    ]
-//  > |
-// TIsArrayValidationError
+// status: 'success', data: 'abc'
+// isString принял значение, ветка с isNumber не вызывалась
 
+const asNumber = validateValue(42, [
+  [isString],
+  [isNumber, isPositiveNumber],
+]);
+// status: 'success', data: 42
+// isString вернул ошибку, isNumber и isPositiveNumber приняли то же значение 42
+
+const failed = validateValue(true, [
+  [isString],
+  [isNumber, isPositiveNumber],
+]);
+// message: 'Value should be string or Value should be number. Value should be positive number'
+// errors: [
+//   [ошибка isString],
+//   [ошибка isNumber, ошибка isPositiveNumber],
+// ]
 ```
-## 📦 Импорт
+
+Тот же набор веток как переиспользуемая функция:
+
 ```typescript
-// Импорт всех основных компонентов из корневого модуля
-import { isString, composeValidator, validateValue, SuccessResult, ErrorResult } from '@validation';
+const stringOrPositive = composeValidator([
+  [isString],
+  [isNumber, isPositiveNumber],
+]);
 
-// Или точечный импорт из конкретных модулей
-import { isString } from '@validation/rules';
-import { composeValidator } from '@validation/factories';
-import { validateValue } from '@validation/functions';
-import { SuccessResult, ErrorResult } from '@validation/utils'; 
+stringOrPositive('abc');
+stringOrPositive(5);
+stringOrPositive(true);
 ```
 
+Опциональное значение — это OR с `isUndefined`:
+
+```typescript
+const optionalString = composeValidator([
+  [isString],
+  [isUndefined],
+]);
+
+optionalString(undefined); // успех, data: undefined
+optionalString('abc');     // успех, data: string
+optionalString(1);         // ошибка, обе ветки
+```
+
+Вложенный валидатор внутри ветки раскрывается так же, как если бы его правила лежали прямо в этой ветке:
+
+```typescript
+const positive = composeValidator([[isNumber, isPositiveNumber]]);
+
+const nameOrPositive = composeValidator([
+  [isString],
+  [positive],
+]);
+```
+
+Разделители задаются вторым аргументом `composeValidator` или третьим аргументом `validateValue`:
+
+```typescript
+const validator = composeValidator(
+  [
+    [isString],
+    [isNumber, isPositiveNumber],
+  ],
+  { separatorOR: ' либо ', separatorAND: ' + ' },
+);
+
+validator(true);
+// 'Value should be string либо Value should be number + Value should be positive number'
+```
+
+По умолчанию AND — `'. '`, OR — `' or '`.
+
+## Параметр shouldReturnError
+
+Второй аргумент правила и валидатора — `{ shouldReturnError?: boolean }`.
+
+Литерал `true` меняет и рантайм, и тип. Функция возвращает ошибку даже для верного значения, а тип результата — только `IError`, без `ISuccess`. Так можно посмотреть полную форму ошибки, не подбирая заведомо плохое значение.
+
+```typescript
+const forced = isString('hello', { shouldReturnError: true });
+// тип: IError<'Value should be string', undefined>
+// status: 'error', хотя строка валидна
+```
+
+Если флаг имеет тип `boolean`, а не литерал `true`, тип остаётся объединением успеха и ошибки: компилятор не знает, какая ветка случится в рантайме.
+
+Тот же флаг можно передать в `validateValue`, `validateValueFromRules` и в валидатор объекта, массива или кортежа. Тогда его получают вложенные правила.
+
+## Объект
+
+`createObjectValidationRule` принимает схему: имя поля и валидатор этого поля. В схему кладётся результат `composeValidator`, а не голое правило.
+
+Успех — объект с `data` полей. Ошибка собирает сообщения по упавшим полям. Поле `errors` хранит ошибку каждого упавшего поля. Поле `valid` хранит `data` полей, которые прошли. Общее `message` имеет тип `string`: набор упавших полей известен только в рантайме. Литералы сообщений остаются на ошибках полей.
+
+```typescript
+import {
+  composeValidator,
+  createObjectValidationRule,
+  isNumber,
+  isPositiveNumber,
+  isString,
+  isUndefined,
+} from '@validation';
+
+const userRule = createObjectValidationRule({
+  name: composeValidator([[isString]]),
+  age: composeValidator([[isNumber, isPositiveNumber]]),
+});
+
+const ok = userRule({ name: 'John', age: 25 });
+// ISuccess<{ name: string, age: number & TPositiveNumberNominal }>
+
+const failed = userRule({ name: 1, age: 25 });
+if (failed.status === 'error') {
+  failed.message;
+  // 'Object validation failed for the following fields: \nname: Value should be string'
+
+  failed.errors?.name; // ошибка поля name
+  failed.errors?.age;  // undefined, возраст прошёл
+
+  failed.valid?.age;   // 25
+  failed.valid?.name;  // undefined
+}
+```
+
+Тексты можно заменить при создании правила:
+
+```typescript
+const userRuleWithTexts = createObjectValidationRule(
+  {
+    name: composeValidator([[isString]]),
+    age: composeValidator([[isNumber, isPositiveNumber]]),
+  },
+  {
+    errorMessageHypernym: 'Пользователь не прошёл проверку',
+    errorMessageHypernymSeparator: ' — ',
+    errorMessageFieldSeparator: ' — ',
+  },
+);
+```
+
+По умолчанию заголовок — `Object validation failed for the following fields`, оба разделителя — `': '`.
+
+Необязательное поле — валидатор с веткой `isUndefined`:
+
+```typescript
+const withNickname = createObjectValidationRule({
+  nickname: composeValidator([[isString], [isUndefined]]),
+});
+
+withNickname({ nickname: undefined }); // успех
+```
+
+Если на вход пришло не объект, правило всё равно возвращает ошибку схемы, а не падает.
+
+## Массив
+
+`createArrayValidationRule` проверяет каждый элемент одним и тем же валидатором.
+
+Успех — массив `data` элементов. Ошибка хранит индексы. В `errors` на месте проваленного элемента лежит его ошибка, на месте прошедшего — `undefined`. В `valid` наоборот: прошедшие значения стоят на своих индексах, проваленные — `undefined`. Сообщение перечисляет индексы упавших элементов. Общее `message` снова имеет тип `string`.
+
+```typescript
+import {
+  composeValidator,
+  createArrayValidationRule,
+  isString,
+} from '@validation';
+
+const strings = createArrayValidationRule(composeValidator([[isString]]));
+
+strings(['a', 'b']);
+// ISuccess<string[]>
+
+const failed = strings(['a', 1, 'c']);
+if (failed.status === 'error') {
+  failed.errors?.[0]; // undefined
+  failed.errors?.[1]; // ошибка «Value should be string»
+  failed.valid;       // ['a', undefined, 'c']
+  // тип valid: Array<string | undefined>
+}
+```
+
+`doNotPreserveInvalidIndex: true` убирает дырки из `valid`: туда попадают только успешные элементы, без `undefined` на местах ошибок. `errors` по-прежнему выровнен по индексу исходного массива.
+
+```typescript
+const compact = strings(['a', 1, 'c'], { doNotPreserveInvalidIndex: true });
+if (compact.status === 'error') {
+  compact.valid; // ['a', 'c']
+  // тип valid: Array<string>
+  compact.errors?.[1]; // ошибка второго элемента
+}
+```
+
+Тип смотрит на литерал флага:
+
+| Что передано | Тип `valid` |
+|---|---|
+| флаг не передан или `false` | `Array<Data \| undefined>` |
+| `doNotPreserveInvalidIndex: true` | `Array<Data>` |
+| флаг типа `boolean`, не литерал | `Array<Data \| undefined>` |
+
+В последнем случае рантайм зависит от значения. Тип остаётся широким, потому что `boolean` — это и `true`, и `false`.
+
+Если значение не массив или это пустой массив при `shouldReturnError: true`, сообщение начинается с `Array does not consist of elements following next validation rules`. Для обычного массива с битыми элементами заголовок — `Array validation failed for the following elements`.
+
+Свои тексты:
+
+```typescript
+createArrayValidationRule(composeValidator([[isString]]), {
+  errorMessageHypernym: 'Список строк',
+  errorMessageEmptyHypernym: 'Это не список строк',
+  errorMessageHypernymSeparator: ' — ',
+  errorMessageIndexSeparator: ' — ',
+});
+```
+
+## Кортеж
+
+`createTupleValidationRule` проверяет массив фиксированной длины: у каждой позиции свой валидатор. Успех — кортеж `data`. Ошибка — кортеж ошибок той же длины, прошедшие позиции в нём равны `undefined`. В `valid` лежат успешные позиции, тип этого поля частичный.
+
+```typescript
+import {
+  composeValidator,
+  createTupleValidationRule,
+  isNumber,
+  isString,
+} from '@validation';
+
+const pair = createTupleValidationRule([
+  composeValidator([[isString]]),
+  composeValidator([[isNumber]]),
+]);
+
+pair(['hello', 42]);
+// ISuccess<[string, number]>
+
+const failed = pair(['hello', '42']);
+if (failed.status === 'error') {
+  failed.errors?.[0]; // undefined
+  failed.errors?.[1]; // ошибка isNumber
+  failed.valid?.[0];  // 'hello'
+}
+```
+
+Заголовок по умолчанию — `Tuple validation failed for the following elements`. Если значение не массив нужной формы, используется `Tuple does not consist of elements following next validation rules`. Разделители те же, что у массива: `errorMessageHypernym`, `errorMessageHypernymSeparator`, `errorMessageIndexSeparator`.
+
+## Декораторы
+
+### Своя ошибка
+
+`decorateWithCustomError` оборачивает атомарное правило. Успех не меняется. Ошибка заменяется на переданный `ErrorResult` или на результат фабрики. Фабрика получает исходную ошибку.
+
+Декоратор рассчитан на правило, не на валидатор из `composeValidator`.
+
+```typescript
+import {
+  decorateWithCustomError,
+  ErrorResult,
+  isString,
+} from '@validation';
+
+const nameRule = decorateWithCustomError(
+  isString,
+  new ErrorResult('Имя должно быть строкой', undefined),
+);
+
+nameRule(1);
+// message: 'Имя должно быть строкой'
+
+const withOriginal = decorateWithCustomError(isString, (original) => (
+  new ErrorResult(`Имя: ${original.message}`, undefined)
+));
+```
+
+### Значение по умолчанию
+
+`decorateWithDefaultValue` при ошибке дописывает в результат поле `data`. Это не замена ошибки успехом: `status` остаётся `'error'`, рядом лежит запасное значение. Можно передать само значение или фабрику от исходной ошибки и входного значения. Декоратор принимает и правило, и валидатор.
+
+```typescript
+import {
+  composeValidator,
+  decorateWithDefaultValue,
+  isString,
+} from '@validation';
+
+const nameOrEmpty = decorateWithDefaultValue(isString, '');
+
+const failed = nameOrEmpty(1);
+if (failed.status === 'error') {
+  failed.message; // 'Value should be string'
+  failed.data;    // ''
+}
+
+const ageOrZero = decorateWithDefaultValue(
+  composeValidator([[isNumber]]),
+  (_error, value) => (typeof value === 'number' ? value : 0),
+);
+```
+
+Тип ошибки после декоратора — исходная ошибка, пересечённая с `{ data: типЗапасногоЗначения }`.
+
+## Готовые правила
+
+Импорт из `@validation` или `@validation/rules`. Сообщение правила — константа рядом с функцией, например `IS_STRING_ERROR_MESSAGE`.
+
+Проверки типа значения, вход `any`:
+
+| Правило | Успех | Сообщение |
+|---|---|---|
+| `isString` | `string` | `Value should be string` |
+| `isNumber` | `number` | `Value should be number` |
+| `isBoolean` | `boolean` | `Value should be boolean` |
+| `isUndefined` | `undefined` | `Value should be undefined` |
+| `isNull` | `null` | `Value should be null` |
+| `isSymbol` | `symbol` | `Value should be symbol` |
+| `isFunction` | функция | `Value should be function` |
+| `isDate` | `Date` | `Value should be Date` |
+| `isPromise` | `Promise` | `Value should be Promise` |
+| `isObject` | объект | `Value should be object` |
+| `isArray` | `any[]` | `Value should be array` |
+| `isNaN` | `number` (`NaN`) | `Value should be NaN` |
+
+Строка после `isString`. Вход этих правил — `string`:
+
+| Правило | Успех | Сообщение |
+|---|---|---|
+| `isOnlyEnglishLettersString` | `string & TOnlyLatinLettersNominal` | `Value should contain only Latin letters` |
+| `isOnlyDigitsString` | `string & TOnlyDigitsNominal` | `Value should contain only digits` |
+
+В публичном барреле правило латинских букв называется `isOnlyEnglishLettersString`. Файл и текст ошибки говорят про Latin letters.
+
+Число после `isNumber`:
+
+| Правило | Успех | Сообщение |
+|---|---|---|
+| `isPositiveNumber` | `TPositiveNumberNominal` | `Value should be positive number` |
+
+Длина массива. Это фабрики: `isArrayMinLength(2)`. Ставить их после `isArray`. Условие в коде такое: минимум — `length >= n`, максимум — `length <= n`, точная длина — `length === n`.
+
+| Правило | Сообщение |
+|---|---|
+| `isArrayMinLength(n)` | `Array should contain more than ${n} elements` |
+| `isArrayMaxLength(n)` | `Array should contain less than ${n} elements` |
+| `isArrayExactLength(n)` | `Array should contain exactly ${n} elements` |
+
+Коллекции и бинарные типы: `isMap`, `isSet`, `isWeakMap`, `isWeakSet`, `isArrayBuffer`, `isSharedArrayBuffer`, `isDataView`, `isInt8Array`, `isInt16Array`, `isInt32Array`, `isUint8Array`, `isUint8ClampedArray`, `isUint16Array`, `isUint32Array`, `isFloat32Array`, `isFloat64Array`, `isBigInt64Array`, `isBigUint64Array`. Успех — соответствующий экземпляр. Текст ошибки у каждого свой, его константа экспортируется рядом с функцией. У `isMap` это `Value should be a Map`, у `isSet` — `Value should be Set`.
