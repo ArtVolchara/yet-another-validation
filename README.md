@@ -274,7 +274,7 @@ const nameOrPositive = composeValidator([
 ]);
 ```
 
-Разделители задаются вторым аргументом `composeValidator` или третьим аргументом `validateValue`:
+Разделители задаются вторым аргументом `composeValidator` или третьим аргументом `validateValue`. У `composeValidator` те же ключи можно передать и при вызове: `separatorOR`, `separatorAND` и `shouldReturnError`. Переданный ключ заменяет значение из создания, отсутствующий ключ оставляет его.
 
 ```typescript
 const validator = composeValidator(
@@ -291,6 +291,20 @@ validator(true);
 
 По умолчанию AND — `'. '`, OR — `' or '`.
 
+```typescript
+const alwaysError = composeValidator(
+  [[isString], [isNumber, isPositiveNumber]],
+  { separatorOR: ' либо ', separatorAND: ' + ', shouldReturnError: true },
+);
+
+alwaysError('abc');
+// status: 'error', тип результата — только IError
+// 'Value should be string либо Value should be number + Value should be positive number'
+
+alwaysError('abc', { shouldReturnError: false, separatorOR: ' || ' });
+// status: 'success', data: 'abc'
+```
+
 ## Параметр shouldReturnError
 
 Второй аргумент правила и валидатора — `{ shouldReturnError?: boolean }`.
@@ -306,6 +320,17 @@ const forced = isString('hello', { shouldReturnError: true });
 Если флаг имеет тип `boolean`, а не литерал `true`, тип остаётся объединением успеха и ошибки: компилятор не знает, какая ветка случится в рантайме.
 
 Тот же флаг можно передать в `validateValue`, `validateValueFromRules` и в валидатор объекта, массива или кортежа. Тогда его получают вложенные правила.
+
+У `composeValidator`, `createObjectValidationRule`, `createArrayValidationRule` и `createTupleValidationRule` часть ключей задаётся и при создании, и при вызове. Переданный ключ вызова заменяет ключ создания. Если в вызове ключа нет, остаётся значение из создания.
+
+| Функция | Ключи создания и вызова | Только при создании |
+|---|---|---|
+| `composeValidator` | `separatorOR`, `separatorAND`, `shouldReturnError` | нет |
+| `createObjectValidationRule` | `shouldReturnError` | `errorMessageHypernym`, `errorMessageHypernymSeparator`, `errorMessageFieldSeparator` |
+| `createArrayValidationRule` | `shouldReturnError`, `doNotPreserveInvalidIndex` | `errorMessageHypernym`, `errorMessageEmptyHypernym`, `errorMessageHypernymSeparator`, `errorMessageIndexSeparator` |
+| `createTupleValidationRule` | `shouldReturnError` | `errorMessageHypernym`, `errorMessageHypernymSeparator`, `errorMessageIndexSeparator` |
+
+`validateValue` и `validateValueFromRules` принимают параметры только в момент вызова.
 
 ## Объект
 
@@ -362,6 +387,21 @@ const userRuleWithTexts = createObjectValidationRule(
 
 По умолчанию заголовок — `Object validation failed for the following fields`, оба разделителя — `': '`.
 
+`shouldReturnError` можно передать вторым аргументом `createObjectValidationRule`. Тогда он действует на каждый вызов. Аргумент вызова перекрывает его.
+
+```typescript
+const alwaysError = createObjectValidationRule(
+  { name: composeValidator([[isString]]) },
+  { shouldReturnError: true },
+);
+
+alwaysError({ name: 'John' });
+// status: 'error', тип результата — только IError
+
+alwaysError({ name: 'John' }, { shouldReturnError: false });
+// status: 'success', data: { name: 'John' }
+```
+
 Необязательное поле — валидатор с веткой `isUndefined`:
 
 ```typescript
@@ -372,7 +412,7 @@ const withNickname = createObjectValidationRule({
 withNickname({ nickname: undefined }); // успех
 ```
 
-Если на вход пришло не объект, правило всё равно возвращает ошибку схемы, а не падает.
+Если значение не прошло `isObject`, валидатор каждого поля вызывается с `shouldReturnError: true`. Заголовок остаётся `Object validation failed for the following fields`. `isObject` принимает обычный объект.
 
 ## Массив
 
@@ -401,7 +441,7 @@ if (failed.status === 'error') {
 }
 ```
 
-`doNotPreserveInvalidIndex: true` убирает дырки из `valid`: туда попадают только успешные элементы, без `undefined` на местах ошибок. `errors` по-прежнему выровнен по индексу исходного массива.
+`doNotPreserveInvalidIndex: true` убирает дырки из `valid`: туда попадают только успешные элементы, без `undefined` на местах ошибок. `errors` по-прежнему выровнен по индексу исходного массива. Флаг можно задать при создании правила и перекрыть аргументом вызова, так же как `shouldReturnError`.
 
 ```typescript
 const compact = strings(['a', 1, 'c'], { doNotPreserveInvalidIndex: true });
@@ -422,7 +462,23 @@ if (compact.status === 'error') {
 
 В последнем случае рантайм зависит от значения. Тип остаётся широким, потому что `boolean` — это и `true`, и `false`.
 
-Если значение не массив или это пустой массив при `shouldReturnError: true`, сообщение начинается с `Array does not consist of elements following next validation rules`. Для обычного массива с битыми элементами заголовок — `Array validation failed for the following elements`.
+`shouldReturnError` можно передать вторым аргументом `createArrayValidationRule`. Тогда он действует на каждый вызов правила. Аргумент самого вызова перекрывает его: переданный ключ заменяет значение из создания, отсутствующий ключ оставляет значение из создания.
+
+```typescript
+const alwaysError = createArrayValidationRule(
+  composeValidator([[isString]]),
+  { shouldReturnError: true },
+);
+
+alwaysError(['a', 'b']);
+// status: 'error', тип результата — только IError
+
+alwaysError(['a', 'b'], { shouldReturnError: false });
+// status: 'success', data: ['a', 'b']
+// тип снова ISuccess | IError
+```
+
+Если значение не массив или это пустой массив при итоговом `shouldReturnError: true`, сообщение начинается с `Array does not consist of elements following next validation rules`. Для обычного массива с битыми элементами заголовок — `Array validation failed for the following elements`.
 
 Свои тексты:
 
@@ -463,7 +519,24 @@ if (failed.status === 'error') {
 }
 ```
 
-Заголовок по умолчанию — `Tuple validation failed for the following elements`. Если значение не массив нужной формы, используется `Tuple does not consist of elements following next validation rules`. Разделители те же, что у массива: `errorMessageHypernym`, `errorMessageHypernymSeparator`, `errorMessageIndexSeparator`.
+Заголовок по умолчанию — `Tuple validation failed for the following elements`. Тексты задаются только при создании: `errorMessageHypernym`, `errorMessageHypernymSeparator`, `errorMessageIndexSeparator`. По умолчанию оба разделителя — `': '`.
+
+Если значение не массив, валидатор каждой позиции вызывается с `shouldReturnError: true`. Заголовок остаётся тем же.
+
+`shouldReturnError` можно передать вторым аргументом `createTupleValidationRule`. Тогда он действует на каждый вызов. Аргумент вызова перекрывает его.
+
+```typescript
+const alwaysError = createTupleValidationRule(
+  [composeValidator([[isString]]), composeValidator([[isNumber]])],
+  { shouldReturnError: true },
+);
+
+alwaysError(['hello', 42]);
+// status: 'error', тип результата — только IError
+
+alwaysError(['hello', 42], { shouldReturnError: false });
+// status: 'success', data: ['hello', 42]
+```
 
 ## Декораторы
 

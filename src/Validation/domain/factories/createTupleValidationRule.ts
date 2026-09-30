@@ -7,6 +7,7 @@ import {
   TValidator,
   TValidators,
 } from '../entities/TValidator';
+import { TOverrideParams } from '../../../_Root/domain/types/utils';
 import { ISuccess } from '../../../_Root/domain/types/Result/ISuccess';
 import { IError } from '../../../_Root/domain/types/Result/IError';
 import { ErrorResult, SuccessResult } from '../../../_Root/domain/factories';
@@ -51,11 +52,16 @@ type TValidationAccumulator<Validators extends TValidators> = {
   isError: boolean;
 };
 
-export type TCreateTupleRuleParams = {
+export type TCreateTupleRuleParams = TValidationParams & {
   errorMessageHypernym?: string,
   errorMessageHypernymSeparator?: string,
   errorMessageIndexSeparator?: string,
 };
+
+type TResolvedTupleValidationParams<
+  CreateParams extends TCreateTupleRuleParams | undefined,
+  CallParams extends TValidationParams | undefined,
+> = TOverrideParams<CreateParams, CallParams, 'shouldReturnError'>;
 
 type TTupleValidationRuleResult<
   Validators extends TValidators,
@@ -73,14 +79,17 @@ type TTupleValidationRuleResult<
       // если вынести в отдельный тип - тайпскрипт будет выводить нечитаемый type alias
       | IError<string, TErrorTupleValidationData<Validators>> & { valid: Partial<TSuccessTupleValidationData<Validators>> };
 
-export default function createTupleValidationRule<const Validators extends TValidators>(
+export default function createTupleValidationRule<
+  const Validators extends TValidators,
+  const Params extends TCreateTupleRuleParams | undefined = undefined,
+>(
   validators: Validators,
-  params?: TCreateTupleRuleParams,
+  params?: Params,
 ) {
-  return <Params extends TValidationParams | undefined = undefined>(
+  return <CallParams extends TValidationParams | undefined = undefined>(
     value: Array<(TInputValue<Validators>)[number]> | Readonly<Array<(TInputValue<Validators>)[number]>>,
-    validationParams?: Params,
-  ): TTupleValidationRuleResult<Validators, Params> => {
+    validationParams?: CallParams,
+  ): TTupleValidationRuleResult<Validators, TResolvedTupleValidationParams<Params, CallParams>> => {
     try {
       const initialAcc: TValidationAccumulator<Validators> = {
         validResults: [] as unknown as TSuccessTupleValidationData<Validators>,
@@ -88,6 +97,7 @@ export default function createTupleValidationRule<const Validators extends TVali
         errorMessage: '',
         isError: false,
       };
+      const shouldReturnError = validationParams?.shouldReturnError ?? params?.shouldReturnError;
 
       const result = initialAcc;
       // eslint-disable-next-line no-restricted-syntax
@@ -96,7 +106,7 @@ export default function createTupleValidationRule<const Validators extends TVali
         if (!validator) continue;
 
         const validationResult = validator(value?.[index], {
-          shouldReturnError: isArray(value).status === 'error' || validationParams?.shouldReturnError,
+          shouldReturnError: isArray(value).status === 'error' || shouldReturnError,
         });
 
         if (validationResult.status === 'success') {
@@ -116,9 +126,9 @@ export default function createTupleValidationRule<const Validators extends TVali
           // если вынести в отдельный тип - тайпскрипт будет выводить нечитаемый type alias
         ) as unknown as IError<string, TErrorTupleValidationData<Validators>> & { valid: Partial<TSuccessTupleValidationData<Validators>> };
         errorResult.valid = result.validResults;
-        return errorResult as TTupleValidationRuleResult<Validators, Params>;
+        return errorResult as TTupleValidationRuleResult<Validators, TResolvedTupleValidationParams<Params, CallParams>>;
       }
-      return new SuccessResult(result.validResults) as TTupleValidationRuleResult<Validators, Params>;
+      return new SuccessResult(result.validResults) as TTupleValidationRuleResult<Validators, TResolvedTupleValidationParams<Params, CallParams>>;
     } catch (e) {
       console.error(e);
       throw e;

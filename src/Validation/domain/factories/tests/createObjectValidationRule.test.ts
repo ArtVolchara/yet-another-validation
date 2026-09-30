@@ -281,6 +281,57 @@ describe('createObjectValidationRule', () => {
         expect(actualResult?.errors?.score).toBeDefined();
       }
     });
+
+    test('Should use shouldReturnError from create params when call omits it', () => {
+      const objectValidationRule = createObjectValidationRule(
+        {
+          name: composeValidator([[isString]]),
+          age: composeValidator([[isNumber]]),
+        },
+        { shouldReturnError: true },
+      );
+
+      const actualResult = objectValidationRule({ name: 'John', age: 25 });
+      const actualStatus: 'error' = actualResult.status;
+
+      expect(actualStatus).toBe('error');
+      if (actualResult.status === 'error') {
+        expect(actualResult.errors?.name).toBeDefined();
+        expect(actualResult.errors?.age).toBeDefined();
+      }
+    });
+
+    test('Should let call params override shouldReturnError from create params', () => {
+      const objectValidationRule = createObjectValidationRule(
+        {
+          name: composeValidator([[isString]]),
+          age: composeValidator([[isNumber]]),
+        },
+        { shouldReturnError: true },
+      );
+
+      const actualResult = objectValidationRule({ name: 'John', age: 25 }, { shouldReturnError: false });
+
+      expect(actualResult.status).toBe('success');
+      if (actualResult.status === 'success') {
+        expect(actualResult.data).toEqual({ name: 'John', age: 25 });
+      }
+    });
+
+    test('Should let call params set shouldReturnError when create params omit it', () => {
+      const objectValidationRule = createObjectValidationRule(
+        {
+          name: composeValidator([[isString]]),
+          age: composeValidator([[isNumber]]),
+        },
+        { shouldReturnError: false },
+      );
+
+      const actualResult = objectValidationRule({ name: 'John', age: 25 }, { shouldReturnError: true });
+      const actualStatus: 'error' = actualResult.status;
+
+      expect(actualStatus).toBe('error');
+    });
   });
 
   describe('createObjectValidationRule success cases', () => {

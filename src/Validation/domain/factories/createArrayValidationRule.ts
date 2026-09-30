@@ -5,6 +5,7 @@ import {
   TValidator,
 } from '../entities/TValidator';
 import { TRetrieveError } from '../../../_Root/domain/types/Result/TResult';
+import { TOverrideParams } from '../../../_Root/domain/types/utils';
 import { ISuccess } from '../../../_Root/domain/types/Result/ISuccess';
 import { IError } from '../../../_Root/domain/types/Result/IError';
 import { ErrorResult, SuccessResult } from '../../../_Root/domain/factories';
@@ -22,16 +23,24 @@ export type TValidationAccumulator<Validator extends TValidator> = {
   isError: boolean;
 };
 
-export type TCreateArrayRuleParams = {
+export type TCreateArrayRuleParams = TValidationParams & {
+  doNotPreserveInvalidIndex?: boolean,
   errorMessageHypernym?: string,
   errorMessageEmptyHypernym?: string,
   errorMessageHypernymSeparator?: string,
   errorMessageIndexSeparator?: string,
 };
 
+type TCallValidationParams = (TValidationParams & { doNotPreserveInvalidIndex?: boolean }) | undefined;
+
+type TResolvedArrayValidationParams<
+  CreateParams extends TCreateArrayRuleParams | undefined,
+  CallParams extends TCallValidationParams,
+> = TOverrideParams<CreateParams, CallParams, 'shouldReturnError' | 'doNotPreserveInvalidIndex'>;
+
 type TArrayValidationRuleResult<
   Validator extends TValidator,
-  Params extends (TValidationParams & { doNotPreserveInvalidIndex?: boolean }) | undefined = undefined,
+  Params extends TCallValidationParams,
 > =
   [NonNullable<Params>['shouldReturnError']] extends [never]
     ? ISuccess<Array<TRetrieveValidationSuccess<Validator>['data']>>
@@ -69,14 +78,15 @@ type TArrayValidationRuleResult<
 
 export default function createArrayValidationRule<
   const Validator extends TValidator,
+  const Params extends TCreateArrayRuleParams | undefined = undefined,
 >(
   validator: Validator,
-  params?: TCreateArrayRuleParams,
+  params?: Params,
 ) {
-  return <Params extends (TValidationParams & { doNotPreserveInvalidIndex?: boolean }) | undefined = undefined>(
+  return <CallParams extends TCallValidationParams = undefined>(
     value: Array<TRetrieveValidationInputData<Validator>>,
-    validationParams?: Params & { doNotPreserveInvalidIndex?: boolean },
-  ): TArrayValidationRuleResult<Validator, Params> => {
+    validationParams?: CallParams & { doNotPreserveInvalidIndex?: boolean },
+  ): TArrayValidationRuleResult<Validator, TResolvedArrayValidationParams<Params, CallParams>> => {
     try {
       const initialAcc: TValidationAccumulator<Validator> = {
         validResults: [],
@@ -84,8 +94,10 @@ export default function createArrayValidationRule<
         errorMessage: '',
         isError: false,
       };
+      const shouldReturnError = validationParams?.shouldReturnError ?? params?.shouldReturnError;
+      const doNotPreserveInvalidIndex = validationParams?.doNotPreserveInvalidIndex ?? params?.doNotPreserveInvalidIndex;
       if (isArray(value).status === 'error'
-      || (isArray(value).status === 'success' && value.length === 0 && validationParams?.shouldReturnError)
+      || (isArray(value).status === 'success' && value.length === 0 && shouldReturnError)
       ) {
         const validationResult = validator(undefined, { shouldReturnError: true });
         if (validationResult.status === 'error') {
@@ -94,21 +106,21 @@ export default function createArrayValidationRule<
             [],
             // если вынести в отдельный тип - тайпскрипт будет выводить нечитаемый type alias
           ) as unknown as IError<string, Array<TRetrieveError<ReturnType<Validator>> | undefined>>
-          & { valid: [NonNullable<Params>['doNotPreserveInvalidIndex']] extends [never]
+          & { valid: [NonNullable<CallParams>['doNotPreserveInvalidIndex']] extends [never]
             ? Array<TRetrieveValidationSuccess<Validator>['data'] | undefined>
-            : [NonNullable<Params>['doNotPreserveInvalidIndex']] extends [true]
+            : [NonNullable<CallParams>['doNotPreserveInvalidIndex']] extends [true]
               ? Array<TRetrieveValidationSuccess<Validator>['data']>
               : Array<TRetrieveValidationSuccess<Validator>['data'] | undefined> };
           errorResult.valid = [];
-          return errorResult as TArrayValidationRuleResult<Validator, Params>;
+          return errorResult as TArrayValidationRuleResult<Validator, TResolvedArrayValidationParams<Params, CallParams>>;
         }
       }
       const result = value?.reduce((acc, item, index) => {
         const validationResult = validator(item, {
-          shouldReturnError: validationParams?.shouldReturnError,
+          shouldReturnError,
         });
         if (validationResult.status === 'success') {
-          if (validationParams?.doNotPreserveInvalidIndex === true) {
+          if (doNotPreserveInvalidIndex === true) {
             acc.validResults.push(validationResult.data);
           } else {
             acc.validResults[index] = validationResult.data;
@@ -116,7 +128,7 @@ export default function createArrayValidationRule<
           acc.errors[index] = undefined;
         } else {
           acc.isError = true;
-          if (validationParams?.doNotPreserveInvalidIndex !== true) {
+          if (doNotPreserveInvalidIndex !== true) {
             acc.validResults[index] = undefined;
           }
           acc.errors[index] = validationResult as TRetrieveError<ReturnType<Validator>>;
@@ -130,15 +142,15 @@ export default function createArrayValidationRule<
           result.errors,
           // если вынести в отдельный тип - тайпскрипт будет выводить нечитаемый type alias
         ) as unknown as IError<string, Array<TRetrieveError<ReturnType<Validator>> | undefined>>
-        & { valid: [NonNullable<Params>['doNotPreserveInvalidIndex']] extends [never]
+        & { valid: [NonNullable<CallParams>['doNotPreserveInvalidIndex']] extends [never]
           ? Array<TRetrieveValidationSuccess<Validator>['data'] | undefined>
-          : [NonNullable<Params>['doNotPreserveInvalidIndex']] extends [true]
+          : [NonNullable<CallParams>['doNotPreserveInvalidIndex']] extends [true]
             ? Array<TRetrieveValidationSuccess<Validator>['data']>
             : Array<TRetrieveValidationSuccess<Validator>['data'] | undefined> };
         errorResult.valid = result.validResults;
-        return errorResult as TArrayValidationRuleResult<Validator, Params>;
+        return errorResult as TArrayValidationRuleResult<Validator, TResolvedArrayValidationParams<Params, CallParams>>;
       }
-      return new SuccessResult(result.validResults) as TArrayValidationRuleResult<Validator, Params>;
+      return new SuccessResult(result.validResults) as TArrayValidationRuleResult<Validator, TResolvedArrayValidationParams<Params, CallParams>>;
     } catch (e) {
       console.error(e);
       throw e;

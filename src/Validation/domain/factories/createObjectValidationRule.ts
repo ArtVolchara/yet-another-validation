@@ -1,4 +1,4 @@
-import { TObjectEntries, TRemoveReadonly } from '../../../_Root/domain/types/utils';
+import { TObjectEntries, TOverrideParams, TRemoveReadonly } from '../../../_Root/domain/types/utils';
 import { IError } from '../../../_Root/domain/types/Result/IError';
 import { ErrorResult, SuccessResult } from '../../../_Root/domain/factories';
 import { ISuccess } from '../../../_Root/domain/types/Result/ISuccess';
@@ -12,11 +12,16 @@ export const OBJECT_DEFAULT_ERROR_MESSAGE_HYPERNYM = 'Object validation failed f
 export const OBJECT_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR = ': ';
 export const OBJECT_DEFAULT_ERROR_MESSAGE_FIELD_SEPARATOR = ': ';
 
-export type TCreateObjectRuleParams = {
+export type TCreateObjectRuleParams = TValidationParams & {
   errorMessageHypernym?: string,
   errorMessageHypernymSeparator?: string,
   errorMessageFieldSeparator?: string,
 };
+
+type TResolvedObjectValidationParams<
+  CreateParams extends TCreateObjectRuleParams | undefined,
+  CallParams extends TValidationParams | undefined,
+> = TOverrideParams<CreateParams, CallParams, 'shouldReturnError'>;
 
 type TObjectValidationRuleResult<
   ValidatorsSchema extends TObjectValidatorsSchema,
@@ -42,15 +47,16 @@ type TObjectValidationRuleResult<
 export default function createObjectValidationRule<
   const Schema extends TObjectValidatorsSchema,
   const ValidatorsSchema extends TRemoveReadonly<Schema> = TRemoveReadonly<Schema>,
+  const Params extends TCreateObjectRuleParams | undefined = undefined,
 >(
   validatorsSchema: Schema,
-  params?: TCreateObjectRuleParams,
+  params?: Params,
 ) {
   const schemaEntries = Object.entries(validatorsSchema) as TObjectEntries<typeof validatorsSchema>;
-  return <Params extends TValidationParams | undefined = undefined>(
+  return <CallParams extends TValidationParams | undefined = undefined>(
     value: Record<string | symbol, any> & { length?: never },
-    validationParams?: Params,
-  ): TObjectValidationRuleResult<ValidatorsSchema, Params> => {
+    validationParams?: CallParams,
+  ): TObjectValidationRuleResult<ValidatorsSchema, TResolvedObjectValidationParams<Params, CallParams>> => {
     try {
       const initialAcc = {
         validResults: {} as { [Key in keyof ValidatorsSchema]: TRetrieveSuccess<ReturnType<ValidatorsSchema[Key]>>['data'] },
@@ -58,10 +64,11 @@ export default function createObjectValidationRule<
         errorMessage: '',
         isError: false,
       };
+      const shouldReturnError = validationParams?.shouldReturnError ?? params?.shouldReturnError;
 
       const result = schemaEntries.reduce((acc, [field, fieldValidator]) => {
         const validationResult = fieldValidator(value?.[field as keyof typeof value], {
-          shouldReturnError: isObject(value).status === 'error' || validationParams?.shouldReturnError,
+          shouldReturnError: isObject(value).status === 'error' || shouldReturnError,
         });
         if (validationResult.status === 'success') {
           acc.validResults[field] = validationResult.data;
@@ -80,9 +87,9 @@ export default function createObjectValidationRule<
         ) as IError<string, { [Key in keyof ValidatorsSchema]?: TRetrieveError<ReturnType<ValidatorsSchema[Key]>> }>
         & { valid: { [Key in keyof ValidatorsSchema]?: TRetrieveSuccess<ReturnType<ValidatorsSchema[Key]>>['data'] } };
         errorResult.valid = result.validResults;
-        return errorResult as TObjectValidationRuleResult<ValidatorsSchema, Params>;
+        return errorResult as TObjectValidationRuleResult<ValidatorsSchema, TResolvedObjectValidationParams<Params, CallParams>>;
       }
-      return new SuccessResult(result.validResults) as TObjectValidationRuleResult<ValidatorsSchema, Params>;
+      return new SuccessResult(result.validResults) as TObjectValidationRuleResult<ValidatorsSchema, TResolvedObjectValidationParams<Params, CallParams>>;
     } catch (e) {
       console.error(e);
       throw e;

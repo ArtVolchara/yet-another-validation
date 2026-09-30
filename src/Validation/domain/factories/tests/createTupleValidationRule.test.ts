@@ -302,6 +302,60 @@ describe('createTupleValidationRule', () => {
         expect(actualResult?.errors?.[3]).toBeDefined();
       }
     });
+
+    test('Should use shouldReturnError from create params when call omits it', () => {
+      const inputValue = ['Hello', 42] as const;
+      const tupleValidationRule = createTupleValidationRule(
+        [
+          composeValidator([[isString]]),
+          composeValidator([[isNumber]]),
+        ],
+        { shouldReturnError: true },
+      );
+
+      const actualResult = tupleValidationRule(inputValue);
+      const actualStatus: 'error' = actualResult.status;
+
+      expect(actualStatus).toBe('error');
+      if (actualResult.status === 'error') {
+        expect(actualResult.errors?.[0]).toBeDefined();
+        expect(actualResult.errors?.[1]).toBeDefined();
+      }
+    });
+
+    test('Should let call params override shouldReturnError from create params', () => {
+      const inputValue = ['Hello', 42] as const;
+      const tupleValidationRule = createTupleValidationRule(
+        [
+          composeValidator([[isString]]),
+          composeValidator([[isNumber]]),
+        ],
+        { shouldReturnError: true },
+      );
+
+      const actualResult = tupleValidationRule(inputValue, { shouldReturnError: false });
+
+      expect(actualResult.status).toBe('success');
+      if (actualResult.status === 'success') {
+        expect(actualResult.data).toEqual(['Hello', 42]);
+      }
+    });
+
+    test('Should let call params set shouldReturnError when create params omit it', () => {
+      const inputValue = ['Hello', 42] as const;
+      const tupleValidationRule = createTupleValidationRule(
+        [
+          composeValidator([[isString]]),
+          composeValidator([[isNumber]]),
+        ],
+        { shouldReturnError: false },
+      );
+
+      const actualResult = tupleValidationRule(inputValue, { shouldReturnError: true });
+      const actualStatus: 'error' = actualResult.status;
+
+      expect(actualStatus).toBe('error');
+    });
   });
 
   describe('createTupleValidationRule success cases', () => {

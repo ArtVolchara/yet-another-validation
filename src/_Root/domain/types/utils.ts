@@ -45,3 +45,36 @@ export type IsUnknown<T> = IsAny<T> extends true
 
 // Проверка, является ли тип any или unknown
 export type IsAnyOrUnknown<T> = IsAny<T> extends true ? true : IsUnknown<T>;
+
+// never — ключа нет: keyof never это string | number | symbol, и любая строка ему подходит.
+export type THasKey<Source extends object, Key extends string> =
+  [Source] extends [never]
+    ? false
+    : Key extends keyof Source
+      ? true
+      : false;
+
+export type TReadKey<Source extends object, Key extends string> =
+  Key extends keyof Source
+    ? Source[Key]
+    : never;
+
+// Ключ вызова перекрывает ключ создания. Нет ни там, ни там — never, как если параметр не передавали.
+export type TOverrideFlag<
+  CreateParams extends object | undefined,
+  CallParams extends object | undefined,
+  Key extends string,
+> =
+  THasKey<NonNullable<CallParams>, Key> extends true
+    ? TReadKey<NonNullable<CallParams>, Key>
+    : THasKey<NonNullable<CreateParams>, Key> extends true
+      ? TReadKey<NonNullable<CreateParams>, Key>
+      : never;
+
+export type TOverrideParams<
+  CreateParams extends object | undefined,
+  CallParams extends object | undefined,
+  Keys extends string,
+> = {
+  [Key in Keys]: TOverrideFlag<CreateParams, CallParams, Key>;
+};

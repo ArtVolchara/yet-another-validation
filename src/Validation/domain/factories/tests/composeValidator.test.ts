@@ -283,6 +283,102 @@ describe('composeValidator', () => {
     });
   });
 
+  describe('composeValidator params override', () => {
+    it('should use shouldReturnError from create params when call omits it', () => {
+      const validator = composeValidator(
+        [[isString], [isNumber, isPositiveNumber]],
+        { shouldReturnError: true },
+      );
+
+      const actualResult = validator('abc');
+      const actualStatus: 'error' = actualResult.status;
+
+      expect(actualStatus).toBe('error');
+      if (actualResult.status === 'error') {
+        const expectedMessage = `${IS_STRING_ERROR_MESSAGE}${DEFAULT_OR_SEPARATOR}${IS_NUMBER_ERROR_MESSAGE}${DEFAULT_AND_SEPARATOR}${IS_POSITIVE_NUMBER_ERROR_MESSAGE}`;
+        const actualMessage: typeof expectedMessage = actualResult.message;
+        expect(actualMessage).toBe(expectedMessage);
+      }
+    });
+
+    it('should let call params override shouldReturnError from create params', () => {
+      const validator = composeValidator([[isString]], { shouldReturnError: true });
+
+      const actualResult = validator('abc', { shouldReturnError: false });
+
+      expect(actualResult.status).toBe('success');
+      if (actualResult.status === 'success') {
+        expect(actualResult.data).toBe('abc');
+      }
+    });
+
+    it('should let call shouldReturnError true override create false', () => {
+      const validator = composeValidator([[isString]], { shouldReturnError: false });
+
+      const actualResult = validator('abc', { shouldReturnError: true });
+      const actualStatus: 'error' = actualResult.status;
+
+      expect(actualStatus).toBe('error');
+      if (actualResult.status === 'error') {
+        expect(actualResult.message).toBe(IS_STRING_ERROR_MESSAGE);
+      }
+    });
+
+    it('should keep create shouldReturnError and separatorAND when call overrides separatorOR', () => {
+      const separatorOR = ' либо ';
+      const separatorAND = ' + ';
+      const validator = composeValidator(
+        [[isString], [isNumber, isPositiveNumber]],
+        { separatorOR, separatorAND, shouldReturnError: true },
+      );
+
+      const actualResult = validator('abc', { separatorOR: ' || ' });
+      const actualStatus: 'error' = actualResult.status;
+
+      expect(actualStatus).toBe('error');
+      if (actualResult.status === 'error') {
+        const expectedMessage = `${IS_STRING_ERROR_MESSAGE} || ${IS_NUMBER_ERROR_MESSAGE}${separatorAND}${IS_POSITIVE_NUMBER_ERROR_MESSAGE}`;
+        const actualMessage: typeof expectedMessage = actualResult.message;
+        expect(actualMessage).toBe(expectedMessage);
+      }
+    });
+
+    it('should keep create separators when call passes only shouldReturnError', () => {
+      const separatorOR = ' либо ';
+      const separatorAND = ' + ';
+      const validator = composeValidator(
+        [[isString], [isNumber, isPositiveNumber]],
+        { separatorOR, separatorAND },
+      );
+
+      const actualResult = validator(true, { shouldReturnError: true });
+      const actualStatus = actualResult.status;
+
+      expect(actualStatus).toBe('error');
+      if (actualResult.status === 'error') {
+        const expectedMessage = `${IS_STRING_ERROR_MESSAGE}${separatorOR}${IS_NUMBER_ERROR_MESSAGE}${separatorAND}${IS_POSITIVE_NUMBER_ERROR_MESSAGE}`;
+        const actualMessage: typeof expectedMessage = actualResult.message;
+        expect(actualMessage).toBe(expectedMessage);
+      }
+    });
+
+    it('should let call separator override create separator', () => {
+      const validator = composeValidator(
+        [[isString], [isNumber, isPositiveNumber]],
+        { separatorOR: ' либо ', separatorAND: ' + ' },
+      );
+
+      const actualResult = validator(true, { separatorAND: ' & ' });
+
+      expect(actualResult.status).toBe('error');
+      if (actualResult.status === 'error') {
+        const expectedMessage = `${IS_STRING_ERROR_MESSAGE} либо ${IS_NUMBER_ERROR_MESSAGE} & ${IS_POSITIVE_NUMBER_ERROR_MESSAGE}`;
+        const actualMessage: typeof expectedMessage = actualResult.message;
+        expect(actualMessage).toBe(expectedMessage);
+      }
+    });
+  });
+
   describe('composeValidator success cases', () => {
     describe('Single OR validator', () => {
       it('should return success with single string rule', () => {

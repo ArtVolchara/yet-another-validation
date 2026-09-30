@@ -1,44 +1,42 @@
 import validateValue, {
-  TConsistentORValidators, TORValidationFirstParameter,
+  TConsistentORValidators, TORValidationFirstParameter, TParams,
 } from '../functions/validateValue';
 import {
   TORValidators,
-  TValidationParams,
   TValidatorMeta,
   meta_brand,
 } from '../entities/TValidator';
+import { TOverrideParams } from '../../../_Root/domain/types/utils';
 
-type MergeComposeValidatorParams<
-  ValidationParams extends TValidationParams | undefined,
-  ComposerParams extends { separatorOR?: string, separatorAND?: string } | undefined ,
-> = [ValidationParams, ComposerParams] extends [undefined, undefined] | [never, never]
-  ? undefined
-  : [ValidationParams] extends [undefined | never]
-    ? ComposerParams
-    : [ComposerParams] extends [undefined | never]
-      ? ValidationParams
-      : ValidationParams & ComposerParams;
+type TResolvedComposeValidatorParams<
+  CreateParams extends TParams | undefined,
+  CallParams extends TParams | undefined,
+> = TOverrideParams<CreateParams, CallParams, 'separatorOR' | 'separatorAND' | 'shouldReturnError'>;
 
 // Валидационные правила, передаваемые в pipe-функцию должны быть готовы вне зависимости от типа аргумента(но тип нужен)
 // обработать любое значение из рантайма и для этого иметь catch внутри себя, в котором возвращается(не выбрасывается)
 // ErrorResult c нужным message.
 export default function composeValidator<
   ORValidators extends TORValidators,
-  const ComposerParams extends { separatorOR?: string, separatorAND?: string } | undefined = undefined,
-  >(
+  const ComposerParams extends TParams | undefined = undefined,
+>(
   orValidators: TConsistentORValidators<ORValidators>,
   composerParams?: ComposerParams,
 ) {
   const validator = <
     const Value extends TORValidationFirstParameter<ORValidators>,
-    const ValidationParams extends TValidationParams | undefined = undefined,
+    const ValidationParams extends TParams | undefined = undefined,
   >(
       value: Value,
       validationParams?: ValidationParams,
-    ) => validateValue<Value, ORValidators, MergeComposeValidatorParams<ValidationParams, ComposerParams>>(
+    ) => validateValue<Value, ORValidators, TResolvedComposeValidatorParams<ComposerParams, ValidationParams>>(
       value,
       orValidators,
-      { ...(composerParams || {}), ...(validationParams || {}) } as MergeComposeValidatorParams<ValidationParams, ComposerParams>,
+      {
+        separatorOR: validationParams?.separatorOR ?? composerParams?.separatorOR,
+        separatorAND: validationParams?.separatorAND ?? composerParams?.separatorAND,
+        shouldReturnError: validationParams?.shouldReturnError ?? composerParams?.shouldReturnError,
+      } as TResolvedComposeValidatorParams<ComposerParams, ValidationParams>,
     );
   // Бренд фантомный: метаданные исходных веток позволяют внешнему validateValue
   // развернуть вложенный валидатор в типах так же, как это делает рантайм

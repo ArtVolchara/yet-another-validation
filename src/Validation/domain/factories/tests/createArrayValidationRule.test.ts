@@ -319,6 +319,70 @@ describe('createArrayValidationRule', () => {
       }
     });
 
+    test('Should use shouldReturnError from create params when call omits it', () => {
+      const inputValue = ['Hello', 'World'];
+      const arrayValidationRule = createArrayValidationRule(
+        composeValidator([[isString]]),
+        { shouldReturnError: true },
+      );
+
+      const actualResult = arrayValidationRule(inputValue);
+
+      expect(actualResult.status).toBe('error');
+      if (actualResult.status === 'error') {
+        expect(actualResult.errors).toHaveLength(2);
+        expect(actualResult.errors?.[0]).toBeDefined();
+        expect(actualResult.errors?.[1]).toBeDefined();
+      }
+    });
+
+    test('Should let call params override shouldReturnError from create params', () => {
+      const inputValue = ['Hello', 'World'];
+      const arrayValidationRule = createArrayValidationRule(
+        composeValidator([[isString]]),
+        { shouldReturnError: true },
+      );
+
+      const actualResult = arrayValidationRule(inputValue, { shouldReturnError: false });
+
+      expect(actualResult.status).toBe('success');
+      if (actualResult.status === 'success') {
+        expect(actualResult.data).toEqual(['Hello', 'World']);
+      }
+    });
+
+    test('Should keep create params shouldReturnError when call passes another flag', () => {
+      const inputValue = ['Hello', 1];
+      const arrayValidationRule = createArrayValidationRule(
+        composeValidator([[isString]]),
+        { shouldReturnError: true },
+      );
+
+      const actualResult = arrayValidationRule(inputValue, { doNotPreserveInvalidIndex: true });
+
+      expect(actualResult.status).toBe('error');
+      if (actualResult.status === 'error') {
+        expect(actualResult.valid).toEqual([]);
+        expect(actualResult.errors).toHaveLength(2);
+      }
+    });
+
+    test('Should fail empty array when shouldReturnError comes from create params', () => {
+      const inputValue: string[] = [];
+      const arrayValidationRule = createArrayValidationRule(
+        composeValidator([[isString]]),
+        { shouldReturnError: true },
+      );
+
+      const actualResult = arrayValidationRule(inputValue);
+
+      expect(actualResult.status).toBe('error');
+      if (actualResult.status === 'error') {
+        expect(actualResult.message).toContain(`${ARRAY_DEFAULT_ERROR_MESSAGE_EMPTY_HYPERNYM}${ARRAY_DEFAULT_ERROR_MESSAGE_HYPERNYM_SEPARATOR}\n${IS_STRING_ERROR_MESSAGE}`);
+        expect(actualResult.errors).toEqual([]);
+      }
+    });
+
     test('Should return error when shouldReturnError is true for empty array', () => {
       const inputValue: string[] = [];
       const arrayValidationRule = createArrayValidationRule(composeValidator([[isString]]));
