@@ -47,11 +47,14 @@ export type IsUnknown<T> = IsAny<T> extends true
 export type IsAnyOrUnknown<T> = IsAny<T> extends true ? true : IsUnknown<T>;
 
 // never — ключа нет: keyof never это string | number | symbol, и любая строка ему подходит.
+// Опциональное свойство тоже не ключ: его могли не передать.
 export type THasKey<Source extends object, Key extends string> =
   [Source] extends [never]
     ? false
     : Key extends keyof Source
-      ? true
+      ? {} extends Pick<Source, Key>
+        ? false
+        : true
       : false;
 
 export type TReadKey<Source extends object, Key extends string> =

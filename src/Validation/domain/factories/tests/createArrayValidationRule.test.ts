@@ -261,11 +261,11 @@ describe('createArrayValidationRule', () => {
       }
     });
 
-    test('Should omit invalid indexes from valid when doNotPreserveInvalidIndex is true', () => {
+    test('Should omit invalid indexes from valid when skipInvalidIndexInValidResults is true', () => {
       const inputValue = ['Hello', 123, 'World', false];
       const arrayValidationRule = createArrayValidationRule(composeValidator([[isString]]));
 
-      const actualResult = arrayValidationRule(inputValue, { doNotPreserveInvalidIndex: true });
+      const actualResult = arrayValidationRule(inputValue, { skipInvalidIndexInValidResults: true });
 
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
@@ -279,9 +279,9 @@ describe('createArrayValidationRule', () => {
       }
     });
 
-    test('Should keep undefined in valid type when doNotPreserveInvalidIndex is a widened boolean', () => {
+    test('Should keep undefined in valid type when skipInvalidIndexInValidResults is a widened boolean', () => {
       const inputValue = ['Hello', 123, 'World'];
-      const validationParams: { doNotPreserveInvalidIndex: boolean } = { doNotPreserveInvalidIndex: true };
+      const validationParams: { skipInvalidIndexInValidResults: boolean } = { skipInvalidIndexInValidResults: true };
       const arrayValidationRule = createArrayValidationRule(composeValidator([[isString]]));
 
       const actualResult = arrayValidationRule(inputValue, validationParams);
@@ -293,11 +293,11 @@ describe('createArrayValidationRule', () => {
       }
     });
 
-    test('Should keep undefined in valid when doNotPreserveInvalidIndex is false', () => {
+    test('Should keep undefined in valid when skipInvalidIndexInValidResults is false', () => {
       const inputValue = ['Hello', 123, 'World'];
       const arrayValidationRule = createArrayValidationRule(composeValidator([[isString]]));
 
-      const actualResult = arrayValidationRule(inputValue, { doNotPreserveInvalidIndex: false });
+      const actualResult = arrayValidationRule(inputValue, { skipInvalidIndexInValidResults: false });
 
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
@@ -305,11 +305,11 @@ describe('createArrayValidationRule', () => {
       }
     });
 
-    test('Should return empty valid when every element is invalid and doNotPreserveInvalidIndex is true', () => {
+    test('Should return empty valid when every element is invalid and skipInvalidIndexInValidResults is true', () => {
       const inputValue = [1, false, null];
       const arrayValidationRule = createArrayValidationRule(composeValidator([[isString]]));
 
-      const actualResult = arrayValidationRule(inputValue, { doNotPreserveInvalidIndex: true });
+      const actualResult = arrayValidationRule(inputValue, { skipInvalidIndexInValidResults: true });
 
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {
@@ -358,7 +358,7 @@ describe('createArrayValidationRule', () => {
         { shouldReturnError: true },
       );
 
-      const actualResult = arrayValidationRule(inputValue, { doNotPreserveInvalidIndex: true });
+      const actualResult = arrayValidationRule(inputValue, { skipInvalidIndexInValidResults: true });
 
       expect(actualResult.status).toBe('error');
       if (actualResult.status === 'error') {

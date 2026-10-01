@@ -24,19 +24,19 @@ export type TValidationAccumulator<Validator extends TValidator> = {
 };
 
 export type TCreateArrayRuleParams = TValidationParams & {
-  doNotPreserveInvalidIndex?: boolean,
+  skipInvalidIndexInValidResults?: boolean,
   errorMessageHypernym?: string,
   errorMessageEmptyHypernym?: string,
   errorMessageHypernymSeparator?: string,
   errorMessageIndexSeparator?: string,
 };
 
-type TCallValidationParams = (TValidationParams & { doNotPreserveInvalidIndex?: boolean }) | undefined;
+type TCallValidationParams = (TValidationParams & { skipInvalidIndexInValidResults?: boolean }) | undefined;
 
 type TResolvedArrayValidationParams<
   CreateParams extends TCreateArrayRuleParams | undefined,
   CallParams extends TCallValidationParams,
-> = TOverrideParams<CreateParams, CallParams, 'shouldReturnError' | 'doNotPreserveInvalidIndex'>;
+> = TOverrideParams<CreateParams, CallParams, 'shouldReturnError' | 'skipInvalidIndexInValidResults'>;
 
 type TArrayValidationRuleResult<
   Validator extends TValidator,
@@ -46,33 +46,33 @@ type TArrayValidationRuleResult<
     ? ISuccess<Array<TRetrieveValidationSuccess<Validator>['data']>>
     // если вынести в отдельный тип - тайпскрипт будет выводить нечитаемый type alias
     | IError<string, Array<TRetrieveError<ReturnType<Validator>> | undefined>>
-    & { valid: [NonNullable<Params>['doNotPreserveInvalidIndex']] extends [never]
+    & { valid: [NonNullable<Params>['skipInvalidIndexInValidResults']] extends [never]
       ? Array<TRetrieveValidationSuccess<Validator>['data'] | undefined>
-      : [NonNullable<Params>['doNotPreserveInvalidIndex']] extends [true]
+      : [NonNullable<Params>['skipInvalidIndexInValidResults']] extends [true]
         ? Array<TRetrieveValidationSuccess<Validator>['data']>
         : Array<TRetrieveValidationSuccess<Validator>['data'] | undefined> }
     : [NonNullable<Params>['shouldReturnError']] extends [true]
       // если вынести в отдельный тип - тайпскрипт будет выводить нечитаемый type alias
       ? [IError<string, Array<TRetrieveError<ReturnType<Validator>> | undefined>>
-      & { valid: [NonNullable<Params>['doNotPreserveInvalidIndex']] extends [never]
+      & { valid: [NonNullable<Params>['skipInvalidIndexInValidResults']] extends [never]
         ? Array<TRetrieveValidationSuccess<Validator>['data'] | undefined>
-        : [NonNullable<Params>['doNotPreserveInvalidIndex']] extends [true]
+        : [NonNullable<Params>['skipInvalidIndexInValidResults']] extends [true]
           ? Array<TRetrieveValidationSuccess<Validator>['data']>
           : Array<TRetrieveValidationSuccess<Validator>['data'] | undefined> }] extends [never]
         ? ISuccess<Array<TRetrieveValidationSuccess<Validator>['data']>>
         // если вынести в отдельный тип - тайпскрипт будет выводить нечитаемый type alias
         : IError<string, Array<TRetrieveError<ReturnType<Validator>> | undefined>>
-        & { valid: [NonNullable<Params>['doNotPreserveInvalidIndex']] extends [never]
+        & { valid: [NonNullable<Params>['skipInvalidIndexInValidResults']] extends [never]
           ? Array<TRetrieveValidationSuccess<Validator>['data'] | undefined>
-          : [NonNullable<Params>['doNotPreserveInvalidIndex']] extends [true]
+          : [NonNullable<Params>['skipInvalidIndexInValidResults']] extends [true]
             ? Array<TRetrieveValidationSuccess<Validator>['data']>
             : Array<TRetrieveValidationSuccess<Validator>['data'] | undefined> }
       : ISuccess<Array<TRetrieveValidationSuccess<Validator>['data']>>
       // если вынести в отдельный тип - тайпскрипт будет выводить нечитаемый type alias
       | IError<string, Array<TRetrieveError<ReturnType<Validator>> | undefined>>
-      & { valid: [NonNullable<Params>['doNotPreserveInvalidIndex']] extends [never]
+      & { valid: [NonNullable<Params>['skipInvalidIndexInValidResults']] extends [never]
         ? Array<TRetrieveValidationSuccess<Validator>['data'] | undefined>
-        : [NonNullable<Params>['doNotPreserveInvalidIndex']] extends [true]
+        : [NonNullable<Params>['skipInvalidIndexInValidResults']] extends [true]
           ? Array<TRetrieveValidationSuccess<Validator>['data']>
           : Array<TRetrieveValidationSuccess<Validator>['data'] | undefined> };
 
@@ -85,7 +85,7 @@ export default function createArrayValidationRule<
 ) {
   return <CallParams extends TCallValidationParams = undefined>(
     value: Array<TRetrieveValidationInputData<Validator>>,
-    validationParams?: CallParams & { doNotPreserveInvalidIndex?: boolean },
+    validationParams?: CallParams & { skipInvalidIndexInValidResults?: boolean },
   ): TArrayValidationRuleResult<Validator, TResolvedArrayValidationParams<Params, CallParams>> => {
     try {
       const initialAcc: TValidationAccumulator<Validator> = {
@@ -95,7 +95,7 @@ export default function createArrayValidationRule<
         isError: false,
       };
       const shouldReturnError = validationParams?.shouldReturnError ?? params?.shouldReturnError;
-      const doNotPreserveInvalidIndex = validationParams?.doNotPreserveInvalidIndex ?? params?.doNotPreserveInvalidIndex;
+      const skipInvalidIndexInValidResults = validationParams?.skipInvalidIndexInValidResults ?? params?.skipInvalidIndexInValidResults;
       if (isArray(value).status === 'error'
       || (isArray(value).status === 'success' && value.length === 0 && shouldReturnError)
       ) {
@@ -106,9 +106,9 @@ export default function createArrayValidationRule<
             [],
             // если вынести в отдельный тип - тайпскрипт будет выводить нечитаемый type alias
           ) as unknown as IError<string, Array<TRetrieveError<ReturnType<Validator>> | undefined>>
-          & { valid: [NonNullable<CallParams>['doNotPreserveInvalidIndex']] extends [never]
+          & { valid: [NonNullable<CallParams>['skipInvalidIndexInValidResults']] extends [never]
             ? Array<TRetrieveValidationSuccess<Validator>['data'] | undefined>
-            : [NonNullable<CallParams>['doNotPreserveInvalidIndex']] extends [true]
+            : [NonNullable<CallParams>['skipInvalidIndexInValidResults']] extends [true]
               ? Array<TRetrieveValidationSuccess<Validator>['data']>
               : Array<TRetrieveValidationSuccess<Validator>['data'] | undefined> };
           errorResult.valid = [];
@@ -120,7 +120,7 @@ export default function createArrayValidationRule<
           shouldReturnError,
         });
         if (validationResult.status === 'success') {
-          if (doNotPreserveInvalidIndex === true) {
+          if (skipInvalidIndexInValidResults === true) {
             acc.validResults.push(validationResult.data);
           } else {
             acc.validResults[index] = validationResult.data;
@@ -128,7 +128,7 @@ export default function createArrayValidationRule<
           acc.errors[index] = undefined;
         } else {
           acc.isError = true;
-          if (doNotPreserveInvalidIndex !== true) {
+          if (skipInvalidIndexInValidResults !== true) {
             acc.validResults[index] = undefined;
           }
           acc.errors[index] = validationResult as TRetrieveError<ReturnType<Validator>>;
@@ -142,9 +142,9 @@ export default function createArrayValidationRule<
           result.errors,
           // если вынести в отдельный тип - тайпскрипт будет выводить нечитаемый type alias
         ) as unknown as IError<string, Array<TRetrieveError<ReturnType<Validator>> | undefined>>
-        & { valid: [NonNullable<CallParams>['doNotPreserveInvalidIndex']] extends [never]
+        & { valid: [NonNullable<CallParams>['skipInvalidIndexInValidResults']] extends [never]
           ? Array<TRetrieveValidationSuccess<Validator>['data'] | undefined>
-          : [NonNullable<CallParams>['doNotPreserveInvalidIndex']] extends [true]
+          : [NonNullable<CallParams>['skipInvalidIndexInValidResults']] extends [true]
             ? Array<TRetrieveValidationSuccess<Validator>['data']>
             : Array<TRetrieveValidationSuccess<Validator>['data'] | undefined> };
         errorResult.valid = result.validResults;

@@ -327,7 +327,7 @@ const forced = isString('hello', { shouldReturnError: true });
 |---|---|---|
 | `composeValidator` | `separatorOR`, `separatorAND`, `shouldReturnError` | нет |
 | `createObjectValidationRule` | `shouldReturnError` | `errorMessageHypernym`, `errorMessageHypernymSeparator`, `errorMessageFieldSeparator` |
-| `createArrayValidationRule` | `shouldReturnError`, `doNotPreserveInvalidIndex` | `errorMessageHypernym`, `errorMessageEmptyHypernym`, `errorMessageHypernymSeparator`, `errorMessageIndexSeparator` |
+| `createArrayValidationRule` | `shouldReturnError`, `skipInvalidIndexInValidResults` | `errorMessageHypernym`, `errorMessageEmptyHypernym`, `errorMessageHypernymSeparator`, `errorMessageIndexSeparator` |
 | `createTupleValidationRule` | `shouldReturnError` | `errorMessageHypernym`, `errorMessageHypernymSeparator`, `errorMessageIndexSeparator` |
 
 `validateValue` и `validateValueFromRules` принимают параметры только в момент вызова.
@@ -441,10 +441,10 @@ if (failed.status === 'error') {
 }
 ```
 
-`doNotPreserveInvalidIndex: true` убирает дырки из `valid`: туда попадают только успешные элементы, без `undefined` на местах ошибок. `errors` по-прежнему выровнен по индексу исходного массива. Флаг можно задать при создании правила и перекрыть аргументом вызова, так же как `shouldReturnError`.
+`skipInvalidIndexInValidResults: true` убирает дырки из `valid`: туда попадают только успешные элементы, без `undefined` на местах ошибок. `errors` по-прежнему выровнен по индексу исходного массива. Флаг можно задать при создании правила и перекрыть аргументом вызова, так же как `shouldReturnError`.
 
 ```typescript
-const compact = strings(['a', 1, 'c'], { doNotPreserveInvalidIndex: true });
+const compact = strings(['a', 1, 'c'], { skipInvalidIndexInValidResults: true });
 if (compact.status === 'error') {
   compact.valid; // ['a', 'c']
   // тип valid: Array<string>
@@ -457,7 +457,7 @@ if (compact.status === 'error') {
 | Что передано | Тип `valid` |
 |---|---|
 | флаг не передан или `false` | `Array<Data \| undefined>` |
-| `doNotPreserveInvalidIndex: true` | `Array<Data>` |
+| `skipInvalidIndexInValidResults: true` | `Array<Data>` |
 | флаг типа `boolean`, не литерал | `Array<Data \| undefined>` |
 
 В последнем случае рантайм зависит от значения. Тип остаётся широким, потому что `boolean` — это и `true`, и `false`.
